@@ -1,3 +1,5 @@
+"use client"
+
 import { notFound } from "next/navigation"
 import { mockCreators, mockSupports } from "@/lib/mock-data"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -5,24 +7,111 @@ import { CoffeeSupport } from "@/components/coffee-support"
 import { RecentSupporters } from "@/components/recent-supporters"
 import { Coffee } from "lucide-react"
 import Link from "next/link"
+import { use, useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { UserMenu } from "@/components/user-menu"
+import { getCurrentUser } from "@/lib/auth-utils"
 
-export default function CreatorProfilePage({ params }: { params: { username: string } }) {
-  const creator = mockCreators.find((c) => c.username === params.username)
+export default function CreatorProfilePage({ params }: { params: Promise<{ username: string }> }) {
+  const { username } = use(params)
+  const creator = mockCreators.find((c) => c.username === username)
+  const [currentUser, setCurrentUser] = useState<{ id: string; username: string } | null>(null)
+
+  useEffect(() => {
+    setCurrentUser(getCurrentUser())
+  }, [])
 
   if (!creator) {
     notFound()
   }
 
   const supports = mockSupports[creator.id] || []
+  const isOwnProfile = currentUser?.username === creator.username
 
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="border-b-4 border-black bg-white">
-        <nav className="container mx-auto px-4 py-6">
-          <Link href="/" className="text-3xl font-black">
-            BuyCoffee
+      <header className="border-b-4 border-black bg-white sticky top-0 z-50">
+        <nav className="container mx-auto px-4 py-6 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="bg-[#0000FF] rounded-full p-2 border-4 border-black">
+              <Coffee className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-2xl font-black hidden sm:inline">BuyCoffee</span>
           </Link>
+          <div className="hidden md:flex items-center gap-4">
+            <Link href="/discover" className="text-lg font-bold hover:underline">
+              Discover
+            </Link>
+            {isOwnProfile ? (
+              <>
+                <Link href="/dashboard" className="text-lg font-bold hover:underline">
+                  Dashboard
+                </Link>
+                <UserMenu />
+              </>
+            ) : (
+              <>
+                {currentUser && (
+                  <Link href="/dashboard" className="text-lg font-bold hover:underline">
+                    Dashboard
+                  </Link>
+                )}
+                {!currentUser && (
+                  <Link href="/login" className="text-lg font-bold hover:underline">
+                    Log in
+                  </Link>
+                )}
+                {currentUser ? (
+                  <UserMenu />
+                ) : (
+                  <Button
+                    asChild
+                    className="bg-[#CCFF00] hover:bg-[#B8E600] text-black font-bold text-lg px-8 py-6 rounded-full border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                  >
+                    <Link href="/signup">Sign up</Link>
+                  </Button>
+                )}
+              </>
+            )}
+          </div>
+          {/* Mobile */}
+          <div className="md:hidden flex items-center gap-2">
+            <Link href="/discover" className="text-sm font-bold hover:underline">
+              Discover
+            </Link>
+            {isOwnProfile ? (
+              <>
+                <Link href="/dashboard" className="text-sm font-bold hover:underline">
+                  Dashboard
+                </Link>
+                <UserMenu />
+              </>
+            ) : (
+              <>
+                {currentUser && (
+                  <Link href="/dashboard" className="text-sm font-bold hover:underline">
+                    Dashboard
+                  </Link>
+                )}
+                {!currentUser && (
+                  <Link href="/login" className="text-sm font-bold hover:underline">
+                    Log in
+                  </Link>
+                )}
+                {currentUser ? (
+                  <UserMenu />
+                ) : (
+                  <Button
+                    asChild
+                    className="bg-[#CCFF00] hover:bg-[#B8E600] text-black font-bold px-4 py-2 text-sm rounded-full border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                  >
+                    <Link href="/signup">Sign up</Link>
+                  </Button>
+                )}
+              </>
+            )}
+          </div>
         </nav>
       </header>
 
@@ -33,7 +122,7 @@ export default function CreatorProfilePage({ params }: { params: { username: str
 
       {/* Profile Section */}
       <div className="container mx-auto px-4 py-12">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row gap-12">
             {/* Left Column - Profile Info */}
             <div className="md:w-1/3">

@@ -317,48 +317,48 @@ export default function PaymentSettingsPage() {
                   <p className="text-sm text-gray-400 font-bold">Try adjusting your filters</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="max-h-[600px] overflow-y-auto space-y-3 pr-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
                   {filteredPayments.map((payment) => (
                     <div
                       key={payment.id}
                       className="border-4 border-black p-4 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
                     >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-start gap-4 flex-1">
+                      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                        <div className="flex items-start gap-3 md:gap-4 flex-1 min-w-0">
                           <img
                             src={payment.supporterAvatar || "/placeholder.svg"}
                             alt={payment.supporterName}
-                            className="w-12 h-12 rounded-full border-4 border-black object-cover"
+                            className="w-10 h-10 md:w-12 md:h-12 rounded-full border-4 border-black object-cover flex-shrink-0"
                           />
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <p className="font-black text-lg">{payment.supporterName}</p>
-                              <span className="bg-[#CCFF00] border-2 border-black px-3 py-1 text-sm font-bold rounded-full">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-wrap items-center gap-2 mb-1">
+                              <p className="font-black text-base md:text-lg truncate">{payment.supporterName}</p>
+                              <span className="bg-[#CCFF00] border-2 border-black px-2 md:px-3 py-1 text-xs md:text-sm font-bold rounded-full flex-shrink-0">
                                 {payment.coffeeCount}x ☕
                               </span>
                             </div>
                             {payment.message && (
-                              <p className="text-gray-700 font-bold mb-2 bg-gray-50 border-2 border-gray-300 p-3 rounded-lg">
+                              <p className="text-gray-700 font-bold mb-2 bg-gray-50 border-2 border-gray-300 p-2 md:p-3 rounded-lg text-sm md:text-base break-words">
                                 "{payment.message}"
                               </p>
                             )}
-                            <p className="text-sm text-gray-500 font-bold mb-2">{payment.timestamp}</p>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-bold text-gray-500">TXN:</span>
+                            <p className="text-xs md:text-sm text-gray-500 font-bold mb-2">{payment.timestamp}</p>
+                            <div className="flex items-center gap-2 overflow-hidden">
+                              <span className="text-xs font-bold text-gray-500 flex-shrink-0">TXN:</span>
                               <a
                                 href={`https://etherscan.io/tx/${payment.txHash}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-xs font-mono font-bold text-[#0000FF] hover:text-[#0000CC] underline flex items-center gap-1 hover:gap-2 transition-all"
+                                className="text-xs font-mono font-bold text-[#0000FF] hover:text-[#0000CC] underline flex items-center gap-1 hover:gap-2 transition-all truncate"
                               >
-                                {payment.txHash.slice(0, 10)}...{payment.txHash.slice(-8)}
-                                <ExternalLink className="w-3 h-3" />
+                                <span className="truncate">{payment.txHash.slice(0, 8)}...{payment.txHash.slice(-6)}</span>
+                                <ExternalLink className="w-3 h-3 flex-shrink-0" />
                               </a>
                             </div>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-2xl font-black text-[#0000FF]">${payment.amount}</p>
+                        <div className="text-left md:text-right flex-shrink-0">
+                          <p className="text-xl md:text-2xl font-black text-[#0000FF] whitespace-nowrap">${payment.amount}</p>
                         </div>
                       </div>
                     </div>

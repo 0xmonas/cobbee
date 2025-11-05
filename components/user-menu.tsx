@@ -4,13 +4,14 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { User, Settings, LogOut, Eye, Wallet } from "lucide-react"
+import { setCurrentUser } from "@/lib/auth-utils"
 
 export function UserMenu() {
   const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
 
   const handleLogout = () => {
-    // In a real app, this would clear auth tokens
+    setCurrentUser(null)
     router.push("/login")
   }
 

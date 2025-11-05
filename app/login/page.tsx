@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Coffee, ArrowLeft, CheckCircle2, XCircle } from "lucide-react"
+import { setCurrentUser } from "@/lib/auth-utils"
+import { mockCreators } from "@/lib/mock-data"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -21,6 +23,8 @@ export default function LoginPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    // Mock login - set first creator as logged in user
+    setCurrentUser({ id: mockCreators[0].id, username: mockCreators[0].username })
     router.push("/dashboard")
   }
 

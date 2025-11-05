@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { mockCreators, mockSupports } from "@/lib/mock-data"
 import { Coffee, DollarSign, TrendingUp, Users, ExternalLink, Settings } from "lucide-react"
 import { UserMenu } from "@/components/user-menu"
+import { NotificationsMenu } from "@/components/notifications-menu"
 
 export default function DashboardPage() {
   // For demo purposes, we'll use the first creator as the logged-in user
@@ -19,10 +20,13 @@ export default function DashboardPage() {
       {/* Header */}
       <header className="border-b-4 border-black bg-white sticky top-0 z-50">
         <nav className="container mx-auto px-4 py-6 flex items-center justify-between">
-          <Link href="/" className="text-3xl font-black">
-            BuyCoffee
+          <Link href="/" className="flex items-center gap-2">
+            <div className="bg-[#0000FF] rounded-full p-2 border-4 border-black">
+              <Coffee className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-2xl font-black hidden sm:inline">BuyCoffee</span>
           </Link>
-          <div className="flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-4">
             <Link href="/discover" className="text-lg font-bold hover:underline">
               Discover
             </Link>
@@ -36,6 +40,15 @@ export default function DashboardPage() {
                 <ExternalLink className="w-4 h-4 ml-2" />
               </Link>
             </Button>
+            <NotificationsMenu />
+            <UserMenu />
+          </div>
+          {/* Mobile */}
+          <div className="md:hidden flex items-center gap-3">
+            <Link href="/discover" className="text-sm font-bold hover:underline">
+              Discover
+            </Link>
+            <NotificationsMenu />
             <UserMenu />
           </div>
         </nav>

@@ -1,15 +1,22 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { mockCreators } from "@/lib/mock-data"
 import { Search, Coffee, Users } from "lucide-react"
+import { getCurrentUser } from "@/lib/auth-utils"
+import { UserMenu } from "@/components/user-menu"
 
 export default function DiscoverPage() {
   const [searchQuery, setSearchQuery] = useState("")
+  const [currentUser, setCurrentUser] = useState<{ id: string; username: string } | null>(null)
+
+  useEffect(() => {
+    setCurrentUser(getCurrentUser())
+  }, [])
 
   const filteredCreators = mockCreators.filter(
     (creator) =>
@@ -23,19 +30,56 @@ export default function DiscoverPage() {
       {/* Header */}
       <header className="border-b-4 border-black bg-white sticky top-0 z-50">
         <nav className="container mx-auto px-4 py-6 flex items-center justify-between">
-          <Link href="/" className="text-3xl font-black">
-            BuyCoffee
+          <Link href="/" className="flex items-center gap-2">
+            <div className="bg-[#0000FF] rounded-full p-2 border-4 border-black">
+              <Coffee className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-2xl font-black hidden sm:inline">BuyCoffee</span>
           </Link>
-          <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="text-lg font-bold hover:underline">
-              Dashboard
-            </Link>
-            <Button
-              asChild
-              className="bg-[#0000FF] hover:bg-[#0000DD] text-white font-bold text-lg px-8 py-6 rounded-full border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-            >
-              <Link href="/signup">Get Started</Link>
-            </Button>
+          <div className="hidden md:flex items-center gap-4">
+            {currentUser && (
+              <Link href="/dashboard" className="text-lg font-bold hover:underline">
+                Dashboard
+              </Link>
+            )}
+            {!currentUser && (
+              <Link href="/login" className="text-lg font-bold hover:underline">
+                Log in
+              </Link>
+            )}
+            {currentUser ? (
+              <UserMenu />
+            ) : (
+              <Button
+                asChild
+                className="bg-[#CCFF00] hover:bg-[#B8E600] text-black font-bold text-lg px-8 py-6 rounded-full border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+              >
+                <Link href="/signup">Sign up</Link>
+              </Button>
+            )}
+          </div>
+          {/* Mobile */}
+          <div className="md:hidden flex items-center gap-2">
+            {currentUser && (
+              <Link href="/dashboard" className="text-sm font-bold hover:underline">
+                Dashboard
+              </Link>
+            )}
+            {!currentUser && (
+              <Link href="/login" className="text-sm font-bold hover:underline">
+                Log in
+              </Link>
+            )}
+            {currentUser ? (
+              <UserMenu />
+            ) : (
+              <Button
+                asChild
+                className="bg-[#CCFF00] hover:bg-[#B8E600] text-black font-bold px-4 py-2 text-sm rounded-full border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+              >
+                <Link href="/signup">Sign up</Link>
+              </Button>
+            )}
           </div>
         </nav>
       </header>
