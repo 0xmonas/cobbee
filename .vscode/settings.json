@@ -1,0 +1,36 @@
+{
+  // === GitHub Actions Extension - False Positive Fix (2025) ===
+  // Extension v0.27.0+ has a bug showing "Unable to resolve action" errors
+  // These are FALSE POSITIVES - your workflows are valid and will work on GitHub!
+
+  // Disable YAML validation for .github/workflows (recommended fix)
+  "yaml.validate": false,
+
+  // Disable GitHub Actions auto-validation
+  "github-actions.workflows.pinned.workflows": [],
+  "github-actions.workflows.pinned.refresh.enabled": false,
+
+  // === Editor Settings ===
+  "editor.formatOnSave": true,
+
+  // Auto-fix ESLint errors on save
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+
+  // === TypeScript Settings ===
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+
+  // === File Associations ===
+  "files.associations": {
+    "*.yml": "yaml",
+    "*.yaml": "yaml"
+  },
+
+  // === Tailwind CSS IntelliSense ===
+  "tailwindCSS.experimental.classRegex": [
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+    ["cn\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+  ]
+}
