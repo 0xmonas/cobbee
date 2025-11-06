@@ -5,6 +5,7 @@ import { mockCreators, mockSupports } from "@/lib/mock-data"
 import { Coffee, DollarSign, TrendingUp, Users, ExternalLink, Settings } from "lucide-react"
 import { UserMenu } from "@/components/user-menu"
 import { NotificationsMenu } from "@/components/notifications-menu"
+import { SimpleFooter } from "@/components/simple-footer"
 
 export default function DashboardPage() {
   // For demo purposes, we'll use the first creator as the logged-in user
@@ -235,6 +236,8 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      <SimpleFooter />
     </div>
   )
 }

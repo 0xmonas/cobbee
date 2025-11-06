@@ -11,6 +11,7 @@ import { use, useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { UserMenu } from "@/components/user-menu"
 import { getCurrentUser } from "@/lib/auth-utils"
+import { SimpleFooter } from "@/components/simple-footer"
 
 export default function CreatorProfilePage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = use(params)
@@ -159,6 +160,8 @@ export default function CreatorProfilePage({ params }: { params: Promise<{ usern
           </div>
         </div>
       </div>
+
+      <SimpleFooter />
     </div>
   )
 }

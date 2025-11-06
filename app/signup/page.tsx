@@ -180,12 +180,26 @@ export default function SignupPage() {
               />
             </div>
 
-            <Button
-              type="submit"
-              className="w-full bg-[#CCFF00] hover:bg-[#B8E600] text-black font-black text-xl py-7 rounded-xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
-            >
-              Create account
-            </Button>
+            <div className="space-y-4">
+              <p className="text-sm font-bold text-white text-center">
+                By continuing, you agree to the{" "}
+                <Link href="/terms" className="underline hover:no-underline">
+                  terms of service
+                </Link>{" "}
+                and{" "}
+                <Link href="/privacy" className="underline hover:no-underline">
+                  privacy policy
+                </Link>
+                .
+              </p>
+
+              <Button
+                type="submit"
+                className="w-full bg-[#CCFF00] hover:bg-[#B8E600] text-black font-black text-xl py-7 rounded-xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
+              >
+                Create account
+              </Button>
+            </div>
           </form>
 
           <div className="mt-6 text-center">

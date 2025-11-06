@@ -9,6 +9,7 @@ import { mockCreators } from "@/lib/mock-data"
 import { Search, Coffee, Users } from "lucide-react"
 import { getCurrentUser } from "@/lib/auth-utils"
 import { UserMenu } from "@/components/user-menu"
+import { SimpleFooter } from "@/components/simple-footer"
 
 export default function DiscoverPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -224,6 +225,8 @@ export default function DiscoverPage() {
           </div>
         </div>
       </section>
+
+      <SimpleFooter />
     </div>
   )
 }
