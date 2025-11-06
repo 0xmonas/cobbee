@@ -48,7 +48,9 @@ export function LandingHeader() {
           <div className="bg-[#0000FF] rounded-full p-2 border-4 border-black">
             <Coffee className="w-6 h-6 text-white" />
           </div>
-          <span className="text-xl font-black">BuyCoffee</span>
+          <span className={`text-xl font-black transition-all duration-300 ${isScrolled ? "opacity-0 w-0 overflow-hidden" : "opacity-100"}`}>
+            BuyCoffee
+          </span>
         </Link>
 
         <div className="absolute inset-0 hidden flex-1 flex-row items-center justify-center space-x-2 text-sm font-bold md:flex md:space-x-2 pointer-events-none">
@@ -57,6 +59,12 @@ export function LandingHeader() {
             className="relative px-4 py-2 hover:underline transition-colors cursor-pointer pointer-events-auto"
           >
             Features
+          </button>
+          <button
+            onClick={() => scrollToSection("support")}
+            className="relative px-4 py-2 hover:underline transition-colors cursor-pointer pointer-events-auto"
+          >
+            Support
           </button>
           <button
             onClick={() => scrollToSection("how-it-works")}
@@ -127,6 +135,15 @@ export function LandingHeader() {
                 className="text-left px-4 py-3 text-lg font-bold hover:bg-[#CCFF00] transition-colors rounded-2xl border-2 border-transparent hover:border-black"
               >
                 Features
+              </button>
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false)
+                  setTimeout(() => scrollToSection("support"), 100)
+                }}
+                className="text-left px-4 py-3 text-lg font-bold hover:bg-[#CCFF00] transition-colors rounded-2xl border-2 border-transparent hover:border-black"
+              >
+                Support
               </button>
               <button
                 onClick={() => {

@@ -8,12 +8,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { ArrowLeft, Shield, MailIcon, Trash2, AlertTriangle, CheckCircle2, XCircle } from "lucide-react"
+import { ArrowLeft, MailIcon, Trash2, AlertTriangle, CheckCircle2, XCircle } from "lucide-react"
 
 export default function SettingsPage() {
-  const [currentPassword, setCurrentPassword] = useState("")
-  const [newPassword, setNewPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
   const [newEmail, setNewEmail] = useState("sarah@example.com")
   const [emailNotifications, setEmailNotifications] = useState({
     newSupporter: true,
@@ -23,52 +20,9 @@ export default function SettingsPage() {
   })
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
-  const [showPasswordOTP, setShowPasswordOTP] = useState(false)
-  const [passwordOtp, setPasswordOtp] = useState(["", "", "", "", "", ""])
-  const [passwordOtpStatus, setPasswordOtpStatus] = useState<"idle" | "success" | "error">("idle")
-
   const [showEmailOTP, setShowEmailOTP] = useState(false)
   const [emailOtp, setEmailOtp] = useState(["", "", "", "", "", ""])
   const [emailOtpStatus, setEmailOtpStatus] = useState<"idle" | "success" | "error">("idle")
-
-  const handlePasswordChange = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (newPassword !== confirmPassword) {
-      alert("Passwords don't match!")
-      return
-    }
-    setShowPasswordOTP(true)
-  }
-
-  const handlePasswordOtpChange = (index: number, value: string) => {
-    if (value.length > 1) return
-    const newOtp = [...passwordOtp]
-    newOtp[index] = value
-    setPasswordOtp(newOtp)
-
-    if (value && index < 5) {
-      const nextInput = document.getElementById(`password-otp-${index + 1}`)
-      nextInput?.focus()
-    }
-  }
-
-  const handleVerifyPasswordOTP = () => {
-    const otpValue = passwordOtp.join("")
-    if (otpValue === "123456") {
-      setPasswordOtpStatus("success")
-      setTimeout(() => {
-        setCurrentPassword("")
-        setNewPassword("")
-        setConfirmPassword("")
-        setShowPasswordOTP(false)
-        setPasswordOtp(["", "", "", "", "", ""])
-        setPasswordOtpStatus("idle")
-      }, 2000)
-    } else {
-      setPasswordOtpStatus("error")
-      setTimeout(() => setPasswordOtpStatus("idle"), 3000)
-    }
-  }
 
   const handleEmailChange = (e: React.FormEvent) => {
     e.preventDefault()
@@ -126,129 +80,6 @@ export default function SettingsPage() {
       </header>
 
       <div className="container mx-auto px-4 py-12 max-w-4xl space-y-8">
-        {/* Security Section */}
-        <div className="border-4 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-          <div className="bg-[#0000FF] border-b-4 border-black p-4 flex items-center gap-3">
-            <Shield className="w-6 h-6 text-white" />
-            <h2 className="text-2xl font-black text-white">Security</h2>
-          </div>
-          <div className="p-6">
-            <p className="text-lg font-bold mb-6">Keep your account secure with a strong password</p>
-            <form onSubmit={handlePasswordChange} className="space-y-6">
-              {!showPasswordOTP ? (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="currentPassword" className="text-lg font-bold">
-                      Current Password
-                    </Label>
-                    <Input
-                      id="currentPassword"
-                      type="password"
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                      className="border-4 border-black text-lg p-6 focus:ring-4 focus:ring-[#CCFF00]"
-                      placeholder="Enter current password"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="newPassword" className="text-lg font-bold">
-                      New Password
-                    </Label>
-                    <Input
-                      id="newPassword"
-                      type="password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      className="border-4 border-black text-lg p-6 focus:ring-4 focus:ring-[#CCFF00]"
-                      placeholder="Enter new password"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPassword" className="text-lg font-bold">
-                      Confirm New Password
-                    </Label>
-                    <Input
-                      id="confirmPassword"
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="border-4 border-black text-lg p-6 focus:ring-4 focus:ring-[#CCFF00]"
-                      placeholder="Confirm new password"
-                      required
-                    />
-                  </div>
-
-                  <Button
-                    type="submit"
-                    className="bg-[#0000FF] hover:bg-[#0000CC] text-white border-4 border-black text-lg font-bold px-8 py-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
-                  >
-                    Update Password
-                  </Button>
-                </>
-              ) : (
-                <div className="space-y-6">
-                  <div className="bg-[#0000FF] border-4 border-black rounded-xl p-6">
-                    <p className="text-lg font-black text-white mb-4">Enter verification code sent to your email</p>
-                    <div className="flex gap-2 justify-center mb-4">
-                      {passwordOtp.map((digit, index) => (
-                        <Input
-                          key={index}
-                          id={`password-otp-${index}`}
-                          type="text"
-                          maxLength={1}
-                          value={digit}
-                          onChange={(e) => handlePasswordOtpChange(index, e.target.value)}
-                          className="w-12 h-12 text-center text-2xl font-black border-4 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white"
-                        />
-                      ))}
-                    </div>
-
-                    {passwordOtpStatus === "success" && (
-                      <div className="flex items-center gap-2 bg-green-500 text-white p-4 rounded-xl border-4 border-black mb-4">
-                        <CheckCircle2 className="w-6 h-6" />
-                        <span className="font-bold">Password updated successfully!</span>
-                      </div>
-                    )}
-
-                    {passwordOtpStatus === "error" && (
-                      <div className="flex items-center gap-2 bg-red-500 text-white p-4 rounded-xl border-4 border-black mb-4">
-                        <XCircle className="w-6 h-6" />
-                        <span className="font-bold">Invalid code. Please try again.</span>
-                      </div>
-                    )}
-
-                    <div className="flex gap-4">
-                      <Button
-                        type="button"
-                        onClick={handleVerifyPasswordOTP}
-                        disabled={passwordOtp.some((d) => !d)}
-                        className="flex-1 bg-[#CCFF00] hover:bg-[#B8E600] text-black border-4 border-black text-lg font-bold px-8 py-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Verify Code
-                      </Button>
-                      <Button
-                        type="button"
-                        onClick={() => {
-                          setShowPasswordOTP(false)
-                          setPasswordOtp(["", "", "", "", "", ""])
-                          setPasswordOtpStatus("idle")
-                        }}
-                        variant="outline"
-                        className="border-4 border-black text-lg font-bold px-8 py-6 hover:bg-gray-100 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </form>
-          </div>
-        </div>
 
         {/* Email Change Section */}
         <div className="border-4 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">

@@ -14,7 +14,6 @@ export default function SignupPage() {
   const [name, setName] = useState("")
   const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
   const [showOTP, setShowOTP] = useState(false)
   const [otp, setOtp] = useState(["", "", "", "", "", ""])
   const [otpStatus, setOtpStatus] = useState<"idle" | "success" | "error">("idle")
@@ -154,6 +153,12 @@ export default function SignupPage() {
                 required
                 className="text-lg font-bold border-4 border-black rounded-xl h-14 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white"
               />
+              {username && (
+                <div className="mt-3 bg-white border-2 border-black rounded-lg px-4 py-2">
+                  <p className="text-sm font-bold text-gray-600">Your page will be:</p>
+                  <p className="text-base font-black text-[#0000FF]">buymeacoffee.com/{username}</p>
+                </div>
+              )}
             </div>
 
             <div>
@@ -163,18 +168,6 @@ export default function SignupPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
-                required
-                className="text-lg font-bold border-4 border-black rounded-xl h-14 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white"
-              />
-            </div>
-
-            <div>
-              <label className="text-lg font-black text-white mb-2 block">Password</label>
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
                 required
                 className="text-lg font-bold border-4 border-black rounded-xl h-14 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white"
               />

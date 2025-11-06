@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   ArrowLeft,
   DollarSign,
@@ -18,6 +19,7 @@ import {
   ExternalLink,
   Filter,
   X,
+  Coffee,
 } from "lucide-react"
 import { mockSupports } from "@/lib/mock-data"
 
@@ -245,13 +247,13 @@ export default function PaymentSettingsPage() {
             <div className="space-y-4 mb-6">
               <div className="flex gap-3">
                 <div className="flex-1 relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none" />
                   <Input
                     type="text"
                     placeholder="Search by name, message, or transaction hash..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="border-4 border-black pl-12 text-lg p-6 focus:ring-4 focus:ring-[#CCFF00]"
+                    className="border-4 border-black pl-14 pr-6 py-4 text-lg font-bold focus:ring-4 focus:ring-[#CCFF00]"
                   />
                 </div>
                 <Button
@@ -317,48 +319,46 @@ export default function PaymentSettingsPage() {
                   <p className="text-sm text-gray-400 font-bold">Try adjusting your filters</p>
                 </div>
               ) : (
-                <div className="max-h-[600px] overflow-y-auto space-y-3 pr-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+                <div className="max-h-[600px] overflow-y-auto space-y-4 pr-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
                   {filteredPayments.map((payment) => (
                     <div
                       key={payment.id}
-                      className="border-4 border-black p-4 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+                      className="border-4 border-black rounded-2xl p-6 bg-gray-50 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                     >
-                      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                        <div className="flex items-start gap-3 md:gap-4 flex-1 min-w-0">
-                          <img
-                            src={payment.supporterAvatar || "/placeholder.svg"}
-                            alt={payment.supporterName}
-                            className="w-10 h-10 md:w-12 md:h-12 rounded-full border-4 border-black object-cover flex-shrink-0"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex flex-wrap items-center gap-2 mb-1">
-                              <p className="font-black text-base md:text-lg truncate">{payment.supporterName}</p>
-                              <span className="bg-[#CCFF00] border-2 border-black px-2 md:px-3 py-1 text-xs md:text-sm font-bold rounded-full flex-shrink-0">
-                                {payment.coffeeCount}x ☕
-                              </span>
-                            </div>
-                            {payment.message && (
-                              <p className="text-gray-700 font-bold mb-2 bg-gray-50 border-2 border-gray-300 p-2 md:p-3 rounded-lg text-sm md:text-base break-words">
-                                "{payment.message}"
-                              </p>
-                            )}
-                            <p className="text-xs md:text-sm text-gray-500 font-bold mb-2">{payment.timestamp}</p>
-                            <div className="flex items-center gap-2 overflow-hidden">
-                              <span className="text-xs font-bold text-gray-500 flex-shrink-0">TXN:</span>
-                              <a
-                                href={`https://etherscan.io/tx/${payment.txHash}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs font-mono font-bold text-[#0000FF] hover:text-[#0000CC] underline flex items-center gap-1 hover:gap-2 transition-all truncate"
-                              >
-                                <span className="truncate">{payment.txHash.slice(0, 8)}...{payment.txHash.slice(-6)}</span>
-                                <ExternalLink className="w-3 h-3 flex-shrink-0" />
-                              </a>
+                      <div className="flex items-start gap-4 mb-4">
+                        <Avatar className="w-14 h-14 border-4 border-black">
+                          <AvatarImage src={payment.supporterAvatar || "/placeholder.svg"} alt={payment.supporterName} />
+                          <AvatarFallback className="text-lg font-black bg-[#0000FF] text-white">
+                            {payment.supporterName.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className="text-xl font-black">{payment.supporterName}</span>
+                            <div className="flex items-center gap-1 bg-[#CCFF00] border-2 border-black rounded-full px-3 py-1">
+                              <Coffee className="w-4 h-4" />
+                              <span className="text-sm font-black">×{payment.coffeeCount}</span>
                             </div>
                           </div>
+                          {payment.message && (
+                            <p className="text-lg font-bold mb-2 leading-relaxed">{payment.message}</p>
+                          )}
+                          <div className="flex items-center gap-3 text-sm font-bold text-gray-600">
+                            <span>{payment.timestamp}</span>
+                            <span>•</span>
+                            <a
+                              href={`https://etherscan.io/tx/${payment.txHash}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-mono text-[#0000FF] hover:text-[#0000CC] underline flex items-center gap-1 transition-colors"
+                            >
+                              TXN: {payment.txHash.slice(0, 6)}...{payment.txHash.slice(-4)}
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          </div>
                         </div>
-                        <div className="text-left md:text-right flex-shrink-0">
-                          <p className="text-xl md:text-2xl font-black text-[#0000FF] whitespace-nowrap">${payment.amount}</p>
+                        <div className="text-right">
+                          <p className="text-2xl font-black">${payment.amount}</p>
                         </div>
                       </div>
                     </div>

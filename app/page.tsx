@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Coffee, Heart, Users, Zap } from "lucide-react"
 import { LandingHeader } from "@/components/landing-header"
 import { LandingFooter } from "@/components/landing-footer"
+import { SupportDemo } from "@/components/support-demo"
 
 export default function LandingPage() {
   return (
@@ -77,6 +78,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Support Demo Section */}
+      <SupportDemo />
 
       {/* How it Works Section */}
       <section id="how-it-works" className="container mx-auto px-4 py-20">

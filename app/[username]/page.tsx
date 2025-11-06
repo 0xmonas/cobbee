@@ -155,7 +155,13 @@ export default function CreatorProfilePage({ params }: { params: Promise<{ usern
             {/* Right Column - Support Form & Recent Supporters */}
             <div className="md:w-2/3 space-y-8">
               <CoffeeSupport creator={creator} />
-              <RecentSupporters supports={supports} />
+              <RecentSupporters
+                supports={supports}
+                isOwnProfile={isOwnProfile}
+                creatorUsername={creator.username}
+                creatorAvatar={creator.avatar}
+                creatorDisplayName={creator.displayName}
+              />
             </div>
           </div>
         </div>

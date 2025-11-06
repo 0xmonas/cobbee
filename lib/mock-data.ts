@@ -18,6 +18,8 @@ export interface Support {
   timestamp: string
   amount: number
   txHash: string
+  isPrivate?: boolean
+  isHidden?: boolean
 }
 
 export const mockCreators: Creator[] = [
@@ -94,6 +96,8 @@ export const mockSupports: Record<string, Support[]> = {
       timestamp: "2 hours ago",
       amount: 25,
       txHash: "0x1a2b3c4d5e6f7890abcdef1234567890abcdef1234567890abcdef1234567890",
+      isPrivate: false,
+      isHidden: false,
     },
     {
       id: "2",
@@ -104,6 +108,8 @@ export const mockSupports: Record<string, Support[]> = {
       timestamp: "5 hours ago",
       amount: 15,
       txHash: "0x2b3c4d5e6f7890abcdef1234567890abcdef1234567890abcdef1234567890ab",
+      isPrivate: true,
+      isHidden: false,
     },
     {
       id: "3",
@@ -114,6 +120,8 @@ export const mockSupports: Record<string, Support[]> = {
       timestamp: "1 day ago",
       amount: 5,
       txHash: "0x3c4d5e6f7890abcdef1234567890abcdef1234567890abcdef1234567890abcd",
+      isPrivate: false,
+      isHidden: false,
     },
     {
       id: "4",
@@ -124,6 +132,8 @@ export const mockSupports: Record<string, Support[]> = {
       timestamp: "2 days ago",
       amount: 50,
       txHash: "0x4d5e6f7890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+      isPrivate: false,
+      isHidden: false,
     },
     {
       id: "5",
@@ -134,6 +144,8 @@ export const mockSupports: Record<string, Support[]> = {
       timestamp: "3 days ago",
       amount: 15,
       txHash: "0x5e6f7890abcdef1234567890abcdef1234567890abcdef1234567890abcdef12",
+      isPrivate: false,
+      isHidden: false,
     },
   ],
   "2": [
@@ -146,6 +158,8 @@ export const mockSupports: Record<string, Support[]> = {
       timestamp: "1 hour ago",
       amount: 25,
       txHash: "0x6f7890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234",
+      isPrivate: false,
+      isHidden: false,
     },
     {
       id: "7",
@@ -156,6 +170,8 @@ export const mockSupports: Record<string, Support[]> = {
       timestamp: "4 hours ago",
       amount: 5,
       txHash: "0x7890abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456",
+      isPrivate: false,
+      isHidden: false,
     },
   ],
   "3": [
@@ -168,6 +184,8 @@ export const mockSupports: Record<string, Support[]> = {
       timestamp: "30 minutes ago",
       amount: 15,
       txHash: "0x890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567",
+      isPrivate: false,
+      isHidden: false,
     },
   ],
   "4": [
@@ -180,6 +198,8 @@ export const mockSupports: Record<string, Support[]> = {
       timestamp: "3 hours ago",
       amount: 25,
       txHash: "0x90abcdef1234567890abcdef1234567890abcdef1234567890abcdef12345678",
+      isPrivate: false,
+      isHidden: false,
     },
   ],
 }

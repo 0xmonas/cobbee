@@ -6,8 +6,14 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Coffee } from "lucide-react"
+import { Coffee, HelpCircle } from "lucide-react"
 import type { Creator } from "@/lib/mock-data"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 interface CoffeeSupportProps {
   creator: Creator
@@ -19,6 +25,7 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
   const [message, setMessage] = useState("")
   const [supporterName, setSupporterName] = useState("")
   const [showSuccess, setShowSuccess] = useState(false)
+  const [isPrivate, setIsPrivate] = useState(false)
 
   const presetAmounts = [1, 3, 5]
   const isCustom = !presetAmounts.includes(coffeeCount)
@@ -135,6 +142,33 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
               rows={4}
               className="text-lg font-bold border-4 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] resize-none"
             />
+
+            {/* Private Message Toggle */}
+            {message && (
+              <div className="mt-4 flex items-center gap-2">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isPrivate}
+                    onChange={(e) => setIsPrivate(e.target.checked)}
+                    className="w-5 h-5 border-4 border-black rounded cursor-pointer accent-[#0000FF]"
+                  />
+                  <span className="text-lg font-bold">Make this message private</span>
+                </label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button type="button" className="text-gray-600 hover:text-black transition-colors">
+                        <HelpCircle className="w-5 h-5" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-black text-white border-2 border-black px-4 py-2 rounded-lg font-bold max-w-xs">
+                      <p>The message will be visible to you and the creator only</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            )}
           </div>
 
           {/* Total & Submit */}
