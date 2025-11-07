@@ -2,7 +2,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { mockCreators, mockSupports } from "@/lib/mock-data"
-import { Coffee, DollarSign, TrendingUp, Users, ExternalLink, Settings } from "lucide-react"
+import { Coffee, TrendingUp, Users, ExternalLink, Settings } from "lucide-react"
 import { UserMenu } from "@/components/user-menu"
 import { NotificationsMenu } from "@/components/notifications-menu"
 import { SimpleFooter } from "@/components/simple-footer"
@@ -68,7 +68,7 @@ export default function DashboardPage() {
             <div className="bg-[#0000FF] border-4 border-black rounded-2xl p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
               <div className="flex items-center gap-3 mb-3">
                 <div className="bg-white w-12 h-12 rounded-full flex items-center justify-center border-4 border-black">
-                  <DollarSign className="w-6 h-6" />
+                  <span className="text-2xl font-black">$</span>
                 </div>
               </div>
               <p className="text-sm font-bold text-white mb-1">Total Earnings</p>

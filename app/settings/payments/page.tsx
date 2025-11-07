@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   ArrowLeft,
-  DollarSign,
   Wallet,
   MessageSquare,
   TrendingUp,
@@ -125,7 +124,7 @@ export default function PaymentSettingsPage() {
         {/* Coffee Price Section */}
         <div className="border-4 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
           <div className="bg-[#CCFF00] border-b-4 border-black p-4 flex items-center gap-3">
-            <DollarSign className="w-6 h-6" />
+            <span className="text-2xl font-black">$</span>
             <h2 className="text-2xl font-black">Coffee Price</h2>
           </div>
           <div className="p-6">
