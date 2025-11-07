@@ -1,0 +1,24 @@
+{
+  "name": "Cobbee - Support Creators You Love",
+  "short_name": "Cobbee",
+  "description": "Accept donations, build community, and get support from people who love your work",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#CCFF00",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-icon",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

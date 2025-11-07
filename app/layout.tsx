@@ -11,6 +11,17 @@ export const metadata: Metadata = {
   title: "Cobbee - Support Creators You Love",
   description: "Accept donations, build community, and get support from people who love your work",
   generator: "v0.app",
+  icons: {
+    icon: '/icon',
+    apple: '/apple-icon',
+  },
+  manifest: '/manifest.json',
+  themeColor: '#CCFF00',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Cobbee',
+  },
 }
 
 export default function RootLayout({

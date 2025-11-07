@@ -18,8 +18,8 @@ export default function LandingPage() {
             Get support from people who love your work
           </h1>
           <p className="text-2xl md:text-3xl font-bold mb-12 text-balance">
-            Accept one-time and monthly donations. Start a membership. Sell anything you like. It's easier than you
-            think.
+            Accept cryptocurrency donations directly to your wallet. Transparent, decentralized, and instant. No
+            middleman, no fees.
           </p>
           <Button
             asChild
