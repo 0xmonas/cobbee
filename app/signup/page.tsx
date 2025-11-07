@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { CheckCircle2, XCircle, Wallet } from "lucide-react"
 import { Logo } from "@/components/logo"
+import { validateFullName, validateUsername, validateEmail, validateOTP } from "@/lib/utils/validation"
 
 export default function SignupPage() {
   const router = useRouter()
@@ -21,6 +22,11 @@ export default function SignupPage() {
   const [email, setEmail] = useState("")
   const [otp, setOtp] = useState(["", "", "", "", "", ""])
   const [otpStatus, setOtpStatus] = useState<"idle" | "success" | "error">("idle")
+  const [formErrors, setFormErrors] = useState<{
+    name?: string
+    username?: string
+    email?: string
+  }>({})
 
   const handleConnectWallet = async () => {
     setIsConnecting(true)
@@ -41,25 +47,87 @@ export default function SignupPage() {
     }, 1500)
   }
 
+  const validateField = (field: "name" | "username" | "email", value: string) => {
+    const errors = { ...formErrors }
+
+    if (field === "name") {
+      const error = validateFullName(value)
+      if (error) {
+        errors.name = error
+      } else {
+        delete errors.name
+      }
+    } else if (field === "username") {
+      const error = validateUsername(value)
+      if (error) {
+        errors.username = error
+      } else {
+        delete errors.username
+      }
+    } else if (field === "email") {
+      const error = validateEmail(value)
+      if (error) {
+        errors.email = error
+      } else {
+        delete errors.email
+      }
+    }
+
+    setFormErrors(errors)
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setSignupStep("otp")
+
+    const errors: { name?: string; username?: string; email?: string } = {}
+
+    const nameError = validateFullName(name)
+    if (nameError) errors.name = nameError
+
+    const usernameError = validateUsername(username)
+    if (usernameError) errors.username = usernameError
+
+    const emailError = validateEmail(email)
+    if (emailError) errors.email = emailError
+
+    setFormErrors(errors)
+
+    if (Object.keys(errors).length === 0) {
+      setSignupStep("otp")
+    }
   }
 
   const handleOtpChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return
     if (value.length > 1) return
+
     const newOtp = [...otp]
     newOtp[index] = value
     setOtp(newOtp)
 
     if (value && index < 5) {
-      const nextInput = document.getElementById(`otp-${index}`)
+      const nextInput = document.getElementById(`otp-${index + 1}`)
       nextInput?.focus()
+    }
+  }
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      const prevInput = document.getElementById(`otp-${index - 1}`)
+      prevInput?.focus()
     }
   }
 
   const handleVerifyOTP = () => {
     const otpValue = otp.join("")
+
+    const otpError = validateOTP(otpValue)
+    if (otpError) {
+      setOtpStatus("error")
+      setTimeout(() => setOtpStatus("idle"), 3000)
+      return
+    }
+
     if (otpValue === "123456") {
       setOtpStatus("success")
       setTimeout(() => {
@@ -220,9 +288,11 @@ export default function SignupPage() {
                       key={index}
                       id={`otp-${index}`}
                       type="text"
+                      inputMode="numeric"
                       maxLength={1}
                       value={digit}
                       onChange={(e) => handleOtpChange(index, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
                       className="w-14 h-14 text-center text-2xl font-black border-4 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white"
                     />
                   ))}
@@ -297,11 +367,18 @@ export default function SignupPage() {
               <Input
                 type="text"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value)
+                  validateField("name", e.target.value)
+                }}
                 placeholder="John Doe"
-                required
                 className="text-lg font-bold border-4 border-black rounded-xl h-14 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white"
               />
+              {formErrors.name && (
+                <p className="mt-2 text-sm font-bold text-white bg-red-600 border-2 border-black rounded-lg px-3 py-2">
+                  {formErrors.name}
+                </p>
+              )}
             </div>
 
             <div>
@@ -309,12 +386,19 @@ export default function SignupPage() {
               <Input
                 type="text"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) => {
+                  setUsername(e.target.value)
+                  validateField("username", e.target.value)
+                }}
                 placeholder="johndoe"
-                required
                 className="text-lg font-bold border-4 border-black rounded-xl h-14 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white"
               />
-              {username && (
+              {formErrors.username && (
+                <p className="mt-2 text-sm font-bold text-white bg-red-600 border-2 border-black rounded-lg px-3 py-2">
+                  {formErrors.username}
+                </p>
+              )}
+              {username && !formErrors.username && (
                 <div className="mt-3 bg-white border-2 border-black rounded-lg px-4 py-2">
                   <p className="text-sm font-bold text-gray-600">Your page will be:</p>
                   <p className="text-base font-black text-[#0000FF]">cobbee.fun/{username}</p>
@@ -327,11 +411,18 @@ export default function SignupPage() {
               <Input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value)
+                  validateField("email", e.target.value)
+                }}
                 placeholder="your@email.com"
-                required
                 className="text-lg font-bold border-4 border-black rounded-xl h-14 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white"
               />
+              {formErrors.email && (
+                <p className="mt-2 text-sm font-bold text-white bg-red-600 border-2 border-black rounded-lg px-3 py-2">
+                  {formErrors.email}
+                </p>
+              )}
             </div>
 
             <div className="space-y-4">
