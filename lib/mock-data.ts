@@ -7,6 +7,14 @@ export interface Creator {
   coverImage: string
   totalSupports: number
   coffeePrice: number
+  walletAddress?: string
+  socialMedia?: {
+    twitter?: string
+    instagram?: string
+    github?: string
+    tiktok?: string
+    opensea?: string
+  }
 }
 
 export interface Support {
@@ -32,6 +40,12 @@ export const mockCreators: Creator[] = [
     coverImage: "/abstract-colorful-design-pattern.jpg",
     totalSupports: 342,
     coffeePrice: 5,
+    walletAddress: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
+    socialMedia: {
+      twitter: "sarahchen",
+      instagram: "sarahdesigns",
+      github: "sarah-chen",
+    },
   },
   {
     id: "2",

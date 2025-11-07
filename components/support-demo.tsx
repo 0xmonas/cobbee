@@ -52,7 +52,7 @@ export function SupportDemo() {
             Give your audience an easy way to say thanks.
           </h2>
           <p className="text-xl font-bold text-gray-700 max-w-3xl mx-auto">
-            Buy Me a Coffee makes supporting fun and easy. In just a couple of taps, your fans can make the payment
+            Cobbee makes supporting fun and easy. In just a couple of taps, your fans can make the payment
             (buy you a coffee) and leave a message.
           </p>
         </motion.div>

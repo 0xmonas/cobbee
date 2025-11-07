@@ -7,7 +7,7 @@ export function SimpleFooter() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           {/* Left: Copyright */}
           <div className="flex items-center gap-2">
-            <span className="font-bold text-sm">© Buy Me a Coffee</span>
+            <span className="font-bold text-sm">© Cobbee</span>
           </div>
 
           {/* Center: Links */}

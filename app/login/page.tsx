@@ -14,6 +14,10 @@ import { mockCreators } from "@/lib/mock-data"
 export default function LoginPage() {
   const router = useRouter()
   const [loginMethod, setLoginMethod] = useState<"wallet" | "email">("wallet")
+  const [walletStep, setWalletStep] = useState<"connect" | "sign">("connect")
+  const [isConnecting, setIsConnecting] = useState(false)
+  const [isSigning, setIsSigning] = useState(false)
+  const [walletAddress, setWalletAddress] = useState("")
   const [email, setEmail] = useState("")
   const [showOTP, setShowOTP] = useState(false)
   const [otp, setOtp] = useState(["", "", "", "", "", ""])
@@ -50,9 +54,85 @@ export default function LoginPage() {
     }
   }
 
-  const handleConnectWallet = () => {
-    // TODO: Implement wallet connection
-    console.log("Connect wallet clicked")
+  const handleConnectWallet = async () => {
+    setIsConnecting(true)
+    // TODO: Implement actual wallet connection
+    setTimeout(() => {
+      setWalletAddress("0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb")
+      setIsConnecting(false)
+      setWalletStep("sign")
+    }, 1500)
+  }
+
+  const handleSignMessage = async () => {
+    setIsSigning(true)
+    // TODO: Implement actual message signing
+    setTimeout(() => {
+      setIsSigning(false)
+      setCurrentUser({ id: mockCreators[0].id, username: mockCreators[0].username })
+      router.push("/dashboard")
+    }, 1500)
+  }
+
+  // Wallet Sign Message Screen
+  if (loginMethod === "wallet" && walletStep === "sign") {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <Link href="/" className="flex items-center justify-center gap-3 mb-12">
+            <div className="bg-[#CCFF00] w-16 h-16 rounded-full flex items-center justify-center border-4 border-black">
+              <Coffee className="w-8 h-8" />
+            </div>
+            <span className="text-4xl font-black">Cobbee</span>
+          </Link>
+
+          <div className="bg-[#0000FF] border-4 border-black rounded-3xl p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+            <h1 className="text-4xl font-black text-white mb-2">Sign Message in Wallet</h1>
+            <p className="text-lg font-bold text-white mb-8">
+              Please sign the message in your wallet to verify ownership
+            </p>
+
+            <div className="space-y-6">
+              <div className="bg-white border-4 border-black rounded-2xl p-6">
+                <p className="text-sm font-bold text-gray-600 mb-2">Connected Wallet</p>
+                <p className="text-base font-black font-mono break-all">{walletAddress}</p>
+              </div>
+
+              <div className="bg-white border-4 border-black rounded-2xl p-6">
+                <p className="text-sm font-bold text-gray-600 mb-3">Message to sign:</p>
+                <p className="text-base font-bold leading-relaxed">
+                  Welcome to Cobbee!
+                  <br />
+                  <br />
+                  Sign this message to verify your wallet ownership and log in to your account.
+                  <br />
+                  <br />
+                  This will not trigger any blockchain transaction or cost any gas fees.
+                </p>
+              </div>
+
+              <Button
+                onClick={handleSignMessage}
+                disabled={isSigning}
+                className="w-full bg-[#CCFF00] hover:bg-[#B8E600] text-black font-black text-xl py-7 rounded-xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSigning ? "Signing..." : "Sign Message"}
+              </Button>
+
+              <button
+                onClick={() => {
+                  setWalletStep("connect")
+                  setWalletAddress("")
+                }}
+                className="w-full text-center text-white font-bold hover:underline"
+              >
+                Use different wallet
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   // OTP Verification Screen
@@ -64,7 +144,7 @@ export default function LoginPage() {
             <div className="bg-[#CCFF00] w-16 h-16 rounded-full flex items-center justify-center border-4 border-black">
               <Coffee className="w-8 h-8" />
             </div>
-            <span className="text-4xl font-black">BuyCoffee</span>
+            <span className="text-4xl font-black">Cobbee</span>
           </Link>
 
           <div className="bg-[#0000FF] border-4 border-black rounded-3xl p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
@@ -135,7 +215,7 @@ export default function LoginPage() {
           <div className="bg-[#CCFF00] w-16 h-16 rounded-full flex items-center justify-center border-4 border-black">
             <Coffee className="w-8 h-8" />
           </div>
-          <span className="text-4xl font-black">BuyCoffee</span>
+          <span className="text-4xl font-black">Cobbee</span>
         </Link>
 
         <div className="bg-[#0000FF] border-4 border-black rounded-3xl p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
@@ -146,10 +226,11 @@ export default function LoginPage() {
             <div className="space-y-6">
               <Button
                 onClick={handleConnectWallet}
-                className="w-full bg-[#CCFF00] hover:bg-[#B8E600] text-black font-black text-xl py-7 rounded-xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-3"
+                disabled={isConnecting}
+                className="w-full bg-[#CCFF00] hover:bg-[#B8E600] text-black font-black text-xl py-7 rounded-xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Wallet className="w-6 h-6" />
-                Connect Wallet
+                {isConnecting ? "Connecting..." : "Connect Wallet"}
               </Button>
 
               <div className="relative">

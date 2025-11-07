@@ -1,7 +1,7 @@
 # AGENTS.md
 
 ## Purpose
-This file helps AI agents work effectively and safely in this project. It provides a comprehensive map of the codebase structure, development workflows, and critical constraints for the BuyCoffee creator support platform.
+This file helps AI agents work effectively and safely in this project. It provides a comprehensive map of the codebase structure, development workflows, and critical constraints for the Cobbee creator support platform.
 
 ## Quick facts
 - **Languages/Stacks:** TypeScript + React 19 + Next.js 16 (App Router) — *Evidence:* [package.json:49](package.json#L49), [tsconfig.json:2-7](tsconfig.json#L2-L7), [app/layout.tsx](app/layout.tsx)
@@ -189,7 +189,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_VERCEL_ANALYTICS_ID=
 
 # Database (when added)
-DATABASE_URL=postgresql://user:pass@localhost:5432/buycoffee
+DATABASE_URL=postgresql://user:pass@localhost:5432/cobbee
 
 # Auth (when added)
 NEXTAUTH_SECRET=

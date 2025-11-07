@@ -1,6 +1,6 @@
 # API Documentation
 
-This document describes the API architecture for the BuyCoffee platform.
+This document describes the API architecture for the Cobbee platform.
 
 > **Note:** The backend API is currently **not implemented**. This document serves as a specification for future development.
 

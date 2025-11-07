@@ -20,12 +20,15 @@ import {
   Filter,
   X,
   Coffee,
+  Copy,
+  Check,
 } from "lucide-react"
 import { mockSupports } from "@/lib/mock-data"
 
 export default function PaymentSettingsPage() {
   const [coffeePrice, setCoffeePrice] = useState("5")
-  const [ethereumAddress, setEthereumAddress] = useState("0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb")
+  const [ethereumAddress] = useState("0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb")
+  const [copiedWallet, setCopiedWallet] = useState(false)
   const [thankYouMessage, setThankYouMessage] = useState(
     "Thank you so much for your support! Your contribution helps me continue creating content. ☕",
   )
@@ -35,6 +38,12 @@ export default function PaymentSettingsPage() {
   const [minAmount, setMinAmount] = useState("")
   const [maxAmount, setMaxAmount] = useState("")
   const [dateFilter, setDateFilter] = useState("all") // all, today, week, month
+
+  const handleCopyWallet = () => {
+    navigator.clipboard.writeText(ethereumAddress)
+    setCopiedWallet(true)
+    setTimeout(() => setCopiedWallet(false), 2000)
+  }
 
   // Get all payments for the current user (using creator ID "1" as example)
   const allPayments = mockSupports["1"] || []
@@ -157,16 +166,24 @@ export default function PaymentSettingsPage() {
                 <Label htmlFor="ethereumAddress" className="text-lg font-bold">
                   Ethereum Address
                 </Label>
-                <Input
-                  id="ethereumAddress"
-                  type="text"
-                  value={ethereumAddress}
-                  onChange={(e) => setEthereumAddress(e.target.value)}
-                  className="border-4 border-black text-lg p-6 focus:ring-4 focus:ring-[#CCFF00] font-mono"
-                  placeholder="0x..."
-                />
+                <div className="relative">
+                  <Input
+                    id="ethereumAddress"
+                    type="text"
+                    value={ethereumAddress}
+                    readOnly
+                    className="border-4 border-black text-lg p-6 pr-14 font-mono bg-white cursor-default"
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleCopyWallet}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#CCFF00] hover:bg-[#B8E600] text-black font-bold px-3 py-2 rounded-lg border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+                  >
+                    {copiedWallet ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  </Button>
+                </div>
                 <p className="text-sm text-gray-600 font-bold">
-                  All payments will be sent to this Ethereum address. Make sure it's correct!
+                  All payments will be sent to this Ethereum address. This is your connected wallet.
                 </p>
               </div>
               <div className="bg-[#CCFF00] border-4 border-black p-4 rounded-lg">

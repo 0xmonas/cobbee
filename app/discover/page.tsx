@@ -35,7 +35,7 @@ export default function DiscoverPage() {
             <div className="bg-[#0000FF] rounded-full p-2 border-4 border-black">
               <Coffee className="w-6 h-6 text-white" />
             </div>
-            <span className="text-2xl font-black hidden sm:inline">BuyCoffee</span>
+            <span className="text-2xl font-black hidden sm:inline">Cobbee</span>
           </Link>
           <div className="hidden md:flex items-center gap-4">
             {currentUser && (

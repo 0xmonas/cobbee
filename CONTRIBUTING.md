@@ -1,6 +1,6 @@
-# Contributing to BuyCoffee
+# Contributing to Cobbee
 
-Thank you for your interest in contributing to BuyCoffee! This document provides guidelines and best practices for contributing to the project.
+Thank you for your interest in contributing to Cobbee! This document provides guidelines and best practices for contributing to the project.
 
 ## Table of Contents
 
@@ -27,8 +27,8 @@ Thank you for your interest in contributing to BuyCoffee! This document provides
 
 2. **Clone your fork:**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/buycoffee.git
-   cd buycoffee
+   git clone https://github.com/YOUR_USERNAME/cobbee.git
+   cd cobbee
    ```
 
 3. **Install dependencies:**
@@ -505,4 +505,4 @@ By contributing, you agree that your contributions will be licensed under the sa
 
 ---
 
-Thank you for contributing to BuyCoffee! 🙏
+Thank you for contributing to Cobbee! 🙏

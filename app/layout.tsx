@@ -8,7 +8,7 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "BuyCoffee - Support Creators You Love",
+  title: "Cobbee - Support Creators You Love",
   description: "Accept donations, build community, and get support from people who love your work",
   generator: "v0.app",
 }

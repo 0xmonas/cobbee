@@ -1,6 +1,6 @@
 # Deployment Guide
 
-This document outlines the deployment process for the BuyCoffee application.
+This document outlines the deployment process for the Cobbee application.
 
 ## Table of Contents
 
@@ -15,7 +15,7 @@ This document outlines the deployment process for the BuyCoffee application.
 
 ## Overview
 
-BuyCoffee is a Next.js 16 application optimized for deployment on **Vercel**, the platform created by Next.js makers. Vercel provides:
+Cobbee is a Next.js 16 application optimized for deployment on **Vercel**, the platform created by Next.js makers. Vercel provides:
 
 - ✅ Zero-configuration deployments
 - ✅ Automatic HTTPS
@@ -47,7 +47,7 @@ Before deploying, ensure:
 2. **Import Project**
    - Click "Add New..." → "Project"
    - Select your Git provider
-   - Find and import the `buycoffee` repository
+   - Find and import the `cobbee` repository
    - Vercel will auto-detect Next.js configuration
 
 3. **Configure Project**
@@ -110,7 +110,7 @@ Set these in Vercel Dashboard → Project Settings → Environment Variables:
 
 ```bash
 # App Configuration
-NEXT_PUBLIC_APP_URL=https://buycoffee.yourdomain.com
+NEXT_PUBLIC_APP_URL=https://cobbee.yourdomain.com
 ```
 
 #### Optional (Add as Features are Implemented)
@@ -118,7 +118,7 @@ NEXT_PUBLIC_APP_URL=https://buycoffee.yourdomain.com
 ```bash
 # Authentication (when added)
 NEXTAUTH_SECRET=<generate-with-openssl-rand-base64-32>
-NEXTAUTH_URL=https://buycoffee.yourdomain.com
+NEXTAUTH_URL=https://cobbee.yourdomain.com
 
 # Or Supabase Auth
 NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
@@ -132,7 +132,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 
 # Email Service (when added)
 SENDGRID_API_KEY=SG.xxxxx
-SENDGRID_FROM_EMAIL=noreply@buycoffee.com
+SENDGRID_FROM_EMAIL=noreply@cobbee.com
 
 # File Storage (when added)
 BLOB_READ_WRITE_TOKEN=vercel_blob_rw_...
@@ -178,7 +178,7 @@ vercel env pull .env.local
 1. **Go to Project Settings → Domains**
 
 2. **Add Domain**
-   - Enter your domain: `buycoffee.com` or `www.buycoffee.com`
+   - Enter your domain: `cobbee.com` or `www.cobbee.com`
    - Click "Add"
 
 3. **Configure DNS** (at your domain registrar)
@@ -192,13 +192,13 @@ vercel env pull .env.local
    - Vercel automatically manages DNS records
 
    **Option B: Use A/CNAME Records**
-   - **For root domain (`buycoffee.com`):**
+   - **For root domain (`cobbee.com`):**
      ```
      Type: A
      Name: @
      Value: 76.76.21.21
      ```
-   - **For subdomain (`www.buycoffee.com`):**
+   - **For subdomain (`www.cobbee.com`):**
      ```
      Type: CNAME
      Name: www
@@ -217,8 +217,8 @@ vercel env pull .env.local
 After adding custom domain:
 
 ```bash
-NEXT_PUBLIC_APP_URL=https://buycoffee.com
-NEXTAUTH_URL=https://buycoffee.com  # If using NextAuth
+NEXT_PUBLIC_APP_URL=https://cobbee.com
+NEXTAUTH_URL=https://cobbee.com  # If using NextAuth
 ```
 
 Redeploy to apply changes.
@@ -337,7 +337,7 @@ Before deploying to production:
 **Solutions:**
 1. Wait for DNS propagation (up to 48 hours)
 2. Check DNS records at domain registrar
-3. Use `dig buycoffee.com` to verify DNS resolution
+3. Use `dig cobbee.com` to verify DNS resolution
 4. Clear browser cache
 5. Try incognito/private mode
 
@@ -372,7 +372,7 @@ pnpm start  # Runs on port 3000
 **Example with PM2:**
 ```bash
 npm install -g pm2
-pm2 start npm --name "buycoffee" -- start
+pm2 start npm --name "cobbee" -- start
 pm2 save
 pm2 startup
 ```

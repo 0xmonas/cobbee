@@ -1,4 +1,4 @@
-# BuyCoffee - Support Creators You Love
+# Cobbee - Support Creators You Love
 
 [![CI/CD Pipeline](https://github.com/0xmonas/grape/actions/workflows/ci.yml/badge.svg)](https://github.com/0xmonas/grape/actions/workflows/ci.yml)
 
@@ -104,4 +104,4 @@ This project is private and proprietary.
 
 ---
 
-**Built with ❤️ by the BuyCoffee team**
+**Built with ❤️ by the Cobbee team**

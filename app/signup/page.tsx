@@ -7,20 +7,42 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Coffee, CheckCircle2, XCircle } from "lucide-react"
+import { Coffee, CheckCircle2, XCircle, Wallet } from "lucide-react"
 
 export default function SignupPage() {
   const router = useRouter()
+  const [signupStep, setSignupStep] = useState<"wallet" | "sign" | "details" | "otp">("wallet")
+  const [isConnecting, setIsConnecting] = useState(false)
+  const [isSigning, setIsSigning] = useState(false)
+  const [walletAddress, setWalletAddress] = useState("")
   const [name, setName] = useState("")
   const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
-  const [showOTP, setShowOTP] = useState(false)
   const [otp, setOtp] = useState(["", "", "", "", "", ""])
   const [otpStatus, setOtpStatus] = useState<"idle" | "success" | "error">("idle")
 
+  const handleConnectWallet = async () => {
+    setIsConnecting(true)
+    // TODO: Implement actual wallet connection
+    setTimeout(() => {
+      setWalletAddress("0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb")
+      setIsConnecting(false)
+      setSignupStep("sign")
+    }, 1500)
+  }
+
+  const handleSignMessage = async () => {
+    setIsSigning(true)
+    // TODO: Implement actual message signing
+    setTimeout(() => {
+      setIsSigning(false)
+      setSignupStep("details")
+    }, 1500)
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setShowOTP(true)
+    setSignupStep("otp")
   }
 
   const handleOtpChange = (index: number, value: string) => {
@@ -48,7 +70,8 @@ export default function SignupPage() {
     }
   }
 
-  if (showOTP) {
+  // Connect Wallet Step
+  if (signupStep === "wallet") {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center p-4">
         <div className="w-full max-w-md">
@@ -56,7 +79,137 @@ export default function SignupPage() {
             <div className="bg-[#CCFF00] w-16 h-16 rounded-full flex items-center justify-center border-4 border-black">
               <Coffee className="w-8 h-8" />
             </div>
-            <span className="text-4xl font-black">BuyCoffee</span>
+            <span className="text-4xl font-black">Cobbee</span>
+          </Link>
+
+          <div className="bg-[#FF6B35] border-4 border-black rounded-3xl p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+            <h1 className="text-4xl font-black text-white mb-2">Get started</h1>
+            <p className="text-lg font-bold text-white mb-8">Connect your wallet to create your account</p>
+
+            <div className="space-y-6">
+              <Button
+                onClick={handleConnectWallet}
+                disabled={isConnecting}
+                className="w-full bg-[#CCFF00] hover:bg-[#B8E600] text-black font-black text-xl py-7 rounded-xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+              >
+                <Wallet className="w-6 h-6" />
+                {isConnecting ? "Connecting..." : "Connect Wallet"}
+              </Button>
+
+              <div className="mt-6 text-center">
+                <p className="text-sm font-bold text-white">
+                  By continuing, you agree to the{" "}
+                  <Link href="/terms" className="underline hover:no-underline">
+                    terms of service
+                  </Link>{" "}
+                  and{" "}
+                  <Link href="/privacy" className="underline hover:no-underline">
+                    privacy policy
+                  </Link>
+                  .
+                </p>
+              </div>
+
+              <div className="mt-6 text-center">
+                <p className="text-lg font-bold text-white">
+                  Already have an account?{" "}
+                  <Link href="/login" className="underline hover:no-underline">
+                    Log in
+                  </Link>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Sign Message Step
+  if (signupStep === "sign") {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <Link href="/" className="flex items-center justify-center gap-3 mb-12">
+            <div className="bg-[#CCFF00] w-16 h-16 rounded-full flex items-center justify-center border-4 border-black">
+              <Coffee className="w-8 h-8" />
+            </div>
+            <span className="text-4xl font-black">Cobbee</span>
+          </Link>
+
+          <div className="bg-[#0000FF] border-4 border-black rounded-3xl p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+            <h1 className="text-4xl font-black text-white mb-2">Sign Message in Wallet</h1>
+            <p className="text-lg font-bold text-white mb-8">
+              Please sign the message in your wallet to verify ownership
+            </p>
+
+            <div className="space-y-6">
+              <div className="bg-white border-4 border-black rounded-2xl p-6">
+                <p className="text-sm font-bold text-gray-600 mb-2">Connected Wallet</p>
+                <p className="text-base font-black font-mono break-all">{walletAddress}</p>
+              </div>
+
+              <div className="bg-white border-4 border-black rounded-2xl p-6">
+                <p className="text-sm font-bold text-gray-600 mb-3">Message to sign:</p>
+                <p className="text-base font-bold leading-relaxed">
+                  Welcome to Cobbee!
+                  <br />
+                  <br />
+                  Sign this message to create your account and verify your wallet ownership.
+                  <br />
+                  <br />
+                  This will not trigger any blockchain transaction or cost any gas fees.
+                </p>
+              </div>
+
+              <Button
+                onClick={handleSignMessage}
+                disabled={isSigning}
+                className="w-full bg-[#CCFF00] hover:bg-[#B8E600] text-black font-black text-xl py-7 rounded-xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSigning ? "Signing..." : "Sign Message"}
+              </Button>
+
+              <button
+                onClick={() => {
+                  setSignupStep("wallet")
+                  setWalletAddress("")
+                }}
+                className="w-full text-center text-white font-bold hover:underline"
+              >
+                Use different wallet
+              </button>
+
+              <div className="mt-6 text-center">
+                <p className="text-sm font-bold text-white">
+                  By continuing, you agree to the{" "}
+                  <Link href="/terms" className="underline hover:no-underline">
+                    terms of service
+                  </Link>{" "}
+                  and{" "}
+                  <Link href="/privacy" className="underline hover:no-underline">
+                    privacy policy
+                  </Link>
+                  .
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // OTP Verification Step
+  if (signupStep === "otp") {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <Link href="/" className="flex items-center justify-center gap-3 mb-12">
+            <div className="bg-[#CCFF00] w-16 h-16 rounded-full flex items-center justify-center border-4 border-black">
+              <Coffee className="w-8 h-8" />
+            </div>
+            <span className="text-4xl font-black">Cobbee</span>
           </Link>
 
           <div className="bg-[#0000FF] border-4 border-black rounded-3xl p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
@@ -104,11 +257,25 @@ export default function SignupPage() {
               </Button>
 
               <button
-                onClick={() => setShowOTP(false)}
+                onClick={() => setSignupStep("details")}
                 className="w-full text-center text-white font-bold hover:underline"
               >
                 Change email or resend code
               </button>
+
+              <div className="mt-6 text-center">
+                <p className="text-sm font-bold text-white">
+                  By continuing, you agree to the{" "}
+                  <Link href="/terms" className="underline hover:no-underline">
+                    terms of service
+                  </Link>{" "}
+                  and{" "}
+                  <Link href="/privacy" className="underline hover:no-underline">
+                    privacy policy
+                  </Link>
+                  .
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -116,6 +283,7 @@ export default function SignupPage() {
     )
   }
 
+  // User Details Step (default)
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -123,7 +291,7 @@ export default function SignupPage() {
           <div className="bg-[#CCFF00] w-16 h-16 rounded-full flex items-center justify-center border-4 border-black">
             <Coffee className="w-8 h-8" />
           </div>
-          <span className="text-4xl font-black">BuyCoffee</span>
+          <span className="text-4xl font-black">Cobbee</span>
         </Link>
 
         <div className="bg-[#FF6B35] border-4 border-black rounded-3xl p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
@@ -156,7 +324,7 @@ export default function SignupPage() {
               {username && (
                 <div className="mt-3 bg-white border-2 border-black rounded-lg px-4 py-2">
                   <p className="text-sm font-bold text-gray-600">Your page will be:</p>
-                  <p className="text-base font-black text-[#0000FF]">buymeacoffee.com/{username}</p>
+                  <p className="text-base font-black text-[#0000FF]">cobbee.com/{username}</p>
                 </div>
               )}
             </div>

@@ -49,7 +49,7 @@ export function LandingHeader() {
             <Coffee className="w-6 h-6 text-white" />
           </div>
           <span className={`text-xl font-black transition-all duration-300 ${isScrolled ? "opacity-0 w-0 overflow-hidden" : "opacity-100"}`}>
-            BuyCoffee
+            Cobbee
           </span>
         </Link>
 
@@ -100,7 +100,7 @@ export function LandingHeader() {
           <div className="bg-[#0000FF] rounded-full p-2 border-4 border-black">
             <Coffee className="w-5 h-5 text-white" />
           </div>
-          <span className="text-lg font-black">BuyCoffee</span>
+          <span className="text-lg font-black">Cobbee</span>
         </Link>
 
         <button
