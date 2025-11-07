@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Coffee, Heart, Users, Zap } from "lucide-react"
+import { Coffee, Users, Zap } from "lucide-react"
 import { LandingHeader } from "@/components/landing-header"
 import { LandingFooter } from "@/components/landing-footer"
 import { SupportDemo } from "@/components/support-demo"
@@ -47,11 +47,11 @@ export default function LandingPage() {
           {/* Feature 2 */}
           <div className="bg-[#CCFF00] border-4 border-black p-10 rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
             <div className="bg-white w-16 h-16 rounded-full flex items-center justify-center border-4 border-black mb-6">
-              <Heart className="w-8 h-8" />
+              <Zap className="w-8 h-8" />
             </div>
-            <h3 className="text-3xl font-black text-black mb-4">Build community</h3>
+            <h3 className="text-3xl font-black text-black mb-4">Decentralized payments</h3>
             <p className="text-xl font-bold text-black leading-relaxed">
-              Connect with your biggest fans and build a community around your creative work.
+              Peer-to-peer transactions on the blockchain. No middleman, no custody, you control your funds.
             </p>
           </div>
 
@@ -113,7 +113,7 @@ export default function LandingPage() {
             </div>
             <h3 className="text-2xl font-black mb-4">Get support</h3>
             <p className="text-lg font-bold leading-relaxed">
-              Receive coffee donations from your supporters and watch your community grow.
+              Receive cryptocurrency donations instantly to your wallet. All transactions are transparent on the blockchain.
             </p>
           </div>
         </div>
