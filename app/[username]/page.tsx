@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { UserMenu } from "@/components/user-menu"
 import { getCurrentUser } from "@/lib/auth-utils"
 import { SimpleFooter } from "@/components/simple-footer"
+import { Logo } from "@/components/logo"
 
 export default function CreatorProfilePage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = use(params)
@@ -44,9 +45,7 @@ export default function CreatorProfilePage({ params }: { params: Promise<{ usern
       <header className="border-b-4 border-black bg-white sticky top-0 z-50">
         <nav className="container mx-auto px-4 py-6 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="bg-[#0000FF] rounded-full p-2 border-4 border-black">
-              <Coffee className="w-6 h-6 text-white" />
-            </div>
+            <Logo size="md" />
             <span className="text-2xl font-black hidden sm:inline">Cobbee</span>
           </Link>
           <div className="hidden md:flex items-center gap-4">

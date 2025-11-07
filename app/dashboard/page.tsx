@@ -6,6 +6,7 @@ import { Coffee, DollarSign, TrendingUp, Users, ExternalLink, Settings } from "l
 import { UserMenu } from "@/components/user-menu"
 import { NotificationsMenu } from "@/components/notifications-menu"
 import { SimpleFooter } from "@/components/simple-footer"
+import { Logo } from "@/components/logo"
 
 export default function DashboardPage() {
   // For demo purposes, we'll use the first creator as the logged-in user
@@ -22,9 +23,7 @@ export default function DashboardPage() {
       <header className="border-b-4 border-black bg-white sticky top-0 z-50">
         <nav className="container mx-auto px-4 py-6 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="bg-[#0000FF] rounded-full p-2 border-4 border-black">
-              <Coffee className="w-6 h-6 text-white" />
-            </div>
+            <Logo size="md" />
             <span className="text-2xl font-black hidden sm:inline">Cobbee</span>
           </Link>
           <div className="hidden md:flex items-center gap-4">
@@ -205,7 +204,7 @@ export default function DashboardPage() {
                   Get more supporters by sharing your page on social media
                 </p>
                 <div className="bg-white border-4 border-black rounded-xl p-3 mb-4">
-                  <p className="text-sm font-bold truncate">cobbee.com/{currentCreator.username}</p>
+                  <p className="text-sm font-bold truncate">cobbee.fun/{currentCreator.username}</p>
                 </div>
                 <Button className="w-full bg-[#CCFF00] hover:bg-[#B8E600] text-black font-bold text-lg py-6 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                   Copy Link

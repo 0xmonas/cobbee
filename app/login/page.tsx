@@ -7,9 +7,10 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Coffee, Wallet, CheckCircle2, XCircle } from "lucide-react"
+import { Wallet, CheckCircle2, XCircle } from "lucide-react"
 import { setCurrentUser } from "@/lib/auth-utils"
 import { mockCreators } from "@/lib/mock-data"
+import { Logo } from "@/components/logo"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -80,9 +81,7 @@ export default function LoginPage() {
       <div className="min-h-screen bg-white flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <Link href="/" className="flex items-center justify-center gap-3 mb-12">
-            <div className="bg-[#CCFF00] w-16 h-16 rounded-full flex items-center justify-center border-4 border-black">
-              <Coffee className="w-8 h-8" />
-            </div>
+            <Logo size="lg" className="w-16 h-16" />
             <span className="text-4xl font-black">Cobbee</span>
           </Link>
 
@@ -141,9 +140,7 @@ export default function LoginPage() {
       <div className="min-h-screen bg-white flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <Link href="/" className="flex items-center justify-center gap-3 mb-12">
-            <div className="bg-[#CCFF00] w-16 h-16 rounded-full flex items-center justify-center border-4 border-black">
-              <Coffee className="w-8 h-8" />
-            </div>
+            <Logo size="lg" className="w-16 h-16" />
             <span className="text-4xl font-black">Cobbee</span>
           </Link>
 
@@ -212,9 +209,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <Link href="/" className="flex items-center justify-center gap-3 mb-12">
-          <div className="bg-[#CCFF00] w-16 h-16 rounded-full flex items-center justify-center border-4 border-black">
-            <Coffee className="w-8 h-8" />
-          </div>
+          <Logo size="lg" className="w-16 h-16" />
           <span className="text-4xl font-black">Cobbee</span>
         </Link>
 

@@ -7,7 +7,8 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Coffee, CheckCircle2, XCircle, Wallet } from "lucide-react"
+import { CheckCircle2, XCircle, Wallet } from "lucide-react"
+import { Logo } from "@/components/logo"
 
 export default function SignupPage() {
   const router = useRouter()
@@ -76,9 +77,7 @@ export default function SignupPage() {
       <div className="min-h-screen bg-white flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <Link href="/" className="flex items-center justify-center gap-3 mb-12">
-            <div className="bg-[#CCFF00] w-16 h-16 rounded-full flex items-center justify-center border-4 border-black">
-              <Coffee className="w-8 h-8" />
-            </div>
+            <Logo size="lg" className="w-16 h-16" />
             <span className="text-4xl font-black">Cobbee</span>
           </Link>
 
@@ -131,9 +130,7 @@ export default function SignupPage() {
       <div className="min-h-screen bg-white flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <Link href="/" className="flex items-center justify-center gap-3 mb-12">
-            <div className="bg-[#CCFF00] w-16 h-16 rounded-full flex items-center justify-center border-4 border-black">
-              <Coffee className="w-8 h-8" />
-            </div>
+            <Logo size="lg" className="w-16 h-16" />
             <span className="text-4xl font-black">Cobbee</span>
           </Link>
 
@@ -206,9 +203,7 @@ export default function SignupPage() {
       <div className="min-h-screen bg-white flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <Link href="/" className="flex items-center justify-center gap-3 mb-12">
-            <div className="bg-[#CCFF00] w-16 h-16 rounded-full flex items-center justify-center border-4 border-black">
-              <Coffee className="w-8 h-8" />
-            </div>
+            <Logo size="lg" className="w-16 h-16" />
             <span className="text-4xl font-black">Cobbee</span>
           </Link>
 
@@ -288,9 +283,7 @@ export default function SignupPage() {
     <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <Link href="/" className="flex items-center justify-center gap-3 mb-12">
-          <div className="bg-[#CCFF00] w-16 h-16 rounded-full flex items-center justify-center border-4 border-black">
-            <Coffee className="w-8 h-8" />
-          </div>
+          <Logo size="lg" className="w-16 h-16" />
           <span className="text-4xl font-black">Cobbee</span>
         </Link>
 
@@ -324,7 +317,7 @@ export default function SignupPage() {
               {username && (
                 <div className="mt-3 bg-white border-2 border-black rounded-lg px-4 py-2">
                   <p className="text-sm font-bold text-gray-600">Your page will be:</p>
-                  <p className="text-base font-black text-[#0000FF]">cobbee.com/{username}</p>
+                  <p className="text-base font-black text-[#0000FF]">cobbee.fun/{username}</p>
                 </div>
               )}
             </div>

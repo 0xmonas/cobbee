@@ -167,7 +167,7 @@ export default function EditProfilePage() {
                   Username
                 </Label>
                 <div className="flex items-center gap-2">
-                  <span className="text-lg font-bold">cobbee.com/</span>
+                  <span className="text-lg font-bold">cobbee.fun/</span>
                   <Input
                     id="username"
                     value={formData.username}

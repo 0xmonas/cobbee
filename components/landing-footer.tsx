@@ -100,12 +100,12 @@ export function LandingFooter() {
               </ul>
             </motion.div>
             <motion.h2
-              className="absolute bottom-0 left-0 translate-y-[28%] text-[80px] sm:text-[120px] md:text-[160px] lg:text-[192px] font-black select-none text-black/20"
+              className="absolute bottom-0 left-0 translate-y-[28%] text-[80px] sm:text-[120px] md:text-[160px] lg:text-[192px] font-black select-none text-black"
               initial={{ opacity: 0, x: -100 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
             >
-              BC
+              COBBEE
             </motion.h2>
           </div>
         </motion.div>

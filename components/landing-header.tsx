@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Coffee } from "lucide-react"
+import { Logo } from "@/components/logo"
 
 export function LandingHeader() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -45,9 +45,7 @@ export function LandingHeader() {
           }`}
           href="/"
         >
-          <div className="bg-[#0000FF] rounded-full p-2 border-4 border-black">
-            <Coffee className="w-6 h-6 text-white" />
-          </div>
+          <Logo size="md" />
           <span className={`text-xl font-black transition-all duration-300 ${isScrolled ? "opacity-0 w-0 overflow-hidden" : "opacity-100"}`}>
             Cobbee
           </span>
@@ -97,9 +95,7 @@ export function LandingHeader() {
       {/* Mobile Header */}
       <header className="sticky top-4 z-[9999] mx-4 flex w-auto flex-row items-center justify-between rounded-full bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] md:hidden px-4 py-3">
         <Link className="flex items-center justify-center gap-2" href="/">
-          <div className="bg-[#0000FF] rounded-full p-2 border-4 border-black">
-            <Coffee className="w-5 h-5 text-white" />
-          </div>
+          <Logo size="sm" />
           <span className="text-lg font-black">Cobbee</span>
         </Link>
 
