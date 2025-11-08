@@ -14,7 +14,7 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20">
         <div className="max-w-5xl mx-auto text-center">
-          <h1 className="text-7xl md:text-8xl font-black mb-8 leading-tight text-balance">
+          <h1 className="text-7xl md:text-8xl font-black mb-8 leading-tight text-balance" style={{ fontFamily: "'Clash Display', sans-serif" }}>
             Get support from people who love your work
           </h1>
           <p className="text-2xl md:text-3xl font-bold mb-12 text-balance">

@@ -418,7 +418,7 @@ export default function EditProfilePage() {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full sm:w-auto border-4 border-black text-lg font-bold px-8 py-6 hover:bg-gray-100 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all bg-transparent"
+                className="w-full sm:w-auto border-4 border-black text-lg font-bold px-8 py-6 hover:bg-gray-100 hover:text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all bg-transparent"
               >
                 Cancel
               </Button>

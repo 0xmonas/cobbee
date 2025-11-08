@@ -20,7 +20,7 @@ interface CoffeeSupportProps {
   creator: Creator
 }
 
-type PurchaseStep = "form" | "summary" | "processing" | "success" | "error"
+type PurchaseStep = "form" | "connect-wallet" | "summary" | "processing" | "success" | "error"
 
 export function CoffeeSupport({ creator }: CoffeeSupportProps) {
   const [coffeeCount, setCoffeeCount] = useState(1)
@@ -30,15 +30,35 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
   const [isPrivate, setIsPrivate] = useState(false)
   const [purchaseStep, setPurchaseStep] = useState<PurchaseStep>("form")
   const [copiedWallet, setCopiedWallet] = useState(false)
+  const [copiedSupporterWallet, setCopiedSupporterWallet] = useState(false)
   const [txnHash, setTxnHash] = useState("")
+  const [supporterWallet, setSupporterWallet] = useState("")
 
   const presetAmounts = [1, 3, 5]
   const isCustom = !presetAmounts.includes(coffeeCount)
-  const totalAmount = isCustom ? Number.parseFloat(customAmount) || 0 : coffeeCount * creator.coffeePrice
+  const totalAmount = isCustom
+    ? (Number.parseInt(customAmount) || 0) * creator.coffeePrice
+    : coffeeCount * creator.coffeePrice
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setPurchaseStep("connect-wallet")
+  }
+
+  const handleConnectWallet = () => {
+    // Simulate wallet connection
+    // In production, this will use RainbowKit/Wagmi
+    const mockWallet = "0x" + Array.from({ length: 40 }, () => Math.floor(Math.random() * 16).toString(16)).join("")
+    setSupporterWallet(mockWallet)
     setPurchaseStep("summary")
+  }
+
+  const handleCopySupporterWallet = () => {
+    if (supporterWallet) {
+      navigator.clipboard.writeText(supporterWallet)
+      setCopiedSupporterWallet(true)
+      setTimeout(() => setCopiedSupporterWallet(false), 2000)
+    }
   }
 
   const handlePurchase = () => {
@@ -162,9 +182,75 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
             <Button
               onClick={handleDone}
               variant="outline"
-              className="flex-1 bg-white hover:bg-gray-100 text-black font-black text-xl py-6 rounded-xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
+              className="flex-1 bg-white hover:bg-gray-100 text-black hover:text-black font-black text-xl py-6 rounded-xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
             >
               Cancel
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Wallet Connection Screen
+  if (purchaseStep === "connect-wallet") {
+    return (
+      <div className="bg-[#0000FF] border-4 border-black rounded-3xl p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+        <h2 className="text-3xl font-black text-white mb-6">Connect Your Wallet</h2>
+
+        <div className="bg-white border-4 border-black rounded-2xl p-8">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-[#CCFF00] rounded-full border-4 border-black mb-4">
+              <Wallet className="w-10 h-10" />
+            </div>
+            <h3 className="text-2xl font-black mb-2">Almost there!</h3>
+            <p className="text-lg font-bold text-gray-600">
+              Connect your wallet to complete the support
+            </p>
+          </div>
+
+          <div className="space-y-4 mb-8">
+            {/* Summary Info */}
+            <div className="bg-gray-50 border-4 border-black rounded-xl p-4">
+              <div className="flex justify-between items-center mb-2">
+                <span className="font-bold text-gray-600">Supporting</span>
+                <span className="text-lg font-black">{creator.displayName}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-gray-600">Amount</span>
+                <span className="text-2xl font-black">${totalAmount.toFixed(2)}</span>
+              </div>
+            </div>
+
+            {/* Info Notice */}
+            <div className="bg-[#CCFF00] border-4 border-black rounded-xl p-4">
+              <div className="flex items-start gap-2">
+                <span className="text-lg">💡</span>
+                <div>
+                  <p className="text-sm font-black mb-1">Web3 Wallet Required</p>
+                  <p className="text-xs font-bold text-gray-700">
+                    You'll need a Web3 wallet (like MetaMask) to make crypto donations. The connection is secure and decentralized.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-4">
+            <Button
+              onClick={() => setPurchaseStep("form")}
+              variant="outline"
+              className="flex-1 bg-white hover:bg-gray-100 text-black hover:text-black font-black text-xl py-6 rounded-xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
+            >
+              Back
+            </Button>
+            <Button
+              onClick={handleConnectWallet}
+              className="flex-1 bg-[#CCFF00] hover:bg-[#B8E600] text-black font-black text-xl py-6 rounded-xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-2"
+            >
+              <Wallet className="w-6 h-6" />
+              Connect Wallet
             </Button>
           </div>
         </div>
@@ -199,6 +285,25 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
             <p className="text-sm font-bold text-gray-600 mb-1">Your Name</p>
             <p className="text-lg font-black">{supporterName}</p>
           </div>
+
+          {/* Supporter Wallet */}
+          {supporterWallet && (
+            <div className="bg-white border-4 border-black rounded-2xl p-4">
+              <p className="text-sm font-bold text-gray-600 mb-2">Your Wallet Address</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-mono font-bold break-all flex-1">
+                  {supporterWallet}
+                </p>
+                <button
+                  onClick={handleCopySupporterWallet}
+                  className="bg-[#CCFF00] hover:bg-[#B8E600] text-black font-bold p-2 rounded-lg border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all flex-shrink-0"
+                  title="Copy wallet address"
+                >
+                  {copiedSupporterWallet ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Message */}
           {message && (
@@ -248,7 +353,7 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
           <Button
             onClick={() => setPurchaseStep("form")}
             variant="outline"
-            className="flex-1 bg-white hover:bg-gray-100 text-black font-black text-xl py-6 rounded-xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
+            className="flex-1 bg-white hover:bg-gray-100 text-black hover:text-black font-black text-xl py-6 rounded-xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
           >
             Back
           </Button>
@@ -322,16 +427,28 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
           {/* Custom Amount Input */}
           {isCustom && (
             <div>
-              <label className="text-xl font-black mb-3 block">Custom amount ($)</label>
+              <label className="text-xl font-black mb-3 block">How many coffees? (max 100)</label>
               <Input
                 type="number"
                 min="1"
+                max="100"
                 step="1"
                 value={customAmount}
-                onChange={(e) => setCustomAmount(e.target.value)}
-                placeholder="Enter amount"
+                onChange={(e) => {
+                  const value = e.target.value
+                  const numValue = Number.parseInt(value)
+                  if (value === "" || (numValue >= 1 && numValue <= 100)) {
+                    setCustomAmount(value)
+                  }
+                }}
+                placeholder="Enter number of coffees"
                 className="text-xl font-bold border-4 border-black rounded-xl h-14 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
               />
+              {customAmount && (
+                <p className="text-lg font-bold text-gray-700 mt-2">
+                  = ${(Number.parseInt(customAmount) * creator.coffeePrice).toFixed(2)}
+                </p>
+              )}
             </div>
           )}
 
