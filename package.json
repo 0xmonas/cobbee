@@ -1,12 +1,12 @@
 {
-  "name": "my-v0-project",
+  "name": "cobbee",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "build": "next build",
     "dev": "next dev",
-    "lint": "next lint",
-    "lint:fix": "next lint --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
     "start": "next start"
   },
@@ -68,12 +68,13 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "eslint": "^8",
-    "eslint-config-next": "16.0.0",
+    "eslint": "^9.39.1",
+    "eslint-config-next": "16.0.1",
     "postcss": "^8.5",
     "tailwindcss": "^4.1.9",
     "tw-animate-css": "1.3.3",
-    "typescript": "^5"
+    "typescript": "^5",
+    "typescript-eslint": "^8.46.3"
   },
   "engines": {
     "node": ">=20.0.0",

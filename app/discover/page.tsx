@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
+import NextImage from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -14,11 +15,7 @@ import { Logo } from "@/components/logo"
 
 export default function DiscoverPage() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [currentUser, setCurrentUser] = useState<{ id: string; username: string } | null>(null)
-
-  useEffect(() => {
-    setCurrentUser(getCurrentUser())
-  }, [])
+  const [currentUser] = useState<{ id: string; username: string } | null>(() => getCurrentUser())
 
   const filteredCreators = mockCreators.filter(
     (creator) =>
@@ -138,9 +135,11 @@ export default function DiscoverPage() {
                       >
                         {/* Cover Image */}
                         <div className="h-48 border-b-4 border-black overflow-hidden">
-                          <img
+                          <NextImage
                             src={creator.coverImage || "/placeholder.svg"}
                             alt={creator.displayName}
+                            width={600}
+                            height={300}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                           />
                         </div>

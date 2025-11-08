@@ -7,7 +7,8 @@ import { CoffeeSupport } from "@/components/coffee-support"
 import { RecentSupporters } from "@/components/recent-supporters"
 import { Coffee, Copy, Check } from "lucide-react"
 import Link from "next/link"
-import { use, useState, useEffect } from "react"
+import NextImage from "next/image"
+import { use, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { UserMenu } from "@/components/user-menu"
 import { getCurrentUser } from "@/lib/auth-utils"
@@ -18,11 +19,7 @@ import { TwitterIcon, InstagramIcon, GitHubIcon, TikTokIcon, OpenSeaIcon } from 
 export default function CreatorProfilePage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = use(params)
   const creator = mockCreators.find((c) => c.username === username)
-  const [currentUser, setCurrentUser] = useState<{ id: string; username: string } | null>(null)
-
-  useEffect(() => {
-    setCurrentUser(getCurrentUser())
-  }, [])
+  const [currentUser] = useState<{ id: string; username: string } | null>(() => getCurrentUser())
 
   if (!creator) {
     notFound()
@@ -127,7 +124,7 @@ export default function CreatorProfilePage({ params }: { params: Promise<{ usern
 
       {/* Cover Image */}
       <div className="w-full h-64 border-b-4 border-black overflow-hidden">
-        <img src={creator.coverImage || "/placeholder.svg"} alt="Cover" className="w-full h-full object-cover" />
+        <NextImage src={creator.coverImage || "/placeholder.svg"} alt="Cover" width={1500} height={500} className="w-full h-full object-cover" />
       </div>
 
       {/* Profile Section */}

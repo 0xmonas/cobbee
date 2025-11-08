@@ -98,9 +98,9 @@ export default function DashboardPage() {
             </div>
 
             {/* Average Support */}
-            <div className="bg-black border-4 border-black rounded-2xl p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+            <div className="bg-chart-6 border-4 border-black rounded-2xl p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
               <div className="flex items-center gap-3 mb-3">
-                <div className="bg-[#CCFF00] w-12 h-12 rounded-full flex items-center justify-center border-4 border-black">
+                <div className="bg-white w-12 h-12 rounded-full flex items-center justify-center border-4 border-black">
                   <TrendingUp className="w-6 h-6" />
                 </div>
               </div>

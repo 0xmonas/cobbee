@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import NextImage from "next/image"
 import { useRouter } from "next/navigation"
 import { User, Settings, LogOut, Eye, Wallet } from "lucide-react"
 import { setCurrentUser } from "@/lib/auth-utils"
@@ -21,7 +22,7 @@ export function UserMenu() {
         onClick={() => setIsOpen(!isOpen)}
         className="w-12 h-12 border-4 border-black rounded-full overflow-hidden bg-gray-100 hover:ring-4 hover:ring-[#CCFF00] transition-all"
       >
-        <img src="/woman-designer-avatar.png" alt="User avatar" className="w-full h-full object-cover" />
+        <NextImage src="/woman-designer-avatar.png" alt="User avatar" width={48} height={48} className="w-full h-full object-cover" />
       </button>
 
       {isOpen && (

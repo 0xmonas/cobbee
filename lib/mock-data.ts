@@ -1,3 +1,5 @@
+import { getAvatarUrl } from './avatar-utils'
+
 export interface Creator {
   id: string
   username: string
@@ -104,7 +106,7 @@ export const mockSupports: Record<string, Support[]> = {
     {
       id: "1",
       supporterName: "Alex Kim",
-      supporterAvatar: "/person-avatar-1.png",
+      supporterAvatar: getAvatarUrl(null, "Alex Kim"), // Auto-generated avatar with initials
       coffeeCount: 5,
       message: "Your design tutorials are amazing! Keep up the great work!",
       timestamp: "2 hours ago",
@@ -116,7 +118,7 @@ export const mockSupports: Record<string, Support[]> = {
     {
       id: "2",
       supporterName: "Maria Garcia",
-      supporterAvatar: "/diverse-person-avatar-2.png",
+      supporterAvatar: getAvatarUrl(null, "Maria Garcia"),
       coffeeCount: 3,
       message: "Thanks for the Figma tips!",
       timestamp: "5 hours ago",
@@ -128,7 +130,7 @@ export const mockSupports: Record<string, Support[]> = {
     {
       id: "3",
       supporterName: "David Lee",
-      supporterAvatar: "/person-avatar-3.png",
+      supporterAvatar: getAvatarUrl(null, "David Lee"),
       coffeeCount: 1,
       message: "",
       timestamp: "1 day ago",
@@ -140,7 +142,7 @@ export const mockSupports: Record<string, Support[]> = {
     {
       id: "4",
       supporterName: "Sophie Turner",
-      supporterAvatar: "/person-avatar-4.png",
+      supporterAvatar: getAvatarUrl(null, "Sophie Turner"),
       coffeeCount: 10,
       message: "Your work inspires me every day! Here's a big coffee for you!",
       timestamp: "2 days ago",
@@ -152,7 +154,7 @@ export const mockSupports: Record<string, Support[]> = {
     {
       id: "5",
       supporterName: "James Wilson",
-      supporterAvatar: "/diverse-person-avatars.png",
+      supporterAvatar: getAvatarUrl(null, "James Wilson"),
       coffeeCount: 3,
       message: "Love your color palette choices!",
       timestamp: "3 days ago",
@@ -166,7 +168,7 @@ export const mockSupports: Record<string, Support[]> = {
     {
       id: "6",
       supporterName: "Rachel Green",
-      supporterAvatar: "/diverse-person-avatars.png",
+      supporterAvatar: getAvatarUrl(null, "Rachel Green"),
       coffeeCount: 5,
       message: "Your coding tutorials saved my project!",
       timestamp: "1 hour ago",
@@ -178,7 +180,7 @@ export const mockSupports: Record<string, Support[]> = {
     {
       id: "7",
       supporterName: "Tom Brady",
-      supporterAvatar: "/developer-avatar.png",
+      supporterAvatar: getAvatarUrl(null, "Tom Brady"),
       coffeeCount: 1,
       message: "",
       timestamp: "4 hours ago",
@@ -192,7 +194,7 @@ export const mockSupports: Record<string, Support[]> = {
     {
       id: "8",
       supporterName: "Lisa Park",
-      supporterAvatar: "/art-lover-avatar.jpg",
+      supporterAvatar: getAvatarUrl(null, "Lisa Park"),
       coffeeCount: 3,
       message: "Your art style is so unique and beautiful!",
       timestamp: "30 minutes ago",
@@ -206,7 +208,7 @@ export const mockSupports: Record<string, Support[]> = {
     {
       id: "9",
       supporterName: "Chris Evans",
-      supporterAvatar: "/music-fan-avatar.jpg",
+      supporterAvatar: getAvatarUrl(null, "Chris Evans"),
       coffeeCount: 5,
       message: "Can't stop listening to your latest track!",
       timestamp: "3 hours ago",

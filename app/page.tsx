@@ -67,8 +67,8 @@ export default function LandingPage() {
           </div>
 
           {/* Feature 4 */}
-          <div className="bg-black border-4 border-black p-10 rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-            <div className="bg-[#CCFF00] w-16 h-16 rounded-full flex items-center justify-center border-4 border-black mb-6">
+          <div className="bg-chart-6 border-4 border-black p-10 rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+            <div className="bg-white w-16 h-16 rounded-full flex items-center justify-center border-4 border-black mb-6">
               <Zap className="w-8 h-8" />
             </div>
             <h3 className="text-3xl font-black text-white mb-4">Get started fast</h3>

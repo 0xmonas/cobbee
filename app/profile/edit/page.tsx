@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
+import NextImage from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -138,9 +139,11 @@ export default function EditProfilePage() {
             <div className="p-6">
               <div className="space-y-4">
                 <div className="relative w-full h-48 border-4 border-black overflow-hidden bg-gray-100">
-                  <img
+                  <NextImage
                     src={previewCover || "/placeholder.svg"}
                     alt="Cover preview"
+                    width={1500}
+                    height={500}
                     className="w-full h-full object-cover"
                   />
                   <label
@@ -171,9 +174,11 @@ export default function EditProfilePage() {
               <div className="flex items-center gap-6">
                 <div className="relative">
                   <div className="w-32 h-32 border-4 border-black rounded-full overflow-hidden bg-gray-100">
-                    <img
+                    <NextImage
                       src={previewAvatar || "/placeholder.svg"}
                       alt="Avatar preview"
+                      width={128}
+                      height={128}
                       className="w-full h-full object-cover"
                     />
                   </div>
