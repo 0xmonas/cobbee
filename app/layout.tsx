@@ -9,8 +9,9 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Cobbee - Support Creators You Love",
-  description: "Accept donations, build community, and get support from people who love your work",
+  description: "Accept donations, build community, and get support from people who love your work. Support your favorite creators with crypto coffee.",
   generator: "cobbee.fun",
+  metadataBase: new URL('https://cobbee.fun'),
   icons: {
     icon: '/icon',
     apple: '/apple-icon',
@@ -21,6 +22,19 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: 'black-translucent',
     title: 'Cobbee',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://cobbee.fun',
+    siteName: 'Cobbee',
+    title: 'Cobbee - Support Creators You Love',
+    description: 'Accept donations, build community, and get support from people who love your work. Support your favorite creators with crypto coffee.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Cobbee - Support Creators You Love',
+    description: 'Accept donations, build community, and get support from people who love your work. Support your favorite creators with crypto coffee.',
   },
 }
 

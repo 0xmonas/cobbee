@@ -145,6 +145,42 @@ export function validateSocialUsername(username: string): string | null {
   return null
 }
 
+export function validateSupporterName(name: string): string | null {
+  const trimmed = name.trim()
+
+  if (!trimmed) {
+    return "Name is required"
+  }
+
+  if (trimmed.length < 2) {
+    return "Name must be at least 2 characters"
+  }
+
+  if (trimmed.length > 50) {
+    return "Name must not exceed 50 characters"
+  }
+
+  if (!/^[a-zA-Z\s]+$/.test(trimmed)) {
+    return "Name can only contain letters and spaces"
+  }
+
+  return null
+}
+
+export function validateSupportMessage(message: string): string | null {
+  if (!message) {
+    return null // Message is optional
+  }
+
+  const trimmed = message.trim()
+
+  if (trimmed.length > 500) {
+    return "Message must not exceed 500 characters"
+  }
+
+  return null
+}
+
 export function validateProfileForm(formData: {
   displayName: string
   username: string

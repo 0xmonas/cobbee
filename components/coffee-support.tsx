@@ -15,6 +15,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { validateSupporterName, validateSupportMessage } from "@/lib/utils/validation"
 
 interface CoffeeSupportProps {
   creator: Creator
@@ -33,6 +34,8 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
   const [copiedSupporterWallet, setCopiedSupporterWallet] = useState(false)
   const [txnHash, setTxnHash] = useState("")
   const [supporterWallet, setSupporterWallet] = useState("")
+  const [nameError, setNameError] = useState<string | null>(null)
+  const [messageError, setMessageError] = useState<string | null>(null)
 
   const presetAmounts = [1, 3, 5]
   const isCustom = !presetAmounts.includes(coffeeCount)
@@ -42,7 +45,19 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setPurchaseStep("connect-wallet")
+
+    // Validate supporter name
+    const nameValidationError = validateSupporterName(supporterName)
+    setNameError(nameValidationError)
+
+    // Validate message (if provided)
+    const messageValidationError = validateSupportMessage(message)
+    setMessageError(messageValidationError)
+
+    // Only proceed if no errors
+    if (!nameValidationError && !messageValidationError) {
+      setPurchaseStep("connect-wallet")
+    }
   }
 
   const handleConnectWallet = () => {
@@ -148,6 +163,22 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
               </div>
             </a>
           )}
+
+          {/* Share on X Button */}
+          <Button
+            onClick={() => {
+              const coffeeAmount = isCustom ? Math.floor(totalAmount / creator.coffeePrice) : coffeeCount
+              const text = `I just sent ${creator.displayName} ${coffeeAmount} coffee${coffeeAmount > 1 ? 's' : ''} on Cobbee! ☕ Check out their profile! @cobbeefun`
+              const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(`https://cobbee.fun/${creator.username}`)}`
+              window.open(url, '_blank', 'width=550,height=420')
+            }}
+            className="w-full bg-black hover:bg-gray-800 text-white font-bold text-lg py-6 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all mb-3"
+          >
+            <svg viewBox="0 0 24 24" className="w-5 h-5 mr-2" fill="currentColor">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+            </svg>
+            Share on X
+          </Button>
 
           <Button
             onClick={handleDone}
@@ -458,11 +489,28 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
             <Input
               type="text"
               value={supporterName}
-              onChange={(e) => setSupporterName(e.target.value)}
+              onChange={(e) => {
+                setSupporterName(e.target.value)
+                // Clear error on change
+                if (nameError) {
+                  const error = validateSupporterName(e.target.value)
+                  setNameError(error)
+                }
+              }}
+              onBlur={() => {
+                // Validate on blur
+                const error = validateSupporterName(supporterName)
+                setNameError(error)
+              }}
               placeholder="Enter your name"
               required
               className="text-xl font-bold border-4 border-black rounded-xl h-14 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
             />
+            {nameError && (
+              <p className="text-sm font-bold text-white bg-red-600 border-2 border-black rounded-lg px-3 py-2 mt-2">
+                {nameError}
+              </p>
+            )}
           </div>
 
           {/* Message */}
@@ -470,11 +518,29 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
             <label className="text-xl font-black mb-3 block">Message (optional)</label>
             <Textarea
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={(e) => {
+                setMessage(e.target.value)
+                // Clear error on change
+                if (messageError) {
+                  const error = validateSupportMessage(e.target.value)
+                  setMessageError(error)
+                }
+              }}
+              onBlur={() => {
+                // Validate on blur
+                const error = validateSupportMessage(message)
+                setMessageError(error)
+              }}
               placeholder="Say something nice..."
               rows={4}
               className="text-lg font-bold border-4 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] resize-none"
             />
+            <p className="text-sm text-gray-600 font-bold mt-2">{message.length} / 500 characters</p>
+            {messageError && (
+              <p className="text-sm font-bold text-white bg-red-600 border-2 border-black rounded-lg px-3 py-2 mt-2">
+                {messageError}
+              </p>
+            )}
 
             {/* Private Message Toggle */}
             {message && (

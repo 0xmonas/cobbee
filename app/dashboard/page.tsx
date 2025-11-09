@@ -1,14 +1,18 @@
+"use client"
+
+import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { mockCreators, mockSupports } from "@/lib/mock-data"
-import { Coffee, TrendingUp, Users, ExternalLink, Settings } from "lucide-react"
+import { Coffee, TrendingUp, Users, ExternalLink, Settings, Copy, Check } from "lucide-react"
 import { UserMenu } from "@/components/user-menu"
 import { NotificationsMenu } from "@/components/notifications-menu"
 import { SimpleFooter } from "@/components/simple-footer"
 import { Logo } from "@/components/logo"
 
 export default function DashboardPage() {
+  const [copiedLink, setCopiedLink] = useState(false)
   // For demo purposes, we'll use the first creator as the logged-in user
   const currentCreator = mockCreators[0]
   const supports = mockSupports[currentCreator.id] || []
@@ -16,6 +20,24 @@ export default function DashboardPage() {
   const totalEarnings = supports.reduce((sum, support) => sum + support.amount, 0)
   const totalCoffees = supports.reduce((sum, support) => sum + support.coffeeCount, 0)
   const recentSupports = supports.slice(0, 5)
+
+  const profileUrl = `https://cobbee.fun/${currentCreator.username}`
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(profileUrl)
+      setCopiedLink(true)
+      setTimeout(() => setCopiedLink(false), 2000)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
+  }
+
+  const handleShareOnX = () => {
+    const text = `Support me on Cobbee! ☕ @cobbeefun`
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(profileUrl)}`
+    window.open(url, '_blank', 'width=550,height=420')
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -206,8 +228,38 @@ export default function DashboardPage() {
                 <div className="bg-white border-4 border-black rounded-xl p-3 mb-4">
                   <p className="text-sm font-bold truncate">cobbee.fun/{currentCreator.username}</p>
                 </div>
-                <Button className="w-full bg-[#CCFF00] hover:bg-[#B8E600] text-black font-bold text-lg py-6 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                  Copy Link
+
+                {/* Copy Link Button */}
+                <Button
+                  onClick={handleCopyLink}
+                  className="w-full bg-[#CCFF00] hover:bg-[#B8E600] text-black font-bold text-lg py-6 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all mb-3"
+                >
+                  {copiedLink ? (
+                    <>
+                      <Check className="w-5 h-5 mr-2" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-5 h-5 mr-2" />
+                      Copy Link
+                    </>
+                  )}
+                </Button>
+
+                {/* Share on X Button */}
+                <Button
+                  onClick={handleShareOnX}
+                  className="w-full bg-black hover:bg-gray-800 text-white font-bold text-lg py-6 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="w-5 h-5 mr-2"
+                    fill="currentColor"
+                  >
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                  Share on X
                 </Button>
               </div>
 

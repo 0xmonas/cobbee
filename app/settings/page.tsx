@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { ArrowLeft, MailIcon, Trash2, AlertTriangle, CheckCircle2, XCircle } from "lucide-react"
+import { validateEmail } from "@/lib/utils/validation"
 
 export default function SettingsPage() {
   const [newEmail, setNewEmail] = useState("sarah@example.com")
@@ -23,10 +24,19 @@ export default function SettingsPage() {
   const [showEmailOTP, setShowEmailOTP] = useState(false)
   const [emailOtp, setEmailOtp] = useState(["", "", "", "", "", ""])
   const [emailOtpStatus, setEmailOtpStatus] = useState<"idle" | "success" | "error">("idle")
+  const [emailError, setEmailError] = useState<string | null>(null)
 
   const handleEmailChange = (e: React.FormEvent) => {
     e.preventDefault()
-    setShowEmailOTP(true)
+
+    // Validate email
+    const error = validateEmail(newEmail)
+    setEmailError(error)
+
+    // Only proceed if no error
+    if (!error) {
+      setShowEmailOTP(true)
+    }
   }
 
   const handleEmailOtpChange = (index: number, value: string) => {
@@ -100,11 +110,28 @@ export default function SettingsPage() {
                       id="newEmail"
                       type="email"
                       value={newEmail}
-                      onChange={(e) => setNewEmail(e.target.value)}
+                      onChange={(e) => {
+                        setNewEmail(e.target.value)
+                        // Clear error on change
+                        if (emailError) {
+                          const error = validateEmail(e.target.value)
+                          setEmailError(error)
+                        }
+                      }}
+                      onBlur={() => {
+                        // Validate on blur
+                        const error = validateEmail(newEmail)
+                        setEmailError(error)
+                      }}
                       className="border-4 border-black text-lg p-6 focus:ring-4 focus:ring-[#CCFF00]"
                       placeholder="your.email@example.com"
                       required
                     />
+                    {emailError && (
+                      <p className="text-sm font-bold text-white bg-red-600 border-2 border-black rounded-lg px-3 py-2">
+                        {emailError}
+                      </p>
+                    )}
                     <p className="text-sm text-gray-600 font-bold">
                       You will receive a verification code at your new address
                     </p>
