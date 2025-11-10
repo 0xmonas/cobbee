@@ -15,17 +15,17 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- ============================================================================
--- TABLE: users (CREATORS)
+-- TABLE: users (CREATORS) - SUPABASE AUTH COMPATIBLE
 -- ============================================================================
 -- Primary user table for creators
--- Auth: wallet (SIWE) OR email (OTP)
--- Both wallet and email are UNIQUE and IMMUTABLE
+-- Auth: wallet (SIWE) OR email (OTP) via Supabase Auth
+-- Linked to auth.users table
 CREATE TABLE public.users (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
 
-  -- Authentication (dual method: wallet OR email)
-  wallet_address TEXT UNIQUE NOT NULL,
-  email TEXT UNIQUE NOT NULL,
+  -- Authentication (ONE of these will be filled, not both required)
+  wallet_address TEXT UNIQUE,
+  email TEXT UNIQUE,
   email_verified BOOLEAN DEFAULT false,
 
   -- Profile Information
@@ -58,7 +58,8 @@ CREATE TABLE public.users (
   CONSTRAINT username_format CHECK (username ~* '^[a-z0-9_-]{3,30}$'),
   CONSTRAINT coffee_price_positive CHECK (coffee_price > 0 AND coffee_price <= 1000),
   CONSTRAINT bio_length CHECK (char_length(bio) <= 500),
-  CONSTRAINT email_format CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
+  CONSTRAINT email_format CHECK (email IS NULL OR email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+  CONSTRAINT auth_method CHECK (wallet_address IS NOT NULL OR email IS NOT NULL)
 );
 
 -- Indexes
@@ -67,9 +68,10 @@ CREATE INDEX idx_users_email ON public.users(email);
 CREATE INDEX idx_users_username ON public.users(username);
 CREATE INDEX idx_users_is_active ON public.users(is_active);
 
-COMMENT ON TABLE public.users IS 'Creator accounts with dual auth: wallet (SIWE) or email (OTP)';
-COMMENT ON COLUMN public.users.wallet_address IS 'Immutable - cannot be changed after registration';
-COMMENT ON COLUMN public.users.email IS 'Immutable - cannot be changed after registration';
+COMMENT ON TABLE public.users IS 'Creator accounts linked to auth.users. Auth via Supabase: wallet (SIWE) or email (OTP)';
+COMMENT ON COLUMN public.users.id IS 'References auth.users(id) - managed by Supabase Auth';
+COMMENT ON COLUMN public.users.wallet_address IS 'Nullable - filled for Web3 auth users';
+COMMENT ON COLUMN public.users.email IS 'Nullable - filled for email auth users';
 
 -- ============================================================================
 -- TABLE: email_verification_tokens
@@ -277,36 +279,24 @@ CREATE POLICY "Active creator profiles are public"
   USING (is_active = true);
 
 -- Users can insert their own profile (signup)
--- Note: Wallet and email uniqueness enforced by DB constraints
+-- Note: ID must match auth.users(id) created by Supabase Auth
 CREATE POLICY "Users can create their own profile"
   ON public.users
   FOR INSERT
-  WITH CHECK (
-    wallet_address = current_setting('request.jwt.claim.wallet_address', true)
-    OR email = current_setting('request.jwt.claim.email', true)
-  );
+  WITH CHECK (auth.uid() = id);
 
--- Users can update only their own profile (except wallet & email)
+-- Users can update only their own profile
 CREATE POLICY "Users can update their own profile"
   ON public.users
   FOR UPDATE
-  USING (
-    wallet_address = current_setting('request.jwt.claim.wallet_address', true)
-    OR email = current_setting('request.jwt.claim.email', true)
-  )
-  WITH CHECK (
-    wallet_address = current_setting('request.jwt.claim.wallet_address', true)
-    OR email = current_setting('request.jwt.claim.email', true)
-  );
+  USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
 
 -- Users can delete their own profile
 CREATE POLICY "Users can delete their own profile"
   ON public.users
   FOR DELETE
-  USING (
-    wallet_address = current_setting('request.jwt.claim.wallet_address', true)
-    OR email = current_setting('request.jwt.claim.email', true)
-  );
+  USING (auth.uid() = id);
 
 -- ============================================================================
 -- EMAIL_VERIFICATION_TOKENS POLICIES
@@ -347,8 +337,7 @@ CREATE POLICY "Creators can view all their supports"
   USING (
     creator_id IN (
       SELECT id FROM public.users
-      WHERE wallet_address = current_setting('request.jwt.claim.wallet_address', true)
-         OR email = current_setting('request.jwt.claim.email', true)
+      WHERE id = auth.uid()
     )
   );
 
@@ -365,8 +354,7 @@ CREATE POLICY "Creators can moderate their supports"
   USING (
     creator_id IN (
       SELECT id FROM public.users
-      WHERE wallet_address = current_setting('request.jwt.claim.wallet_address', true)
-         OR email = current_setting('request.jwt.claim.email', true)
+      WHERE id = auth.uid()
     )
   );
 
@@ -377,8 +365,7 @@ CREATE POLICY "Creators can delete their supports"
   USING (
     creator_id IN (
       SELECT id FROM public.users
-      WHERE wallet_address = current_setting('request.jwt.claim.wallet_address', true)
-         OR email = current_setting('request.jwt.claim.email', true)
+      WHERE id = auth.uid()
     )
   );
 

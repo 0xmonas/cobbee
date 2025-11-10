@@ -2,20 +2,29 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Wallet, CheckCircle2, XCircle } from "lucide-react"
-import { setCurrentUser } from "@/lib/auth-utils"
-import { mockCreators } from "@/lib/mock-data"
 import { Logo } from "@/components/logo"
+import { useAppKit } from '@reown/appkit/react'
+import { useAppKitAccount } from '@reown/appkit/react'
+import { useDisconnect } from '@reown/appkit/react'
+import { createClient } from '@/lib/supabase/client'
+import { useEmailOTP } from '@/hooks/use-email-otp'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { open } = useAppKit()
+  const { address, isConnected } = useAppKitAccount()
+  const { disconnect } = useDisconnect()
+  const supabase = createClient()
+  const { sendOTPForLogin, verifyOTP, isSending, isVerifying } = useEmailOTP()
+
   const [loginMethod, setLoginMethod] = useState<"wallet" | "email">("wallet")
-  const [walletStep, setWalletStep] = useState<"connect" | "sign">("connect")
+  const [walletStep, setWalletStep] = useState<"connect" | "sign" | "not-registered">("connect")
   const [isConnecting, setIsConnecting] = useState(false)
   const [isSigning, setIsSigning] = useState(false)
   const [walletAddress, setWalletAddress] = useState("")
@@ -24,13 +33,135 @@ export default function LoginPage() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""])
   const [otpStatus, setOtpStatus] = useState<"idle" | "success" | "error">("idle")
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  // Watch for wallet connection and check if user is registered
+  useEffect(() => {
+    const checkUserRegistration = async () => {
+      if (isConnected && address && walletStep === "connect") {
+        setWalletAddress(address)
+
+        // Check if user exists in public.users BEFORE allowing sign
+        const { data: existingUser, error } = await supabase
+          .from('users')
+          .select('id, username')
+          .eq('wallet_address', address.toLowerCase())
+          .single()
+
+        if (error || !existingUser) {
+          // ❌ User NOT registered - show not-registered screen
+          console.log('User not registered:', error)
+          setWalletStep("not-registered")
+        } else {
+          // ✅ User registered - go to sign step
+          console.log('User registered:', existingUser)
+          setWalletStep("sign")
+        }
+      }
+    }
+
+    checkUserRegistration()
+  }, [isConnected, address, walletStep, supabase])
+
+  const handleConnectWallet = async () => {
+    setIsConnecting(true)
+    try {
+      await open()
+    } catch (error) {
+      console.error('Wallet connection error:', error)
+    } finally {
+      setIsConnecting(false)
+    }
+  }
+
+  const handleSignMessage = async () => {
+    if (!address) {
+      console.error('Wallet not connected')
+      return
+    }
+
+    setIsSigning(true)
+    try {
+      // Check blacklist BEFORE Supabase auth
+      const { data: isBlacklisted, error: blacklistError } = await supabase.rpc('is_wallet_blacklisted', {
+        p_wallet_address: address.toLowerCase()
+      })
+
+      if (blacklistError) {
+        console.error('Blacklist check error:', blacklistError)
+        alert('Unable to verify wallet status. Please try again.')
+        return
+      }
+
+      if (isBlacklisted) {
+        alert('This wallet is banned from the platform.')
+        return
+      }
+
+      // Supabase SIWE Authentication
+      const { data, error } = await supabase.auth.signInWithWeb3({
+        chain: 'ethereum',
+        statement: 'Welcome back to Cobbee! Sign this message to verify your wallet ownership and log in to your account. This will not trigger any blockchain transaction or cost any gas fees.',
+      })
+
+      if (error) {
+        console.error('Supabase SIWE error:', error)
+        alert('Sign-in failed. Please try again.')
+        return
+      }
+
+      console.log('Sign-in successful:', data)
+
+      // ✅ User already verified as registered (checked on wallet connect)
+      // Redirect to dashboard
+      if (data.session) {
+        router.push('/dashboard')
+      }
+    } catch (error) {
+      console.error('Sign message error:', error)
+      alert('An unexpected error occurred. Please try again.')
+    } finally {
+      setIsSigning(false)
+    }
+  }
+
+  const handleDisconnectWallet = async () => {
+    try {
+      await supabase.auth.signOut()
+      await disconnect()
+      setWalletAddress("")
+      setWalletStep("connect")
+      console.log('Disconnected')
+    } catch (error) {
+      console.error('Disconnect error:', error)
+    }
+  }
+
+  const handleUseDifferentWallet = async () => {
+    await handleDisconnectWallet()
+    setTimeout(() => {
+      open()
+    }, 100)
+  }
+
+  // Email Login
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Send OTP to email
+    const { success, error: otpError } = await sendOTPForLogin(email)
+
+    if (!success) {
+      console.error('Failed to send OTP:', otpError)
+      alert(`Failed to send login code: ${otpError}`)
+      return
+    }
+
     setShowOTP(true)
   }
 
   const handleOtpChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return
     if (value.length > 1) return
+
     const newOtp = [...otp]
     newOtp[index] = value
     setOtp(newOtp)
@@ -41,38 +172,85 @@ export default function LoginPage() {
     }
   }
 
-  const handleVerifyOTP = () => {
-    const otpValue = otp.join("")
-    if (otpValue === "123456") {
-      setOtpStatus("success")
-      setTimeout(() => {
-        setCurrentUser({ id: mockCreators[0].id, username: mockCreators[0].username })
-        router.push("/dashboard")
-      }, 2000)
-    } else {
-      setOtpStatus("error")
-      setTimeout(() => setOtpStatus("idle"), 3000)
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      const prevInput = document.getElementById(`otp-${index - 1}`)
+      prevInput?.focus()
     }
   }
 
-  const handleConnectWallet = async () => {
-    setIsConnecting(true)
-    // TODO: Implement actual wallet connection
+  const handleVerifyOTP = async () => {
+    const otpValue = otp.join("")
+
+    if (otpValue.length !== 6) {
+      setOtpStatus("error")
+      setTimeout(() => setOtpStatus("idle"), 3000)
+      return
+    }
+
+    const { success, error: verifyError } = await verifyOTP(email, otpValue, 'login')
+
+    if (!success) {
+      console.error('OTP verification failed:', verifyError)
+      setOtpStatus("error")
+      setTimeout(() => setOtpStatus("idle"), 3000)
+      return
+    }
+
+    setOtpStatus("success")
+
     setTimeout(() => {
-      setWalletAddress("0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb")
-      setIsConnecting(false)
-      setWalletStep("sign")
-    }, 1500)
+      router.push("/dashboard")
+    }, 2000)
   }
 
-  const handleSignMessage = async () => {
-    setIsSigning(true)
-    // TODO: Implement actual message signing
-    setTimeout(() => {
-      setIsSigning(false)
-      setCurrentUser({ id: mockCreators[0].id, username: mockCreators[0].username })
-      router.push("/dashboard")
-    }, 1500)
+  // Not Registered Screen (wallet exists but no profile in public.users)
+  if (loginMethod === "wallet" && walletStep === "not-registered") {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <Link href="/" className="flex items-center justify-center gap-3 mb-12">
+            <Logo size="lg" className="w-16 h-16" />
+            <span className="text-4xl font-black">Cobbee</span>
+          </Link>
+
+          <div className="bg-[#FF6B35] border-4 border-black rounded-3xl p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+            <h1 className="text-4xl font-black text-white mb-2">Account Not Found</h1>
+            <p className="text-lg font-bold text-white mb-8">
+              This wallet is not registered. Please create an account first.
+            </p>
+
+            <div className="space-y-6">
+              <div className="bg-white border-4 border-black rounded-2xl p-6">
+                <p className="text-sm font-bold text-gray-600 mb-2">Connected Wallet</p>
+                <p className="text-base font-black font-mono break-all">{walletAddress}</p>
+              </div>
+
+              <Link href="/signup">
+                <Button className="w-full bg-[#CCFF00] hover:bg-[#B8E600] text-black font-black text-xl py-7 rounded-xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all">
+                  Create Account
+                </Button>
+              </Link>
+
+              <div className="flex gap-4 mt-6">
+                <button
+                  onClick={handleUseDifferentWallet}
+                  className="flex-1 text-center text-white font-bold hover:underline"
+                >
+                  Use different wallet
+                </button>
+                <button
+                  onClick={handleDisconnectWallet}
+                  className="flex-1 text-center text-white font-bold hover:underline"
+                >
+                  Disconnect & Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   // Wallet Sign Message Screen
@@ -100,7 +278,7 @@ export default function LoginPage() {
               <div className="bg-white border-4 border-black rounded-2xl p-6">
                 <p className="text-sm font-bold text-gray-600 mb-3">Message to sign:</p>
                 <p className="text-base font-bold leading-relaxed">
-                  Welcome to Cobbee!
+                  Welcome back to Cobbee!
                   <br />
                   <br />
                   Sign this message to verify your wallet ownership and log in to your account.
@@ -118,15 +296,20 @@ export default function LoginPage() {
                 {isSigning ? "Signing..." : "Sign Message"}
               </Button>
 
-              <button
-                onClick={() => {
-                  setWalletStep("connect")
-                  setWalletAddress("")
-                }}
-                className="w-full text-center text-white font-bold hover:underline"
-              >
-                Use different wallet
-              </button>
+              <div className="flex gap-4">
+                <button
+                  onClick={handleUseDifferentWallet}
+                  className="flex-1 text-center text-white font-bold hover:underline"
+                >
+                  Use different wallet
+                </button>
+                <button
+                  onClick={handleDisconnectWallet}
+                  className="flex-1 text-center text-white font-bold hover:underline"
+                >
+                  Disconnect & Cancel
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -157,9 +340,11 @@ export default function LoginPage() {
                       key={index}
                       id={`otp-${index}`}
                       type="text"
+                      inputMode="numeric"
                       maxLength={1}
                       value={digit}
                       onChange={(e) => handleOtpChange(index, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
                       className="w-14 h-14 text-center text-2xl font-black border-4 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white"
                     />
                   ))}

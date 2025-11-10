@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -10,9 +10,20 @@ import { Input } from "@/components/ui/input"
 import { CheckCircle2, XCircle, Wallet } from "lucide-react"
 import { Logo } from "@/components/logo"
 import { validateFullName, validateUsername, validateEmail, validateOTP } from "@/lib/utils/validation"
+import { useAppKit } from '@reown/appkit/react'
+import { useAppKitAccount } from '@reown/appkit/react'
+import { useDisconnect } from '@reown/appkit/react'
+import { createClient } from '@/lib/supabase/client'
+import { useEmailOTP } from '@/hooks/use-email-otp'
 
 export default function SignupPage() {
   const router = useRouter()
+  const { open } = useAppKit()
+  const { address, isConnected } = useAppKitAccount()
+  const { disconnect } = useDisconnect()
+  const supabase = createClient()
+  const { sendOTPForSignup, verifyOTP, markEmailVerified, isSending, isVerifying } = useEmailOTP()
+
   const [signupStep, setSignupStep] = useState<"wallet" | "sign" | "details" | "otp">("wallet")
   const [isConnecting, setIsConnecting] = useState(false)
   const [isSigning, setIsSigning] = useState(false)
@@ -28,23 +39,158 @@ export default function SignupPage() {
     email?: string
   }>({})
 
+  // Watch for wallet connection
+  useEffect(() => {
+    if (isConnected && address && signupStep === "wallet") {
+      setWalletAddress(address)
+      setSignupStep("sign")
+    }
+  }, [isConnected, address, signupStep])
+
   const handleConnectWallet = async () => {
     setIsConnecting(true)
-    // TODO: Implement actual wallet connection
-    setTimeout(() => {
-      setWalletAddress("0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb")
+    try {
+      await open()
+    } catch (error) {
+      console.error('Wallet connection error:', error)
+    } finally {
       setIsConnecting(false)
-      setSignupStep("sign")
-    }, 1500)
+    }
   }
 
   const handleSignMessage = async () => {
+    if (!address) {
+      console.error('Wallet not connected')
+      return
+    }
+
     setIsSigning(true)
-    // TODO: Implement actual message signing
-    setTimeout(() => {
+    try {
+      // ✅ CRITICAL FIX #1: Check blacklist BEFORE Supabase auth
+      const { data: isBlacklisted, error: blacklistError } = await supabase.rpc('is_wallet_blacklisted', {
+        p_wallet_address: address.toLowerCase()
+      })
+
+      if (blacklistError) {
+        console.error('Blacklist check error:', blacklistError)
+        alert('Unable to verify wallet status. Please try again.')
+        return
+      }
+
+      if (isBlacklisted) {
+        alert('This wallet is banned from the platform.')
+        return
+      }
+
+      // Supabase SIWE Authentication - EIP-4361 Standard
+      // Nonce, timestamp, and signature verification handled by Supabase
+      const { data, error } = await supabase.auth.signInWithWeb3({
+        chain: 'ethereum',
+        statement: 'Welcome to Cobbee! Sign this message to create your account and verify your wallet ownership. This will not trigger any blockchain transaction or cost any gas fees.',
+      })
+
+      if (error) {
+        console.error('Supabase SIWE error:', error)
+
+        // Handle duplicate signup (user already exists)
+        if (error.message.includes('already exists') || error.message.includes('already registered')) {
+          // Try to get existing user session
+          const { data: { user } } = await supabase.auth.getUser()
+
+          if (user) {
+            // Check if profile is complete
+            const { data: profile } = await supabase
+              .from('users')
+              .select('username, display_name')
+              .eq('id', user.id)
+              .single()
+
+            if (profile?.username) {
+              // Profile complete, redirect to dashboard
+              router.push('/dashboard')
+              return
+            } else {
+              // Profile incomplete, continue to details
+              setWalletAddress(address)
+              setSignupStep("details")
+              return
+            }
+          }
+        }
+
+        alert('Sign-in failed. Please try again.')
+        return
+      }
+
+      console.log('Sign-in successful:', data)
+
+      // ✅ CRITICAL FIX #2: Check profile completeness
+      if (data.session) {
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (user) {
+          // Check if public.users profile exists and is complete
+          const { data: profile, error: profileError } = await supabase
+            .from('users')
+            .select('username, display_name')
+            .eq('id', user.id)
+            .single()
+
+          if (profileError && profileError.code !== 'PGRST116') {
+            // PGRST116 = row not found (which is expected for new users)
+            console.error('Profile check error:', profileError)
+          }
+
+          if (profile && profile.username) {
+            // ✅ Profile complete - redirect to dashboard
+            router.push('/dashboard')
+          } else {
+            // ❌ Profile incomplete or doesn't exist - go to details step
+            setWalletAddress(address)
+            setSignupStep("details")
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Sign message error:', error)
+      alert('An unexpected error occurred. Please try again.')
+    } finally {
       setIsSigning(false)
-      setSignupStep("details")
-    }, 1500)
+    }
+  }
+
+  const handleDisconnectWallet = async () => {
+    try {
+      // 1. Sign out from Supabase (clear session)
+      await supabase.auth.signOut()
+
+      // 2. Disconnect wallet
+      await disconnect()
+
+      // 3. Clear all form state
+      setWalletAddress("")
+      setName("")
+      setUsername("")
+      setEmail("")
+      setOtp(["", "", "", "", "", ""])
+      setFormErrors({})
+
+      // 4. Reset to wallet step
+      setSignupStep("wallet")
+
+      console.log('Disconnected and cleared all state')
+    } catch (error) {
+      console.error('Disconnect error:', error)
+    }
+  }
+
+  const handleUseDifferentWallet = async () => {
+    // Disconnect and reopen modal for new connection
+    await handleDisconnectWallet()
+    // Reopen modal after disconnect
+    setTimeout(() => {
+      open()
+    }, 100)
   }
 
   const validateField = (field: "name" | "username" | "email", value: string) => {
@@ -76,7 +222,7 @@ export default function SignupPage() {
     setFormErrors(errors)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     const errors: { name?: string; username?: string; email?: string } = {}
@@ -93,7 +239,97 @@ export default function SignupPage() {
     setFormErrors(errors)
 
     if (Object.keys(errors).length === 0) {
-      setSignupStep("otp")
+      // ✅ CRITICAL FIX #6: Insert into public.users (Web3 auth flow)
+      try {
+        // Get current authenticated user
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+
+        if (userError || !user) {
+          console.error('No authenticated user:', userError)
+          alert('Authentication error. Please try signing in again.')
+          setSignupStep("wallet")
+          return
+        }
+
+        // Extract wallet address from user metadata
+        const walletAddressFromAuth = user.user_metadata?.custom_claims?.address?.toLowerCase()
+
+        if (!walletAddressFromAuth) {
+          console.error('Wallet address not found in user metadata')
+          alert('Wallet address not found. Please try signing in again.')
+          setSignupStep("wallet")
+          return
+        }
+
+        // ✅ STEP 1: If email provided, add it to auth.users FIRST (sends OTP)
+        // This must happen BEFORE inserting into public.users to avoid conflicts
+        if (email) {
+          console.log('Sending OTP to email:', email)
+          const { success, error: otpError } = await sendOTPForSignup(email)
+
+          if (!success) {
+            console.error('Failed to send OTP:', otpError)
+
+            // Check if email already in use by another account
+            if (otpError?.includes('already') || otpError?.includes('exists')) {
+              setFormErrors({ email: 'This email is already in use by another account' })
+              return
+            }
+
+            // Other OTP errors - allow user to continue without email verification
+            alert(`Failed to send verification code: ${otpError}. You can verify your email later from settings.`)
+            // Continue to profile creation without email
+          } else {
+            console.log('OTP sent successfully to:', email)
+          }
+        }
+
+        // ✅ STEP 2: Insert into public.users (after email is in auth.users if provided)
+        const { error: insertError } = await supabase.from('users').insert({
+          id: user.id, // ✅ Must match auth.users.id
+          wallet_address: walletAddressFromAuth,
+          email: email || null, // Optional email for notifications (now synced with auth.users)
+          username: username.toLowerCase(),
+          display_name: name,
+          bio: null,
+          coffee_price: 5.00,
+          is_active: true,
+          email_verified: false
+        })
+
+        if (insertError) {
+          console.error('Profile creation error:', insertError)
+
+          // Handle unique constraint violations
+          if (insertError.code === '23505') {
+            if (insertError.message.includes('username')) {
+              setFormErrors({ username: 'Username already taken' })
+            } else if (insertError.message.includes('wallet_address')) {
+              // Profile already exists - redirect to dashboard
+              router.push('/dashboard')
+            } else {
+              alert('This account already exists.')
+            }
+          } else {
+            alert('Failed to create profile. Please try again.')
+          }
+          return
+        }
+
+        // ✅ Success - Profile created
+        console.log('Profile created successfully')
+
+        // ✅ STEP 3: If email was added, go to OTP verification
+        if (email) {
+          setSignupStep("otp")
+        } else {
+          // No email, redirect directly to dashboard
+          router.push('/dashboard')
+        }
+      } catch (error) {
+        console.error('Unexpected error during profile creation:', error)
+        alert('An unexpected error occurred. Please try again.')
+      }
     }
   }
 
@@ -118,9 +354,10 @@ export default function SignupPage() {
     }
   }
 
-  const handleVerifyOTP = () => {
+  const handleVerifyOTP = async () => {
     const otpValue = otp.join("")
 
+    // Validate OTP format
     const otpError = validateOTP(otpValue)
     if (otpError) {
       setOtpStatus("error")
@@ -128,15 +365,28 @@ export default function SignupPage() {
       return
     }
 
-    if (otpValue === "123456") {
-      setOtpStatus("success")
-      setTimeout(() => {
-        router.push("/dashboard")
-      }, 2000)
-    } else {
+    // Verify OTP with Supabase
+    const { success, error: verifyError, session } = await verifyOTP(email, otpValue, 'signup')
+
+    if (!success) {
+      console.error('OTP verification failed:', verifyError)
       setOtpStatus("error")
       setTimeout(() => setOtpStatus("idle"), 3000)
+      return
     }
+
+    // OTP verified successfully
+    setOtpStatus("success")
+
+    // Mark email as verified in public.users
+    if (session?.user?.id) {
+      await markEmailVerified(session.user.id)
+    }
+
+    // Redirect to dashboard after 2 seconds
+    setTimeout(() => {
+      router.push("/dashboard")
+    }, 2000)
   }
 
   // Connect Wallet Step
@@ -235,15 +485,20 @@ export default function SignupPage() {
                 {isSigning ? "Signing..." : "Sign Message"}
               </Button>
 
-              <button
-                onClick={() => {
-                  setSignupStep("wallet")
-                  setWalletAddress("")
-                }}
-                className="w-full text-center text-white font-bold hover:underline"
-              >
-                Use different wallet
-              </button>
+              <div className="flex gap-4">
+                <button
+                  onClick={handleUseDifferentWallet}
+                  className="flex-1 text-center text-white font-bold hover:underline"
+                >
+                  Use different wallet
+                </button>
+                <button
+                  onClick={handleDisconnectWallet}
+                  className="flex-1 text-center text-white font-bold hover:underline"
+                >
+                  Disconnect & Cancel
+                </button>
+              </div>
 
               <div className="mt-6 text-center">
                 <p className="text-sm font-bold text-white">
