@@ -5,7 +5,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Coffee, MessageCircle, Pencil, Trash2, Eye, EyeOff, Lock } from "lucide-react"
-import type { Support } from "@/lib/mock-data"
+import type { Database } from "@/lib/types/database.types"
+
+type Support = Database['public']['Tables']['supports']['Row']
 
 interface RecentSupportersProps {
   supports: Support[]
@@ -27,7 +29,7 @@ export function RecentSupporters({
   const [replyText, setReplyText] = useState("")
   const [replies, setReplies] = useState<Record<string, string>>({})
   const [hiddenMessages, setHiddenMessages] = useState<Record<string, boolean>>(
-    supports.reduce((acc, support) => ({ ...acc, [support.id]: support.isHidden || false }), {})
+    supports.reduce((acc, support) => ({ ...acc, [support.id]: support.is_hidden_by_creator || false }), {})
   )
 
   const handleReplySubmit = (supportId: string) => {
@@ -69,7 +71,7 @@ export function RecentSupporters({
   // Filter out hidden messages if not own profile
   const visibleSupports = isOwnProfile
     ? supports
-    : supports.filter(support => !hiddenMessages[support.id] && !support.isPrivate)
+    : supports.filter(support => !hiddenMessages[support.id] && !support.is_message_private)
 
   if (supports.length === 0) {
     return (
@@ -88,21 +90,21 @@ export function RecentSupporters({
           <div key={support.id} className={`border-4 border-black rounded-2xl p-6 ${hiddenMessages[support.id] ? 'bg-gray-100 opacity-60' : 'bg-gray-50'} relative`}>
             <div className="flex items-start gap-4 mb-4">
               <Avatar className="w-14 h-14 border-4 border-black">
-                <AvatarImage src={support.supporterAvatar || "/placeholder.svg"} alt={support.supporterName} />
+                <AvatarImage src={support.supporter_avatar_url || "/placeholder.svg"} alt={support.supporter_name} />
                 <AvatarFallback className="text-lg font-black bg-[#0000FF] text-white">
-                  {support.supporterName.charAt(0)}
+                  {support.supporter_name.charAt(0)}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2 flex-wrap">
-                  <span className="text-xl font-black">{support.supporterName}</span>
+                  <span className="text-xl font-black">{support.supporter_name}</span>
                   <div className="flex items-center gap-1 bg-[#CCFF00] border-2 border-black rounded-full px-3 py-1">
                     <Coffee className="w-4 h-4" />
-                    <span className="text-sm font-black">×{support.coffeeCount}</span>
+                    <span className="text-sm font-black">×{support.coffee_count}</span>
                   </div>
 
                   {/* Private Badge */}
-                  {support.isPrivate && (
+                  {support.is_message_private && (
                     <div className="bg-[#0000FF] text-white px-3 py-1 rounded-full border-2 border-black text-xs font-black flex items-center gap-1">
                       <Lock className="w-3 h-3" />
                       PRIVATE
@@ -118,12 +120,18 @@ export function RecentSupporters({
                   )}
                 </div>
                 {support.message && <p className="text-lg font-bold mb-2 leading-relaxed">{support.message}</p>}
-                <p className="text-sm font-bold text-gray-600">{support.timestamp}</p>
+                <p className="text-sm font-bold text-gray-600">
+                  {support.created_at ? new Date(support.created_at).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  }) : ''}
+                </p>
               </div>
               <div className="text-right">
                 {/* Only show amount to creator */}
                 {isOwnProfile && (
-                  <p className="text-2xl font-black">${support.amount}</p>
+                  <p className="text-2xl font-black">${Number(support.total_amount).toFixed(2)}</p>
                 )}
               </div>
             </div>

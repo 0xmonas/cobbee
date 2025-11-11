@@ -342,42 +342,11 @@ export type Database = {
           id: string | null
           instagram_handle: string | null
           opensea_handle: string | null
+          supporter_count: number | null
           tiktok_handle: string | null
           twitter_handle: string | null
           username: string | null
           wallet_address: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          bio?: string | null
-          coffee_price?: number | null
-          cover_image_url?: string | null
-          created_at?: string | null
-          display_name?: string | null
-          github_handle?: string | null
-          id?: string | null
-          instagram_handle?: string | null
-          opensea_handle?: string | null
-          tiktok_handle?: string | null
-          twitter_handle?: string | null
-          username?: string | null
-          wallet_address?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          bio?: string | null
-          coffee_price?: number | null
-          cover_image_url?: string | null
-          created_at?: string | null
-          display_name?: string | null
-          github_handle?: string | null
-          id?: string | null
-          instagram_handle?: string | null
-          opensea_handle?: string | null
-          tiktok_handle?: string | null
-          twitter_handle?: string | null
-          username?: string | null
-          wallet_address?: string | null
         }
         Relationships: []
       }

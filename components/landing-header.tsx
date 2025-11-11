@@ -3,8 +3,16 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Logo } from "@/components/logo"
+import { UserMenu } from "@/components/user-menu"
+import type { Database } from "@/lib/types/database.types"
 
-export function LandingHeader() {
+type User = Database['public']['Tables']['users']['Row']
+
+interface LandingHeaderProps {
+  user: User | null
+}
+
+export function LandingHeader({ user }: LandingHeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
@@ -79,16 +87,27 @@ export function LandingHeader() {
         </div>
 
         <div className="flex items-center gap-4 z-50">
-          <Link href="/login" className="font-bold transition-colors hover:underline text-sm cursor-pointer">
-            Log In
-          </Link>
+          {user ? (
+            <>
+              <Link href="/dashboard" className="font-bold transition-colors hover:underline text-sm cursor-pointer">
+                Dashboard
+              </Link>
+              <UserMenu />
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="font-bold transition-colors hover:underline text-sm cursor-pointer">
+                Log In
+              </Link>
 
-          <Link
-            href="/signup"
-            className="rounded-full font-black cursor-pointer hover:-translate-y-0.5 transition duration-200 inline-block text-center bg-[#CCFF00] text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] px-6 py-2 text-sm"
-          >
-            Sign Up
-          </Link>
+              <Link
+                href="/signup"
+                className="rounded-full font-black cursor-pointer hover:-translate-y-0.5 transition duration-200 inline-block text-center bg-[#CCFF00] text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] px-6 py-2 text-sm"
+              >
+                Sign Up
+              </Link>
+            </>
+          )}
         </div>
       </header>
 
@@ -158,18 +177,37 @@ export function LandingHeader() {
                 Discover
               </Link>
               <div className="border-t-4 border-black pt-4 mt-4 flex flex-col space-y-3">
-                <Link
-                  href="/login"
-                  className="px-4 py-3 text-lg font-bold hover:bg-gray-100 transition-colors rounded-2xl border-2 border-transparent hover:border-black cursor-pointer"
-                >
-                  Log In
-                </Link>
-                <Link
-                  href="/signup"
-                  className="px-4 py-3 text-lg font-bold text-center bg-[#CCFF00] rounded-2xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all"
-                >
-                  Sign Up
-                </Link>
+                {user ? (
+                  <>
+                    <Link
+                      href="/dashboard"
+                      className="px-4 py-3 text-lg font-bold hover:bg-gray-100 transition-colors rounded-2xl border-2 border-transparent hover:border-black cursor-pointer"
+                    >
+                      Dashboard
+                    </Link>
+                    <Link
+                      href={`/${user.username}`}
+                      className="px-4 py-3 text-lg font-bold hover:bg-gray-100 transition-colors rounded-2xl border-2 border-transparent hover:border-black cursor-pointer"
+                    >
+                      View Profile
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/login"
+                      className="px-4 py-3 text-lg font-bold hover:bg-gray-100 transition-colors rounded-2xl border-2 border-transparent hover:border-black cursor-pointer"
+                    >
+                      Log In
+                    </Link>
+                    <Link
+                      href="/signup"
+                      className="px-4 py-3 text-lg font-bold text-center bg-[#CCFF00] rounded-2xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all"
+                    >
+                      Sign Up
+                    </Link>
+                  </>
+                )}
               </div>
             </nav>
           </div>

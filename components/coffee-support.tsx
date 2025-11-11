@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Coffee, HelpCircle, Wallet, CheckCircle, XCircle, Copy, Check, ExternalLink } from "lucide-react"
-import type { Creator } from "@/lib/mock-data"
 import Image from "next/image"
 import {
   Tooltip,
@@ -16,9 +15,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { validateSupporterName, validateSupportMessage } from "@/lib/utils/validation"
+import type { Database } from "@/lib/types/database.types"
+
+type User = Database['public']['Tables']['users']['Row']
 
 interface CoffeeSupportProps {
-  creator: Creator
+  creator: User
 }
 
 type PurchaseStep = "form" | "connect-wallet" | "summary" | "processing" | "success" | "error"
@@ -40,8 +42,8 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
   const presetAmounts = [1, 3, 5]
   const isCustom = !presetAmounts.includes(coffeeCount)
   const totalAmount = isCustom
-    ? (Number.parseInt(customAmount) || 0) * creator.coffeePrice
-    : coffeeCount * creator.coffeePrice
+    ? (Number.parseInt(customAmount) || 0) * Number(creator.coffee_price)
+    : coffeeCount * Number(creator.coffee_price)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -93,8 +95,8 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
   }
 
   const handleCopyWallet = () => {
-    if (creator.walletAddress) {
-      navigator.clipboard.writeText(creator.walletAddress)
+    if (creator.wallet_address) {
+      navigator.clipboard.writeText(creator.wallet_address)
       setCopiedWallet(true)
       setTimeout(() => setCopiedWallet(false), 2000)
     }
@@ -134,7 +136,7 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
             <CheckCircle className="w-20 h-20 text-green-500" />
           </div>
           <h3 className="text-3xl font-black mb-2">Payment Successful!</h3>
-          <p className="text-xl font-bold text-gray-600 mb-6">Your support means the world to {creator.displayName}!</p>
+          <p className="text-xl font-bold text-gray-600 mb-6">Your support means the world to {creator.display_name}!</p>
           <div className="bg-gray-50 border-4 border-black rounded-xl p-4 mb-4">
             <div className="flex justify-between items-center mb-2">
               <span className="font-bold text-gray-600">Amount:</span>
@@ -142,7 +144,7 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
             </div>
             <div className="flex justify-between items-center">
               <span className="font-bold text-gray-600">Coffees:</span>
-              <span className="text-xl font-black">{isCustom ? Math.floor(totalAmount / creator.coffeePrice) : coffeeCount}</span>
+              <span className="text-xl font-black">{isCustom ? Math.floor(totalAmount / Number(creator.coffee_price)) : coffeeCount}</span>
             </div>
           </div>
 
@@ -167,8 +169,8 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
           {/* Share on X Button */}
           <Button
             onClick={() => {
-              const coffeeAmount = isCustom ? Math.floor(totalAmount / creator.coffeePrice) : coffeeCount
-              const text = `I just sent ${creator.displayName} ${coffeeAmount} coffee${coffeeAmount > 1 ? 's' : ''} on Cobbee! ☕ Check out their profile! @cobbeefun`
+              const coffeeAmount = isCustom ? Math.floor(totalAmount / Number(creator.coffee_price)) : coffeeCount
+              const text = `I just sent ${creator.display_name} ${coffeeAmount} coffee${coffeeAmount > 1 ? 's' : ''} on Cobbee! ☕ Check out their profile! @cobbeefun`
               const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(`https://cobbee.fun/${creator.username}`)}`
               window.open(url, '_blank', 'width=550,height=420')
             }}
@@ -245,7 +247,7 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
             <div className="bg-gray-50 border-4 border-black rounded-xl p-4">
               <div className="flex justify-between items-center mb-2">
                 <span className="font-bold text-gray-600">Supporting</span>
-                <span className="text-lg font-black">{creator.displayName}</span>
+                <span className="text-lg font-black">{creator.display_name}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="font-bold text-gray-600">Amount</span>
@@ -299,7 +301,7 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
           {/* Creator Info */}
           <div className="bg-white border-4 border-black rounded-2xl p-4">
             <p className="text-sm font-bold text-gray-600 mb-1">Supporting</p>
-            <p className="text-xl font-black">{creator.displayName}</p>
+            <p className="text-xl font-black">{creator.display_name}</p>
           </div>
 
           {/* Amount Info */}
@@ -307,7 +309,7 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
             <p className="text-sm font-bold text-gray-600 mb-1">Amount</p>
             <p className="text-2xl font-black">${totalAmount.toFixed(2)}</p>
             <p className="text-sm font-bold text-gray-600">
-              {isCustom ? `~${Math.floor(totalAmount / creator.coffeePrice)} coffees` : `${coffeeCount} coffee${coffeeCount > 1 ? 's' : ''}`}
+              {isCustom ? `~${Math.floor(totalAmount / Number(creator.coffee_price))} coffees` : `${coffeeCount} coffee${coffeeCount > 1 ? 's' : ''}`}
             </p>
           </div>
 
@@ -347,12 +349,12 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
           )}
 
           {/* Creator Wallet */}
-          {creator.walletAddress && (
+          {creator.wallet_address && (
             <div className="bg-white border-4 border-black rounded-2xl p-4">
               <p className="text-sm font-bold text-gray-600 mb-2">Creator Wallet Address</p>
               <div className="flex items-center gap-2">
                 <p className="text-sm font-mono font-bold break-all flex-1">
-                  {creator.walletAddress}
+                  {creator.wallet_address}
                 </p>
                 <button
                   onClick={handleCopyWallet}
@@ -408,8 +410,8 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
           <Coffee className="w-8 h-8 text-[#CCFF00]" />
         </div>
         <div>
-          <h2 className="text-3xl font-black">Buy {creator.displayName.split(" ")[0]} a coffee</h2>
-          <p className="text-lg font-bold">${creator.coffeePrice} per coffee</p>
+          <h2 className="text-3xl font-black">Buy {creator.display_name.split(" ")[0]} a coffee</h2>
+          <p className="text-lg font-bold">${Number(creator.coffee_price)} per coffee</p>
         </div>
       </div>
 
@@ -477,7 +479,7 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
               />
               {customAmount && (
                 <p className="text-lg font-bold text-gray-700 mt-2">
-                  = ${(Number.parseInt(customAmount) * creator.coffeePrice).toFixed(2)}
+                  = ${(Number.parseInt(customAmount) * Number(creator.coffee_price)).toFixed(2)}
                 </p>
               )}
             </div>

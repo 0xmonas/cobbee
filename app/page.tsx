@@ -4,12 +4,29 @@ import { Coffee, Users, Zap } from "lucide-react"
 import { LandingHeader } from "@/components/landing-header"
 import { LandingFooter } from "@/components/landing-footer"
 import { SupportDemo } from "@/components/support-demo"
+import { createClient } from "@/lib/supabase/server"
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const supabase = await createClient()
+
+  // Get authenticated user (if any)
+  const { data: { user: authUser } } = await supabase.auth.getUser()
+
+  // Fetch current user's profile if authenticated
+  let currentUser = null
+  if (authUser) {
+    const { data } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', authUser.id)
+      .single()
+    currentUser = data
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <LandingHeader />
+      <LandingHeader user={currentUser} />
 
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20">

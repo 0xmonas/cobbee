@@ -1,28 +1,23 @@
-"use client"
-
-import { useState } from "react"
 import Link from "next/link"
-import NextImage from "next/image"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { mockCreators } from "@/lib/mock-data"
-import { Search, Coffee, Users } from "lucide-react"
-import { getCurrentUser } from "@/lib/auth-utils"
 import { UserMenu } from "@/components/user-menu"
 import { SimpleFooter } from "@/components/simple-footer"
 import { Logo } from "@/components/logo"
+import { DiscoverSearch } from "@/components/discover-search"
+import { createClient } from "@/lib/supabase/server"
 
-export default function DiscoverPage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [currentUser] = useState<{ id: string; username: string } | null>(() => getCurrentUser())
+export default async function DiscoverPage() {
+  const supabase = await createClient()
 
-  const filteredCreators = mockCreators.filter(
-    (creator) =>
-      creator.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      creator.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      creator.bio.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+  // Get authenticated user (if any)
+  const { data: { user: authUser } } = await supabase.auth.getUser()
+
+  // Fetch all active creators with supporter count in ONE query
+  // Using database view to prevent N+1 query problem
+  const { data: creators } = await supabase
+    .from('public_creator_profiles')
+    .select('*')
+    .order('created_at', { ascending: false })
 
   return (
     <div className="min-h-screen bg-white">
@@ -34,17 +29,17 @@ export default function DiscoverPage() {
             <span className="text-2xl font-black hidden sm:inline">Cobbee</span>
           </Link>
           <div className="hidden md:flex items-center gap-4">
-            {currentUser && (
+            {authUser && (
               <Link href="/dashboard" className="text-lg font-bold hover:underline">
                 Dashboard
               </Link>
             )}
-            {!currentUser && (
+            {!authUser && (
               <Link href="/login" className="text-lg font-bold hover:underline">
                 Log in
               </Link>
             )}
-            {currentUser ? (
+            {authUser ? (
               <UserMenu />
             ) : (
               <Button
@@ -57,17 +52,17 @@ export default function DiscoverPage() {
           </div>
           {/* Mobile */}
           <div className="md:hidden flex items-center gap-2">
-            {currentUser && (
+            {authUser && (
               <Link href="/dashboard" className="text-sm font-bold hover:underline">
                 Dashboard
               </Link>
             )}
-            {!currentUser && (
+            {!authUser && (
               <Link href="/login" className="text-sm font-bold hover:underline">
                 Log in
               </Link>
             )}
-            {currentUser ? (
+            {authUser ? (
               <UserMenu />
             ) : (
               <Button
@@ -81,132 +76,7 @@ export default function DiscoverPage() {
         </nav>
       </header>
 
-      {/* Hero Section */}
-      <section className="bg-[#CCFF00] border-b-4 border-black py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-6xl font-black mb-6 text-balance">Discover Amazing Creators</h1>
-            <p className="text-2xl font-bold mb-8 text-balance">Find and support creators doing incredible work</p>
-
-            {/* Search Bar */}
-            <div className="relative max-w-2xl mx-auto">
-              <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-600" />
-              <Input
-                type="text"
-                placeholder="Search creators..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-16 pr-6 py-8 text-xl font-bold border-4 border-black rounded-full shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Creators Grid */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="max-w-7xl mx-auto">
-          {filteredCreators.length === 0 ? (
-            <div className="text-center py-20">
-              <Coffee className="w-20 h-20 mx-auto mb-6 text-gray-400" />
-              <h2 className="text-3xl font-black mb-4">No creators found</h2>
-              <p className="text-xl font-bold text-gray-600">Try a different search term</p>
-            </div>
-          ) : (
-            <>
-              <div className="mb-8">
-                <h2 className="text-3xl font-black">
-                  {searchQuery
-                    ? `Found ${filteredCreators.length} creator${filteredCreators.length !== 1 ? "s" : ""}`
-                    : "All Creators"}
-                </h2>
-              </div>
-
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredCreators.map((creator, index) => {
-                  const bgColors = ["bg-[#0000FF]", "bg-[#CCFF00]", "bg-[#FF6B35]", "bg-black"]
-                  const textColors = ["text-white", "text-black", "text-white", "text-white"]
-                  const colorIndex = index % bgColors.length
-
-                  return (
-                    <Link key={creator.id} href={`/${creator.username}`} className="group">
-                      <div
-                        className={`${bgColors[colorIndex]} border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all`}
-                      >
-                        {/* Cover Image */}
-                        <div className="h-48 border-b-4 border-black overflow-hidden">
-                          <NextImage
-                            src={creator.coverImage || "/placeholder.svg"}
-                            alt={creator.displayName}
-                            width={600}
-                            height={300}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                          />
-                        </div>
-
-                        {/* Content */}
-                        <div className="p-6">
-                          <div className="flex items-start gap-4 mb-4">
-                            <Avatar className="w-16 h-16 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                              <AvatarImage src={creator.avatar || "/placeholder.svg"} alt={creator.displayName} />
-                              <AvatarFallback className="text-xl font-black bg-white">
-                                {creator.displayName.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1">
-                              <h3 className={`text-2xl font-black ${textColors[colorIndex]} mb-1`}>
-                                {creator.displayName}
-                              </h3>
-                              <p className={`text-sm font-bold ${textColors[colorIndex]} opacity-80`}>
-                                @{creator.username}
-                              </p>
-                            </div>
-                          </div>
-
-                          <p
-                            className={`text-base font-bold ${textColors[colorIndex]} mb-6 leading-relaxed line-clamp-3`}
-                          >
-                            {creator.bio}
-                          </p>
-
-                          {/* Stats */}
-                          <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2">
-                              <div
-                                className={`${colorIndex === 1 ? "bg-black" : "bg-white"} w-10 h-10 rounded-full flex items-center justify-center border-4 border-black`}
-                              >
-                                <Users className={`w-5 h-5 ${colorIndex === 1 ? "text-white" : "text-black"}`} />
-                              </div>
-                              <div>
-                                <p className={`text-xs font-bold ${textColors[colorIndex]} opacity-80`}>Supporters</p>
-                                <p className={`text-lg font-black ${textColors[colorIndex]}`}>
-                                  {creator.totalSupports}
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                              <div
-                                className={`${colorIndex === 1 ? "bg-black" : "bg-white"} w-10 h-10 rounded-full flex items-center justify-center border-4 border-black`}
-                              >
-                                <Coffee className={`w-5 h-5 ${colorIndex === 1 ? "text-white" : "text-black"}`} />
-                              </div>
-                              <div>
-                                <p className={`text-xs font-bold ${textColors[colorIndex]} opacity-80`}>Per coffee</p>
-                                <p className={`text-lg font-black ${textColors[colorIndex]}`}>${creator.coffeePrice}</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  )
-                })}
-              </div>
-            </>
-          )}
-        </div>
-      </section>
+      <DiscoverSearch creators={creators || []} />
 
       {/* CTA Section */}
       <section className="border-t-4 border-black bg-[#0000FF] py-20">

@@ -1,67 +1,42 @@
-import { redirect } from "next/navigation"
+"use client"
+
+import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Coffee, TrendingUp, Users, ExternalLink, Settings } from "lucide-react"
+import { mockCreators, mockSupports } from "@/lib/mock-data"
+import { Coffee, TrendingUp, Users, ExternalLink, Settings, Copy, Check } from "lucide-react"
 import { UserMenu } from "@/components/user-menu"
 import { NotificationsMenu } from "@/components/notifications-menu"
 import { SimpleFooter } from "@/components/simple-footer"
 import { Logo } from "@/components/logo"
-import { DashboardActions } from "@/components/dashboard-actions"
-import { createClient } from "@/lib/supabase/server"
 
-export default async function DashboardPage() {
-  const supabase = await createClient()
+export default function DashboardPage() {
+  const [copiedLink, setCopiedLink] = useState(false)
+  // For demo purposes, we'll use the first creator as the logged-in user
+  const currentCreator = mockCreators[0]
+  const supports = mockSupports[currentCreator.id] || []
 
-  // Check authentication
-  const { data: { user: authUser } } = await supabase.auth.getUser()
-
-  if (!authUser) {
-    redirect('/login')
-  }
-
-  // Fetch current user's profile
-  const { data: currentCreator, error: profileError } = await supabase
-    .from('users')
-    .select('*')
-    .eq('id', authUser.id)
-    .single()
-
-  if (profileError || !currentCreator) {
-    // User authenticated but no profile - redirect to complete signup
-    redirect('/signup')
-  }
-
-  // Fetch user's supports (all - including private/hidden for owner)
-  const { data: supports } = await supabase
-    .from('supports')
-    .select('*')
-    .eq('creator_id', currentCreator.id)
-    .order('created_at', { ascending: false })
-
-  // Calculate statistics
-  const totalEarnings = supports?.reduce((sum, support) => sum + Number(support.total_amount), 0) || 0
-  const totalCoffees = supports?.reduce((sum, support) => sum + support.coffee_count, 0) || 0
-  const totalSupporters = supports?.length || 0
-  const avgSupport = totalSupporters > 0 ? totalEarnings / totalSupporters : 0
-
-  // Get recent supports (last 5)
-  const recentSupports = supports?.slice(0, 5) || []
+  const totalEarnings = supports.reduce((sum, support) => sum + support.amount, 0)
+  const totalCoffees = supports.reduce((sum, support) => sum + support.coffeeCount, 0)
+  const recentSupports = supports.slice(0, 5)
 
   const profileUrl = `https://cobbee.fun/${currentCreator.username}`
 
-  // Format time ago
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffInMs = now.getTime() - date.getTime()
-    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60))
-    const diffInDays = Math.floor(diffInHours / 24)
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(profileUrl)
+      setCopiedLink(true)
+      setTimeout(() => setCopiedLink(false), 2000)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
+  }
 
-    if (diffInHours < 1) return 'Just now'
-    if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`
-    if (diffInDays < 7) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`
-    return date.toLocaleDateString()
+  const handleShareOnX = () => {
+    const text = `Support me on Cobbee! ☕ @cobbeefun`
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(profileUrl)}`
+    window.open(url, '_blank', 'width=550,height=420')
   }
 
   return (
@@ -105,9 +80,7 @@ export default async function DashboardPage() {
         <div className="max-w-7xl mx-auto">
           {/* Welcome Section */}
           <div className="mb-12">
-            <h1 className="text-5xl font-black mb-4">
-              Welcome back, {currentCreator.display_name.split(" ")[0]}!
-            </h1>
+            <h1 className="text-5xl font-black mb-4">Welcome back, {currentCreator.displayName.split(" ")[0]}!</h1>
             <p className="text-2xl font-bold text-gray-600">Here's how your page is performing</p>
           </div>
 
@@ -121,7 +94,7 @@ export default async function DashboardPage() {
                 </div>
               </div>
               <p className="text-sm font-bold text-white mb-1">Total Earnings</p>
-              <p className="text-4xl font-black text-white">${totalEarnings.toFixed(2)}</p>
+              <p className="text-4xl font-black text-white">${totalEarnings}</p>
             </div>
 
             {/* Total Coffees */}
@@ -143,7 +116,7 @@ export default async function DashboardPage() {
                 </div>
               </div>
               <p className="text-sm font-bold text-white mb-1">Total Supporters</p>
-              <p className="text-4xl font-black text-white">{totalSupporters}</p>
+              <p className="text-4xl font-black text-white">{currentCreator.totalSupports}</p>
             </div>
 
             {/* Average Support */}
@@ -154,7 +127,9 @@ export default async function DashboardPage() {
                 </div>
               </div>
               <p className="text-sm font-bold text-white mb-1">Avg. Support</p>
-              <p className="text-4xl font-black text-white">${avgSupport.toFixed(0)}</p>
+              <p className="text-4xl font-black text-white">
+                ${supports.length > 0 ? (totalEarnings / supports.length).toFixed(0) : 0}
+              </p>
             </div>
           </div>
 
@@ -190,25 +165,23 @@ export default async function DashboardPage() {
                         <div className="flex items-center gap-4">
                           <Avatar className="w-12 h-12 border-4 border-black">
                             <AvatarImage
-                              src={support.supporter_avatar_url || undefined}
-                              alt={support.supporter_name}
+                              src={support.supporterAvatar || "/placeholder.svg"}
+                              alt={support.supporterName}
                             />
                             <AvatarFallback className="font-black bg-[#0000FF] text-white">
-                              {support.supporter_name.charAt(0)}
+                              {support.supporterName.charAt(0)}
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="text-lg font-black">{support.supporter_name}</p>
-                            <p className="text-sm font-bold text-gray-600">
-                              {formatTimeAgo(support.created_at || '')}
-                            </p>
+                            <p className="text-lg font-black">{support.supporterName}</p>
+                            <p className="text-sm font-bold text-gray-600">{support.timestamp}</p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-2xl font-black">${Number(support.total_amount).toFixed(2)}</p>
+                          <p className="text-2xl font-black">${support.amount}</p>
                           <div className="flex items-center gap-1 justify-end">
                             <Coffee className="w-4 h-4" />
-                            <span className="text-sm font-black">×{support.coffee_count}</span>
+                            <span className="text-sm font-black">×{support.coffeeCount}</span>
                           </div>
                         </div>
                       </div>
@@ -225,13 +198,13 @@ export default async function DashboardPage() {
                 <h3 className="text-2xl font-black mb-4">Your Profile</h3>
                 <div className="flex items-center gap-4 mb-6">
                   <Avatar className="w-16 h-16 border-4 border-black">
-                    <AvatarImage src={currentCreator.avatar_url || undefined} alt={currentCreator.display_name} />
+                    <AvatarImage src={currentCreator.avatar || "/placeholder.svg"} alt={currentCreator.displayName} />
                     <AvatarFallback className="font-black bg-white">
-                      {currentCreator.display_name.charAt(0)}
+                      {currentCreator.displayName.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="text-xl font-black">{currentCreator.display_name}</p>
+                    <p className="text-xl font-black">{currentCreator.displayName}</p>
                     <p className="text-sm font-bold">@{currentCreator.username}</p>
                   </div>
                 </div>
@@ -246,8 +219,49 @@ export default async function DashboardPage() {
                 </Button>
               </div>
 
-              {/* Share Actions - Client Component */}
-              <DashboardActions profileUrl={profileUrl} username={currentCreator.username} />
+              {/* Share Card */}
+              <div className="bg-[#0000FF] border-4 border-black rounded-3xl p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                <h3 className="text-2xl font-black text-white mb-4">Share Your Page</h3>
+                <p className="text-lg font-bold text-white mb-4 leading-relaxed">
+                  Get more supporters by sharing your page on social media
+                </p>
+                <div className="bg-white border-4 border-black rounded-xl p-3 mb-4">
+                  <p className="text-sm font-bold truncate">cobbee.fun/{currentCreator.username}</p>
+                </div>
+
+                {/* Copy Link Button */}
+                <Button
+                  onClick={handleCopyLink}
+                  className="w-full bg-[#CCFF00] hover:bg-[#B8E600] text-black font-bold text-lg py-6 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all mb-3"
+                >
+                  {copiedLink ? (
+                    <>
+                      <Check className="w-5 h-5 mr-2" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-5 h-5 mr-2" />
+                      Copy Link
+                    </>
+                  )}
+                </Button>
+
+                {/* Share on X Button */}
+                <Button
+                  onClick={handleShareOnX}
+                  className="w-full bg-black hover:bg-gray-800 text-white font-bold text-lg py-6 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="w-5 h-5 mr-2"
+                    fill="currentColor"
+                  >
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                  Share on X
+                </Button>
+              </div>
 
               {/* Tips Card */}
               <div className="bg-[#FF6B35] border-4 border-black rounded-3xl p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">

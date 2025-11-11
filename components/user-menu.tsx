@@ -1,19 +1,48 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import NextImage from "next/image"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useRouter } from "next/navigation"
 import { User, Settings, LogOut, Eye, Wallet } from "lucide-react"
-import { setCurrentUser } from "@/lib/auth-utils"
+import { createClient } from "@/lib/supabase/client"
 
 export function UserMenu() {
   const [isOpen, setIsOpen] = useState(false)
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-  const handleLogout = () => {
-    setCurrentUser(null)
+  // Fetch user data on mount
+  useEffect(() => {
+    const fetchUser = async () => {
+      const supabase = createClient()
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+
+      if (authUser) {
+        const { data } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', authUser.id)
+          .single()
+        setUser(data)
+      }
+      setLoading(false)
+    }
+    fetchUser()
+  }, [])
+
+  const handleLogout = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
     router.push("/login")
+    router.refresh()
+  }
+
+  if (loading || !user) {
+    return (
+      <div className="w-12 h-12 border-4 border-black rounded-full overflow-hidden bg-gray-200 animate-pulse" />
+    )
   }
 
   return (
@@ -22,7 +51,12 @@ export function UserMenu() {
         onClick={() => setIsOpen(!isOpen)}
         className="w-12 h-12 border-4 border-black rounded-full overflow-hidden bg-gray-100 hover:ring-4 hover:ring-[#CCFF00] transition-all"
       >
-        <NextImage src="/woman-designer-avatar.png" alt="User avatar" width={48} height={48} className="w-full h-full object-cover" />
+        <Avatar className="w-full h-full">
+          <AvatarImage src={user.avatar_url || undefined} alt={user.display_name} />
+          <AvatarFallback className="text-xl font-black bg-white">
+            {user.display_name?.charAt(0) || 'U'}
+          </AvatarFallback>
+        </Avatar>
       </button>
 
       {isOpen && (
@@ -30,12 +64,12 @@ export function UserMenu() {
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
           <div className="absolute right-0 mt-2 w-64 bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] z-20">
             <div className="p-4 border-b-4 border-black bg-[#CCFF00]">
-              <p className="font-black text-lg">Sarah Chen</p>
-              <p className="text-sm font-bold">@sarahdesigns</p>
+              <p className="font-black text-lg">{user.display_name}</p>
+              <p className="text-sm font-bold">@{user.username}</p>
             </div>
             <div className="py-2">
               <Link
-                href="/sarahdesigns"
+                href={`/${user.username}`}
                 className="flex items-center gap-3 px-4 py-3 hover:bg-[#CCFF00] transition-colors font-bold"
                 onClick={() => setIsOpen(false)}
               >

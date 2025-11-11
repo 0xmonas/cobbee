@@ -24,12 +24,11 @@ export default async function CreatorProfilePage({ params }: CreatorProfilePageP
   // Get authenticated user (if any)
   const { data: { user: authUser } } = await supabase.auth.getUser()
 
-  // Fetch creator by username
+  // Fetch creator by username using VIEW (prevents email leak)
   const { data: creator, error: creatorError } = await supabase
-    .from('users')
+    .from('public_creator_profiles')
     .select('*')
     .eq('username', username)
-    .eq('is_active', true)
     .single()
 
   if (creatorError || !creator) {

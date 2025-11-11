@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { mockCreators } from '@/lib/mock-data'
+import { createClient } from '@/lib/supabase/server'
 
 export async function generateMetadata({
   params
@@ -7,7 +7,14 @@ export async function generateMetadata({
   params: Promise<{ username: string }>
 }): Promise<Metadata> {
   const { username } = await params
-  const creator = mockCreators.find((c) => c.username === username)
+  const supabase = await createClient()
+
+  // Fetch creator by username using VIEW (prevents email leak)
+  const { data: creator } = await supabase
+    .from('public_creator_profiles')
+    .select('*')
+    .eq('username', username)
+    .single()
 
   if (!creator) {
     return {
@@ -16,8 +23,11 @@ export async function generateMetadata({
     }
   }
 
-  const title = `${creator.displayName} (@${creator.username}) - Cobbee`
-  const description = creator.bio || `Support ${creator.displayName} with crypto coffee on Cobbee. ${creator.totalSupports} supporters already!`
+  // Support count already available from VIEW
+  const supportCount = creator.supporter_count || 0
+
+  const title = `${creator.display_name} (@${creator.username}) - Cobbee`
+  const description = creator.bio || `Support ${creator.display_name} with crypto coffee on Cobbee. ${supportCount} supporters already!`
   const url = `https://cobbee.fun/${creator.username}`
 
   return {
