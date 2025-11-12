@@ -2,12 +2,22 @@ import { Resend } from 'resend';
 import OtpEmail from '@/emails/otp-email';
 import ConfirmationEmail from '@/emails/confirmation-email';
 
-// Initialize Resend with API key from environment
-// Note: API key must be set in production for email functionality to work
-const resend = new Resend(process.env.RESEND_API_KEY || '');
-
 // Default sender email (change this to your verified domain)
 const FROM_EMAIL = 'Cobbee <noreply@yourdomain.com>';
+
+/**
+ * Get Resend client instance (lazy initialization)
+ * This avoids build-time errors when RESEND_API_KEY is not set
+ */
+function getResendClient(): Resend {
+  const apiKey = process.env.RESEND_API_KEY;
+
+  if (!apiKey) {
+    throw new Error('RESEND_API_KEY environment variable is not set. Email functionality requires a valid Resend API key.');
+  }
+
+  return new Resend(apiKey);
+}
 
 /**
  * Generate a secure 6-digit OTP code
@@ -53,6 +63,7 @@ export async function verifyOTPHash(otp: string, hash: string): Promise<boolean>
  */
 export async function sendOtpEmail(email: string, otpCode: string) {
   try {
+    const resend = getResendClient();
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: [email],
@@ -81,6 +92,7 @@ export async function sendConfirmationEmail(
   currentEmail?: string
 ) {
   try {
+    const resend = getResendClient();
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: [email],
@@ -111,6 +123,7 @@ export async function sendConfirmationEmail(
  */
 export async function sendSecurityNotification(currentEmail: string, newEmail: string) {
   try {
+    const resend = getResendClient();
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: [currentEmail],
