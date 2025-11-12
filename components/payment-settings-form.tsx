@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -23,6 +24,7 @@ import {
   Check,
 } from "lucide-react"
 import type { Database } from "@/lib/types/database.types"
+import { validateCoffeePrice, validateThankYouMessage } from "@/lib/utils/validation"
 
 type User = Database['public']['Tables']['users']['Row']
 type Support = Database['public']['Tables']['supports']['Row']
@@ -33,12 +35,19 @@ interface PaymentSettingsFormProps {
 }
 
 export function PaymentSettingsForm({ user, supports }: PaymentSettingsFormProps) {
-  const [coffeePrice, setCoffeePrice] = useState(user.coffee_price?.toString() || "5")
+  const router = useRouter()
+  const [coffeePrice, setCoffeePrice] = useState(user.coffee_price?.toString() || "0.50")
   const [ethereumAddress] = useState(user.wallet_address || "")
   const [copiedWallet, setCopiedWallet] = useState(false)
   const [thankYouMessage, setThankYouMessage] = useState(
     user.thank_you_message || "Thank you so much for your support! Your contribution helps me continue creating content. ☕",
   )
+
+  // Validation and loading states
+  const [priceError, setPriceError] = useState<string | null>(null)
+  const [messageError, setMessageError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
 
   const [searchQuery, setSearchQuery] = useState("")
   const [showFilters, setShowFilters] = useState(false)
@@ -70,9 +79,64 @@ export function PaymentSettingsForm({ user, supports }: PaymentSettingsFormProps
   const totalEarnings = filteredPayments.reduce((sum, payment) => sum + Number(payment.total_amount), 0)
   const totalCoffees = filteredPayments.reduce((sum, payment) => sum + payment.coffee_count, 0)
 
-  const handleSaveSettings = (e: React.FormEvent) => {
+  const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault()
-    alert("Payment settings saved successfully!")
+    setIsSubmitting(true)
+    setSaveSuccess(false)
+
+    // Validate coffee price
+    const priceValidation = validateCoffeePrice(coffeePrice)
+    setPriceError(priceValidation)
+
+    // Validate thank you message
+    const messageValidation = validateThankYouMessage(thankYouMessage)
+    setMessageError(messageValidation)
+
+    // Stop if validation fails
+    if (priceValidation || messageValidation) {
+      setIsSubmitting(false)
+      return
+    }
+
+    try {
+      const response = await fetch('/api/user/payment-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          coffeePrice: parseFloat(coffeePrice),
+          thankYouMessage: thankYouMessage.trim()
+        })
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        // Set field-specific error if provided
+        if (result.field === 'coffeePrice') {
+          setPriceError(result.error)
+        } else if (result.field === 'thankYouMessage') {
+          setMessageError(result.error)
+        } else {
+          setPriceError(result.error || 'Failed to save settings')
+        }
+        setIsSubmitting(false)
+        return
+      }
+
+      // Success!
+      setSaveSuccess(true)
+      setIsSubmitting(false)
+
+      // Hide success message after 3 seconds
+      setTimeout(() => setSaveSuccess(false), 3000)
+
+      // Refresh page to show updated data
+      router.refresh()
+    } catch (error) {
+      console.error('Save settings error:', error)
+      setPriceError('Failed to save settings. Please try again.')
+      setIsSubmitting(false)
+    }
   }
 
   const handleExport = () => {
@@ -147,6 +211,15 @@ export function PaymentSettingsForm({ user, supports }: PaymentSettingsFormProps
           </div>
           <div className="p-6">
             <form onSubmit={handleSaveSettings} className="space-y-6">
+              {saveSuccess && (
+                <div className="bg-green-500 text-white p-4 rounded-xl border-4 border-black">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-6 h-6" />
+                    <span className="font-bold">Payment settings saved successfully!</span>
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="coffeePrice" className="text-lg font-bold">
                   Price per Coffee
@@ -156,15 +229,34 @@ export function PaymentSettingsForm({ user, supports }: PaymentSettingsFormProps
                   <Input
                     id="coffeePrice"
                     type="number"
-                    min="1"
+                    min="0.10"
+                    max="1.00"
+                    step="0.01"
                     value={coffeePrice}
-                    onChange={(e) => setCoffeePrice(e.target.value)}
+                    onChange={(e) => {
+                      setCoffeePrice(e.target.value)
+                      // Clear error on change
+                      if (priceError) {
+                        const error = validateCoffeePrice(e.target.value)
+                        setPriceError(error)
+                      }
+                    }}
+                    onBlur={() => {
+                      const error = validateCoffeePrice(coffeePrice)
+                      setPriceError(error)
+                    }}
                     className="border-4 border-black text-lg p-6 focus:ring-4 focus:ring-[#CCFF00] w-32"
+                    disabled={isSubmitting}
                   />
                   <span className="text-lg font-bold">per coffee</span>
                 </div>
+                {priceError && (
+                  <p className="text-sm font-bold text-white bg-red-600 border-2 border-black rounded-lg px-3 py-2">
+                    {priceError}
+                  </p>
+                )}
                 <p className="text-sm text-gray-600 font-bold">
-                  This is the base price supporters will pay for one coffee
+                  This is the base price supporters will pay for one coffee. Currently only $0.10 - $1.00 is supported.
                 </p>
               </div>
             </form>
@@ -228,12 +320,29 @@ export function PaymentSettingsForm({ user, supports }: PaymentSettingsFormProps
                 <Textarea
                   id="thankYouMessage"
                   value={thankYouMessage}
-                  onChange={(e) => setThankYouMessage(e.target.value)}
+                  onChange={(e) => {
+                    setThankYouMessage(e.target.value)
+                    // Clear error on change
+                    if (messageError) {
+                      const error = validateThankYouMessage(e.target.value)
+                      setMessageError(error)
+                    }
+                  }}
+                  onBlur={() => {
+                    const error = validateThankYouMessage(thankYouMessage)
+                    setMessageError(error)
+                  }}
                   className="border-4 border-black text-lg p-6 focus:ring-4 focus:ring-[#CCFF00] min-h-[150px]"
                   placeholder="Write a message that supporters will see after they support you..."
+                  disabled={isSubmitting}
                 />
+                {messageError && (
+                  <p className="text-sm font-bold text-white bg-red-600 border-2 border-black rounded-lg px-3 py-2">
+                    {messageError}
+                  </p>
+                )}
                 <p className="text-sm text-gray-600 font-bold">
-                  This message will be displayed to supporters after they complete their payment
+                  {thankYouMessage.length} / 500 characters. This message will be displayed to supporters after they complete their payment.
                 </p>
               </div>
               <div className="border-4 border-black p-6 rounded-lg bg-gray-50">
@@ -407,9 +516,10 @@ export function PaymentSettingsForm({ user, supports }: PaymentSettingsFormProps
         <div className="flex justify-end">
           <Button
             onClick={handleSaveSettings}
-            className="bg-[#0000FF] hover:bg-[#0000CC] text-white border-4 border-black text-lg font-bold px-8 py-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+            disabled={isSubmitting}
+            className="bg-[#0000FF] hover:bg-[#0000CC] text-white border-4 border-black text-lg font-bold px-8 py-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Save Payment Settings
+            {isSubmitting ? 'Saving...' : 'Save Payment Settings'}
           </Button>
         </div>
       </div>

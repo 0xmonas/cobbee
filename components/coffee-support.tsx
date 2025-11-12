@@ -432,11 +432,12 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
                   className={`
                     py-4 px-6 rounded-xl font-black text-xl border-4 border-black
                     transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
-                    hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]
+                    hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center gap-2
                     ${coffeeCount === amount && !isCustom ? "bg-[#0000FF] text-white" : "bg-white text-black"}
                   `}
                 >
-                  {amount}
+                  <Coffee className="hidden sm:inline w-5 h-5" />
+                  <span>{amount}x</span>
                 </button>
               ))}
               <button
@@ -461,7 +462,7 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
           {/* Custom Amount Input */}
           {isCustom && (
             <div>
-              <label className="text-xl font-black mb-3 block">How many coffees? (max 100)</label>
+              <label className="text-xl font-black mb-3 block">How many cobbees? (max 100)</label>
               <Input
                 type="number"
                 min="1"

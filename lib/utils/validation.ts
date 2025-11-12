@@ -181,6 +181,44 @@ export function validateSupportMessage(message: string): string | null {
   return null
 }
 
+export function validateCoffeePrice(price: string | number): string | null {
+  const numPrice = typeof price === 'string' ? parseFloat(price) : price
+
+  if (isNaN(numPrice)) {
+    return "Please enter a valid price"
+  }
+
+  if (numPrice < 0.10) {
+    return "Minimum price is $0.10"
+  }
+
+  if (numPrice > 1.00) {
+    return "Maximum price is $1.00"
+  }
+
+  // Check if it has more than 2 decimal places
+  const decimalPlaces = (numPrice.toString().split('.')[1] || '').length
+  if (decimalPlaces > 2) {
+    return "Price can have at most 2 decimal places"
+  }
+
+  return null
+}
+
+export function validateThankYouMessage(message: string): string | null {
+  if (!message) {
+    return null // Message is optional
+  }
+
+  const trimmed = message.trim()
+
+  if (trimmed.length > 500) {
+    return "Message must not exceed 500 characters"
+  }
+
+  return null
+}
+
 export function validateProfileForm(formData: {
   displayName: string
   username: string
