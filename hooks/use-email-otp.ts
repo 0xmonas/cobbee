@@ -98,36 +98,10 @@ export function useEmailOTP() {
     }
   }
 
-  /**
-   * Update email_verified flag in public.users table
-   * @param userId - User ID
-   * @returns { success, error }
-   */
-  const markEmailVerified = async (userId: string) => {
-    try {
-      const { error } = await supabase
-        .from('users')
-        .update({ email_verified: true })
-        .eq('id', userId)
-
-      if (error) {
-        console.error('Mark email verified error:', error)
-        return { success: false, error: error.message }
-      }
-
-      console.log('Email marked as verified')
-      return { success: true, error: null }
-    } catch (error) {
-      console.error('Unexpected mark verified error:', error)
-      return { success: false, error: 'Failed to update verification status' }
-    }
-  }
-
   return {
     sendOTPForSignup,
     sendOTPForLogin,
     verifyOTP,
-    markEmailVerified,
     isSending,
     isVerifying
   }
