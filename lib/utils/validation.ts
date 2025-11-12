@@ -15,48 +15,48 @@ export function validateFullName(name: string): string | null {
   const trimmed = name.trim()
 
   if (trimmed.length < 2) {
-    return "Full name must be at least 2 characters"
+    return "Name must be at least 2 characters"
   }
 
   if (trimmed.length > 50) {
-    return "Full name must not exceed 50 characters"
+    return "Name must not exceed 50 characters"
   }
 
   if (!/^[a-zA-Z\s]+$/.test(trimmed)) {
-    return "Full name can only contain letters and spaces"
+    return "Name can only contain letters and spaces"
   }
 
-  if (trimmed.split(/\s+/).length < 2) {
-    return "Please enter both first and last name"
-  }
+  // Allow single name (no last name required)
+  // User can enter just first name or full name with spaces
 
   return null
 }
 
 export function validateUsername(username: string): string | null {
-  const trimmed = username.trim()
+  const trimmed = username.trim().toLowerCase()
 
   if (trimmed.startsWith("@")) {
     return "Username cannot start with @"
   }
 
-  if (trimmed.length < 3) {
-    return "Username must be at least 3 characters"
+  if (trimmed.length < 4) {
+    return "Username must be at least 4 characters"
   }
 
-  if (trimmed.length > 20) {
-    return "Username must not exceed 20 characters"
+  if (trimmed.length > 15) {
+    return "Username must not exceed 15 characters"
   }
 
-  if (!/^[a-zA-Z0-9_-]+$/.test(trimmed)) {
-    return "Username can only contain letters, numbers, underscores, and hyphens"
+  // Only lowercase letters, numbers, and underscores allowed (Twitter standard)
+  if (!/^[a-z0-9_]+$/.test(trimmed)) {
+    return "Username can only contain lowercase letters, numbers, and underscores"
   }
 
-  if (!/^[a-zA-Z0-9]/.test(trimmed)) {
+  if (!/^[a-z0-9]/.test(trimmed)) {
     return "Username must start with a letter or number"
   }
 
-  if (!/[a-zA-Z0-9]$/.test(trimmed)) {
+  if (!/[a-z0-9]$/.test(trimmed)) {
     return "Username must end with a letter or number"
   }
 
