@@ -103,8 +103,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log('Email change confirmation sent to:', newEmail)
-
     return Response.json({
       success: true,
       message: hasEmail

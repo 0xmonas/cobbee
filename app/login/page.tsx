@@ -48,11 +48,9 @@ export default function LoginPage() {
 
         if (error || !existingUser) {
           // ❌ User NOT registered - show not-registered screen
-          console.log('User not registered:', error)
           setWalletStep("not-registered")
         } else {
           // ✅ User registered - go to sign step
-          console.log('User registered:', existingUser)
           setWalletStep("sign")
         }
       }
@@ -108,8 +106,6 @@ export default function LoginPage() {
         return
       }
 
-      console.log('Sign-in successful:', data)
-
       // ✅ User already verified as registered (checked on wallet connect)
       // Redirect to dashboard
       if (data.session) {
@@ -129,7 +125,6 @@ export default function LoginPage() {
       await disconnect()
       setWalletAddress("")
       setWalletStep("connect")
-      console.log('Disconnected')
     } catch (error) {
       console.error('Disconnect error:', error)
     }

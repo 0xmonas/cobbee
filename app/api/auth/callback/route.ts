@@ -48,8 +48,6 @@ export async function GET(request: NextRequest) {
         if (updateError) {
           console.error('Failed to update email in public.users:', updateError)
         } else {
-          console.log('Email updated successfully in public.users:', newEmail)
-
           // Get username for cache revalidation
           const { data: userData } = await supabase
             .from('users')

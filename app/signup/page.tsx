@@ -116,7 +116,6 @@ export default function SignupPage() {
         return
       }
 
-      console.log('Sign-in successful:', data)
 
       // ✅ CRITICAL FIX #2: Check profile completeness
       if (data.session) {
@@ -170,7 +169,6 @@ export default function SignupPage() {
       // 4. Reset to wallet step
       setSignupStep("wallet")
 
-      console.log('Disconnected and cleared all state')
     } catch (error) {
       console.error('Disconnect error:', error)
     }
@@ -286,7 +284,6 @@ export default function SignupPage() {
           return
         }
 
-        console.log('Profile created successfully')
         router.push('/dashboard')
       } catch (error) {
         console.error('Unexpected error during signup:', error)

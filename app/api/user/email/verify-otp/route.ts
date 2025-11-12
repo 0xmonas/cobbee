@@ -131,8 +131,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log('Email added successfully:', email)
-
     return Response.json({
       success: true,
       message: 'Email added successfully!',

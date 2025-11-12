@@ -44,6 +44,7 @@ CREATE TABLE public.users (
 
   -- Creator Settings
   coffee_price DECIMAL(10, 2) DEFAULT 5.00,
+  thank_you_message TEXT,
   is_active BOOLEAN DEFAULT true,
 
   -- Email Notification Preferences

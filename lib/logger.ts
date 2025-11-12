@@ -10,6 +10,8 @@
  * - Color-coded console output in development
  */
 
+/* eslint-disable no-console */
+
 export enum LogLevel {
   DEBUG = 'DEBUG',
   INFO = 'INFO',

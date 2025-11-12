@@ -53,12 +53,16 @@ export function SettingsForm({ user }: SettingsFormProps) {
       // Remove query param first
       window.history.replaceState({}, '', '/settings')
 
-      // Then update state
-      setShowEmailUpdatedSuccess(true)
+      // Schedule state update asynchronously to avoid cascading renders
+      const updateTimer = setTimeout(() => {
+        setShowEmailUpdatedSuccess(true)
 
-      // Auto-hide after 5 seconds
-      const timer = setTimeout(() => setShowEmailUpdatedSuccess(false), 5000)
-      return () => clearTimeout(timer)
+        // Auto-hide after 5 seconds
+        const hideTimer = setTimeout(() => setShowEmailUpdatedSuccess(false), 5000)
+        return () => clearTimeout(hideTimer)
+      }, 0)
+
+      return () => clearTimeout(updateTimer)
     }
   }, [])
 
@@ -92,7 +96,6 @@ export function SettingsForm({ user }: SettingsFormProps) {
       }
 
       // Success - show OTP input
-      console.log('OTP sent:', result)
       setOtpSent(true)
       setEmailError(null)
       setIsSubmitting(false)
@@ -131,7 +134,6 @@ export function SettingsForm({ user }: SettingsFormProps) {
       }
 
       // Success - refresh page to show new email
-      console.log('Email verified and added:', result)
       router.refresh()
     } catch (error) {
       console.error('Verify OTP error:', error)
@@ -177,7 +179,6 @@ export function SettingsForm({ user }: SettingsFormProps) {
       }
 
       // Success - show confirmation message
-      console.log('Email confirmation sent:', result)
       setEmailChangeRequested(true)
       setIsSubmitting(false)
 

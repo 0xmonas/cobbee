@@ -109,7 +109,6 @@ export async function POST(request: NextRequest) {
     // Send OTP via Resend
     try {
       await sendOtpEmail(email, otpCode)
-      console.log('Custom OTP sent to:', email, '(expires in 10 minutes)')
     } catch (emailError) {
       console.error('Failed to send OTP email:', emailError)
 

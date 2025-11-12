@@ -65,7 +65,6 @@ export async function sendOtpEmail(email: string, otpCode: string) {
       throw new Error(`Failed to send verification email: ${error.message}`);
     }
 
-    console.log('OTP email sent successfully:', data?.id);
     return { success: true, messageId: data?.id };
   } catch (error) {
     console.error('Send OTP email error:', error);
@@ -100,7 +99,6 @@ export async function sendConfirmationEmail(
       throw new Error(`Failed to send confirmation email: ${error.message}`);
     }
 
-    console.log('Confirmation email sent successfully:', data?.id);
     return { success: true, messageId: data?.id };
   } catch (error) {
     console.error('Send confirmation email error:', error);
@@ -154,7 +152,6 @@ export async function sendSecurityNotification(currentEmail: string, newEmail: s
       return { success: false, error: error.message };
     }
 
-    console.log('Security notification sent successfully:', data?.id);
     return { success: true, messageId: data?.id };
   } catch (error) {
     console.error('Send security notification error:', error);

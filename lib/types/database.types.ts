@@ -263,6 +263,7 @@ export type Database = {
           instagram_handle: string | null
           is_active: boolean | null
           opensea_handle: string | null
+          thank_you_message: string | null
           tiktok_handle: string | null
           twitter_handle: string | null
           updated_at: string | null
@@ -285,6 +286,7 @@ export type Database = {
           instagram_handle?: string | null
           is_active?: boolean | null
           opensea_handle?: string | null
+          thank_you_message?: string | null
           tiktok_handle?: string | null
           twitter_handle?: string | null
           updated_at?: string | null
@@ -307,6 +309,7 @@ export type Database = {
           instagram_handle?: string | null
           is_active?: boolean | null
           opensea_handle?: string | null
+          thank_you_message?: string | null
           tiktok_handle?: string | null
           twitter_handle?: string | null
           updated_at?: string | null

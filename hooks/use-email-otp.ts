@@ -25,7 +25,6 @@ export function useEmailOTP() {
         return { success: false, error: error.message }
       }
 
-      console.log('OTP sent successfully to:', email)
       return { success: true, error: null }
     } catch (error) {
       console.error('Unexpected OTP send error:', error)
@@ -57,7 +56,6 @@ export function useEmailOTP() {
         return { success: false, error: error.message }
       }
 
-      console.log('Login OTP sent successfully to:', email)
       return { success: true, error: null }
     } catch (error) {
       console.error('Unexpected OTP send error:', error)
@@ -88,7 +86,6 @@ export function useEmailOTP() {
         return { success: false, error: error.message, session: null }
       }
 
-      console.log('OTP verified successfully')
       return { success: true, error: null, session: data.session }
     } catch (error) {
       console.error('Unexpected OTP verify error:', error)

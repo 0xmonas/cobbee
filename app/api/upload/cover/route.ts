@@ -53,15 +53,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Debug: Log user ID and file details
-    console.log('🔍 Upload Debug:', {
-      userId: user.id,
-      fileName: file.name,
-      fileSize: file.size,
-      fileType: file.type,
-      expectedPath: `${user.id}/cover.${file.name.split('.').pop()}`
-    })
-
     // Upload directly (compression happens on client-side)
     // IMPORTANT: Pass server-side supabase client to maintain auth context!
     const result = await uploadCover(file, user.id, supabase)
@@ -73,8 +64,6 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
-
-    console.log('✅ Upload succeeded:', result.url)
 
     // Update user's cover_image_url in database
     const { error: updateError } = await supabase
