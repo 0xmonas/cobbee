@@ -342,7 +342,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
               <div className="space-y-6">
                 <div className="bg-gray-50 border-4 border-black rounded-xl p-6">
                   <Label className="text-sm font-bold text-gray-600 mb-2 block">Current Email</Label>
-                  <p className="text-2xl font-black">{user.email}</p>
+                  <p className="text-xl sm:text-2xl font-black break-all">{user.email}</p>
                 </div>
                 <Button
                   onClick={() => {

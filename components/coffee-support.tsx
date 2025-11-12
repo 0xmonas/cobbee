@@ -448,11 +448,12 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
                 className={`
                   py-4 px-6 rounded-xl font-black text-xl border-4 border-black
                   transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
-                  hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]
+                  hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center
                   ${isCustom ? "bg-[#0000FF] text-white" : "bg-white text-black"}
                 `}
               >
-                Custom
+                <span className="hidden sm:inline">Custom</span>
+                <span className="sm:hidden text-2xl">+</span>
               </button>
             </div>
           </div>
