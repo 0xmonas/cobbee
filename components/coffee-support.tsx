@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/tooltip"
 import { validateSupporterName, validateSupportMessage } from "@/lib/utils/validation"
 import type { Database } from "@/lib/types/database.types"
+import { useAppKit, useAppKitAccount, useDisconnect } from '@reown/appkit/react'
 
 type User = Database['public']['Tables']['users']['Row']
 
@@ -26,6 +27,11 @@ interface CoffeeSupportProps {
 type PurchaseStep = "form" | "connect-wallet" | "summary" | "processing" | "success" | "error"
 
 export function CoffeeSupport({ creator }: CoffeeSupportProps) {
+  // Reown AppKit hooks for supporter wallet
+  const { open } = useAppKit()
+  const { address, isConnected } = useAppKitAccount()
+  const { disconnect } = useDisconnect()
+
   const [coffeeCount, setCoffeeCount] = useState(1)
   const [customAmount, setCustomAmount] = useState("")
   const [message, setMessage] = useState("")
@@ -35,7 +41,6 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
   const [copiedWallet, setCopiedWallet] = useState(false)
   const [copiedSupporterWallet, setCopiedSupporterWallet] = useState(false)
   const [txnHash, setTxnHash] = useState("")
-  const [supporterWallet, setSupporterWallet] = useState("")
   const [nameError, setNameError] = useState<string | null>(null)
   const [messageError, setMessageError] = useState<string | null>(null)
 
@@ -62,36 +67,85 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
     }
   }
 
-  const handleConnectWallet = () => {
-    // Simulate wallet connection
-    // In production, this will use RainbowKit/Wagmi
-    const mockWallet = "0x" + Array.from({ length: 40 }, () => Math.floor(Math.random() * 16).toString(16)).join("")
-    setSupporterWallet(mockWallet)
-    setPurchaseStep("summary")
+  const handleConnectWallet = async () => {
+    try {
+      // Open Reown AppKit modal for supporter wallet connection
+      await open()
+      // After connection, check if wallet is connected
+      if (isConnected && address) {
+        setPurchaseStep("summary")
+      }
+    } catch (error) {
+      console.error('Wallet connection error:', error)
+    }
+  }
+
+  const handleDisconnectWallet = async () => {
+    try {
+      await disconnect()
+      // Go back to connect wallet screen
+      setPurchaseStep("connect-wallet")
+    } catch (error) {
+      console.error('Wallet disconnect error:', error)
+    }
   }
 
   const handleCopySupporterWallet = () => {
-    if (supporterWallet) {
-      navigator.clipboard.writeText(supporterWallet)
+    if (address) {
+      navigator.clipboard.writeText(address)
       setCopiedSupporterWallet(true)
       setTimeout(() => setCopiedSupporterWallet(false), 2000)
     }
   }
 
-  const handlePurchase = () => {
+  const handlePurchase = async () => {
     setPurchaseStep("processing")
 
-    // Simulate wallet connection and transaction
-    setTimeout(() => {
-      // Randomly succeed or fail for demo
-      const success = Math.random() > 0.2 // 80% success rate
-      if (success) {
-        // Generate fake transaction hash
-        const hash = "0x" + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join("")
-        setTxnHash(hash)
+    try {
+      // TODO: Implement real payment transaction here
+      // For now, we simulate a transaction and store in database
+
+      // Simulate transaction delay (3 seconds)
+      await new Promise(resolve => setTimeout(resolve, 3000))
+
+      // Generate temporary mock transaction hash
+      // This will be replaced with real transaction hash once payment system is implemented
+      const mockTxHash = "0x" + Array.from({ length: 64 }, () =>
+        Math.floor(Math.random() * 16).toString(16)).join("")
+
+      setTxnHash(mockTxHash)
+
+      // Store support in database with real data
+      const response = await fetch('/api/support/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          creator_id: creator.id,
+          supporter_name: supporterName,
+          supporter_wallet_address: address, // Real wallet address from Reown
+          coffee_count: isCustom ? Math.floor(totalAmount / Number(creator.coffee_price)) : coffeeCount,
+          message: message || null,
+          is_private: isPrivate,
+          total_amount: totalAmount,
+          transaction_hash: mockTxHash // Will be real once payment is implemented
+        })
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        console.error('Failed to create support:', result.error)
+        setPurchaseStep("error")
+        return
       }
-      setPurchaseStep(success ? "success" : "error")
-    }, 3000)
+
+      // Success!
+      setPurchaseStep("success")
+
+    } catch (error) {
+      console.error('Purchase error:', error)
+      setPurchaseStep("error")
+    }
   }
 
   const handleCopyWallet = () => {
@@ -102,7 +156,12 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
     }
   }
 
-  const handleDone = () => {
+  const handleDone = async () => {
+    // Disconnect wallet after transaction is done
+    if (isConnected) {
+      await disconnect()
+    }
+
     setPurchaseStep("form")
     setCoffeeCount(1)
     setMessage("")
@@ -320,12 +379,18 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
           </div>
 
           {/* Supporter Wallet */}
-          {supporterWallet && (
+          {address && isConnected && (
             <div className="bg-white border-4 border-black rounded-2xl p-4">
-              <p className="text-sm font-bold text-gray-600 mb-2">Your Wallet Address</p>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-bold text-gray-600">Your Wallet Address</p>
+                <div className="flex items-center gap-2 bg-green-100 border-2 border-green-600 rounded-lg px-3 py-1">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <span className="text-xs font-bold text-green-600">Connected</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 mb-3">
                 <p className="text-sm font-mono font-bold break-all flex-1">
-                  {supporterWallet}
+                  {address}
                 </p>
                 <button
                   onClick={handleCopySupporterWallet}
@@ -333,6 +398,20 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
                   title="Copy wallet address"
                 >
                   {copiedSupporterWallet ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleDisconnectWallet}
+                  className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-sm py-2 px-3 rounded-lg border-2 border-red-600 transition-all"
+                >
+                  Disconnect
+                </button>
+                <button
+                  onClick={handleConnectWallet}
+                  className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold text-sm py-2 px-3 rounded-lg border-2 border-blue-600 transition-all"
+                >
+                  Use Different Wallet
                 </button>
               </div>
             </div>

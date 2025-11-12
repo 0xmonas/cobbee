@@ -12,6 +12,7 @@ import { SimpleFooter } from "@/components/simple-footer"
 import { Logo } from "@/components/logo"
 import { TwitterIcon, InstagramIcon, GitHubIcon, TikTokIcon, OpenSeaIcon } from "@/components/icons/social-icons"
 import { CopyWalletButton } from "@/components/copy-wallet-button"
+import { SupporterWalletProvider } from "@/context/supporter-wallet-context"
 
 interface CreatorProfilePageProps {
   params: Promise<{ username: string }>
@@ -275,7 +276,9 @@ export default async function CreatorProfilePage({ params }: CreatorProfilePageP
 
             {/* Right Column - Support Form & Recent Supporters */}
             <div className="md:w-2/3 space-y-8">
-              <CoffeeSupport creator={creator} />
+              <SupporterWalletProvider>
+                <CoffeeSupport creator={creator} />
+              </SupporterWalletProvider>
               <RecentSupporters
                 supports={supports || []}
                 isOwnProfile={isOwnProfile}
