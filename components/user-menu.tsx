@@ -6,12 +6,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useRouter } from "next/navigation"
 import { User, Settings, LogOut, Eye, Wallet } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { useDisconnect } from '@reown/appkit/react'
 
 export function UserMenu() {
   const [isOpen, setIsOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+  const { disconnect } = useDisconnect()
 
   // Fetch user data on mount
   useEffect(() => {
@@ -33,10 +35,24 @@ export function UserMenu() {
   }, [])
 
   const handleLogout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push("/login")
-    router.refresh()
+    try {
+      const supabase = createClient()
+
+      // 1. Sign out from Supabase
+      await supabase.auth.signOut()
+
+      // 2. Disconnect wallet
+      await disconnect()
+
+      // 3. Redirect to landing page
+      router.push("/")
+      router.refresh()
+    } catch (error) {
+      console.error('Logout error:', error)
+      // Still redirect even if there's an error
+      router.push("/")
+      router.refresh()
+    }
   }
 
   if (loading || !user) {

@@ -141,12 +141,14 @@ export default async function LandingPage() {
         <div className="max-w-4xl mx-auto bg-[#0000FF] border-4 border-black rounded-3xl p-16 text-center shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
           <h2 className="text-5xl md:text-6xl font-black text-white mb-6 text-balance">Ready to get started?</h2>
           <p className="text-2xl font-bold text-white mb-10">Join thousands of creators already using Cobbee</p>
-          <Button
-            asChild
-            className="bg-[#CCFF00] hover:bg-[#B8E600] text-black font-black text-2xl px-12 py-8 rounded-full border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
-          >
-            <Link href="/signup">Create your page</Link>
-          </Button>
+          <div className="flex justify-center">
+            <Button
+              asChild
+              className="bg-[#CCFF00] hover:bg-[#B8E600] text-black font-black text-2xl px-12 py-8 rounded-full border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
+            >
+              <Link href="/signup">Create your page</Link>
+            </Button>
+          </div>
         </div>
       </section>
 
