@@ -3,7 +3,8 @@ import OtpEmail from '@/emails/otp-email';
 import ConfirmationEmail from '@/emails/confirmation-email';
 
 // Initialize Resend with API key from environment
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Note: API key must be set in production for email functionality to work
+const resend = new Resend(process.env.RESEND_API_KEY || '');
 
 // Default sender email (change this to your verified domain)
 const FROM_EMAIL = 'Cobbee <noreply@yourdomain.com>';

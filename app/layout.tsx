@@ -19,7 +19,6 @@ export const metadata: Metadata = {
     apple: '/apple-icon',
   },
   manifest: '/manifest.json',
-  themeColor: '#CCFF00',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
@@ -38,6 +37,10 @@ export const metadata: Metadata = {
     title: 'Cobbee - Support Creators You Love',
     description: 'Accept donations, build community, and get support from people who love your work. Support your favorite creators with crypto coffee.',
   },
+}
+
+export const viewport = {
+  themeColor: '#CCFF00',
 }
 
 export default async function RootLayout({
