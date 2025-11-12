@@ -44,15 +44,21 @@ export function SettingsForm({ user }: SettingsFormProps) {
 
   // Check URL params for email update success
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search)
-      if (params.get('email_updated') === 'true') {
-        setShowEmailUpdatedSuccess(true)
-        // Remove query param
-        window.history.replaceState({}, '', '/settings')
-        // Auto-hide after 5 seconds
-        setTimeout(() => setShowEmailUpdatedSuccess(false), 5000)
-      }
+    if (typeof window === 'undefined') return
+
+    const params = new URLSearchParams(window.location.search)
+    const emailUpdated = params.get('email_updated') === 'true'
+
+    if (emailUpdated) {
+      // Remove query param first
+      window.history.replaceState({}, '', '/settings')
+
+      // Then update state
+      setShowEmailUpdatedSuccess(true)
+
+      // Auto-hide after 5 seconds
+      const timer = setTimeout(() => setShowEmailUpdatedSuccess(false), 5000)
+      return () => clearTimeout(timer)
     }
   }, [])
 

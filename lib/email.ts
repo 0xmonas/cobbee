@@ -56,7 +56,7 @@ export async function sendOtpEmail(email: string, otpCode: string) {
       from: FROM_EMAIL,
       to: [email],
       subject: 'Verify Your Email - Cobbee',
-      react: OtpEmail({ otpCode }),
+      react: OtpEmail({ otpCode }) as React.ReactElement,
     });
 
     if (error) {
@@ -91,7 +91,7 @@ export async function sendConfirmationEmail(
         confirmationLink,
         currentEmail,
         newEmail: email,
-      }),
+      }) as React.ReactElement,
     });
 
     if (error) {
