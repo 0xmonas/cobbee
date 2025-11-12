@@ -2,8 +2,8 @@ import { Resend } from 'resend';
 import OtpEmail from '@/emails/otp-email';
 import ConfirmationEmail from '@/emails/confirmation-email';
 
-// Default sender email (change this to your verified domain)
-const FROM_EMAIL = 'Cobbee <noreply@yourdomain.com>';
+// Default sender email (verified Resend domain)
+const FROM_EMAIL = 'Cobbee <noreply@mail.cobbee.fun>';
 
 /**
  * Get Resend client instance (lazy initialization)
