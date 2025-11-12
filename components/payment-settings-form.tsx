@@ -224,31 +224,37 @@ export function PaymentSettingsForm({ user, supports }: PaymentSettingsFormProps
                 <Label htmlFor="coffeePrice" className="text-lg font-bold">
                   Price per Coffee
                 </Label>
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl font-bold">$</span>
-                  <Input
-                    id="coffeePrice"
-                    type="number"
-                    min="0.10"
-                    max="1.00"
-                    step="0.01"
-                    value={coffeePrice}
-                    onChange={(e) => {
-                      setCoffeePrice(e.target.value)
-                      // Clear error on change
-                      if (priceError) {
-                        const error = validateCoffeePrice(e.target.value)
-                        setPriceError(error)
-                      }
+                <div className="flex items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const currentPrice = parseFloat(coffeePrice) || 0.10
+                      const newPrice = Math.max(0.10, currentPrice - 0.10)
+                      setCoffeePrice(newPrice.toFixed(2))
+                      setPriceError(null)
                     }}
-                    onBlur={() => {
-                      const error = validateCoffeePrice(coffeePrice)
-                      setPriceError(error)
+                    disabled={parseFloat(coffeePrice) <= 0.10 || isSubmitting}
+                    className="bg-[#FF6B35] hover:bg-[#E55A25] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-black text-2xl w-12 h-12 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+                  >
+                    -
+                  </button>
+                  <div className="flex items-center gap-2">
+                    <span className="text-3xl font-black">${coffeePrice}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const currentPrice = parseFloat(coffeePrice) || 0.10
+                      const newPrice = Math.min(1.00, currentPrice + 0.10)
+                      setCoffeePrice(newPrice.toFixed(2))
+                      setPriceError(null)
                     }}
-                    className="border-4 border-black text-lg p-6 focus:ring-4 focus:ring-[#CCFF00] w-32"
-                    disabled={isSubmitting}
-                  />
-                  <span className="text-lg font-bold">per coffee</span>
+                    disabled={parseFloat(coffeePrice) >= 1.00 || isSubmitting}
+                    className="bg-[#0000FF] hover:bg-[#0000CC] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-black text-2xl w-12 h-12 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+                  >
+                    +
+                  </button>
+                  <span className="text-lg font-bold text-gray-600">per coffee</span>
                 </div>
                 {priceError && (
                   <p className="text-sm font-bold text-white bg-red-600 border-2 border-black rounded-lg px-3 py-2">

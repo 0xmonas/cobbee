@@ -14,6 +14,10 @@ const DISPOSABLE_EMAIL_DOMAINS = [
 export function validateFullName(name: string): string | null {
   const trimmed = name.trim()
 
+  if (!trimmed) {
+    return "Name is required"
+  }
+
   if (trimmed.length < 2) {
     return "Name must be at least 2 characters"
   }
@@ -163,6 +167,9 @@ export function validateSupporterName(name: string): string | null {
   if (!/^[a-zA-Z\s]+$/.test(trimmed)) {
     return "Name can only contain letters and spaces"
   }
+
+  // Allow single name (no last name required)
+  // User can enter just first name or full name with spaces
 
   return null
 }

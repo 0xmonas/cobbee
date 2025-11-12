@@ -144,7 +144,7 @@ export function DiscoverSearch({ creators }: DiscoverSearchProps) {
                               </div>
                               <div>
                                 <p className={`text-xs font-bold ${textColors[colorIndex]} opacity-80`}>Per coffee</p>
-                                <p className={`text-lg font-black ${textColors[colorIndex]}`}>${Number(creator.coffee_price).toFixed(0)}</p>
+                                <p className={`text-lg font-black ${textColors[colorIndex]}`}>${Number(creator.coffee_price).toFixed(2)}</p>
                               </div>
                             </div>
                           </div>
