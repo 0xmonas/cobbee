@@ -37,7 +37,6 @@ export function SettingsForm({ user }: SettingsFormProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
-  const [emailChangeRequested, setEmailChangeRequested] = useState(false)
   const [emailError, setEmailError] = useState<string | null>(null)
   const [showEmailUpdatedSuccess, setShowEmailUpdatedSuccess] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -133,7 +132,17 @@ export function SettingsForm({ user }: SettingsFormProps) {
         return
       }
 
-      // Success - refresh page to show new email
+      // Success - show success message and refresh page
+      setEmailError(null)
+
+      // Reset form state
+      setOtpSent(false)
+      setOtp('')
+      setNewEmail('')
+      setEmailMode('view')
+      setIsSubmitting(false)
+
+      // Refresh to show new email
       router.refresh()
     } catch (error) {
       console.error('Verify OTP error:', error)
@@ -163,7 +172,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
     }
 
     try {
-      // Send confirmation link for change mode
+      // Send OTP for change mode (same as add mode now)
       const response = await fetch('/api/user/email/send-change-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -173,23 +182,64 @@ export function SettingsForm({ user }: SettingsFormProps) {
       const result = await response.json()
 
       if (!response.ok) {
-        setEmailError(result.error || 'Failed to send confirmation')
+        setEmailError(result.error || 'Failed to send verification code')
         setIsSubmitting(false)
         return
       }
 
-      // Success - show confirmation message
-      setEmailChangeRequested(true)
+      // Success - show OTP input
+      setOtpSent(true)
+      setEmailError(null)
+      setIsSubmitting(false)
+    } catch (error) {
+      console.error('Send OTP error:', error)
+      setEmailError('Failed to send verification code. Please try again.')
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleVerifyChangeOTP = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+
+    // Validate OTP format
+    if (!/^\d{6}$/.test(otp)) {
+      setEmailError('Please enter a valid 6-digit code')
+      setIsSubmitting(false)
+      return
+    }
+
+    try {
+      // Verify OTP for change
+      const response = await fetch('/api/user/email/verify-change-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: newEmail, otp })
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        setEmailError(result.error || 'Invalid verification code')
+        setIsSubmitting(false)
+        return
+      }
+
+      // Success - show success message and refresh page
+      setEmailError(null)
+
+      // Reset form state
+      setOtpSent(false)
+      setOtp('')
+      setNewEmail('')
+      setEmailMode('view')
       setIsSubmitting(false)
 
-      // Reset after 10 seconds
-      setTimeout(() => {
-        setEmailChangeRequested(false)
-        setEmailError(null)
-      }, 10000)
+      // Refresh to show new email
+      router.refresh()
     } catch (error) {
-      console.error('Send email request error:', error)
-      setEmailError('Failed to send confirmation. Please try again.')
+      console.error('Verify change OTP error:', error)
+      setEmailError('Verification failed. Please try again.')
       setIsSubmitting(false)
     }
   }
@@ -283,28 +333,6 @@ export function SettingsForm({ user }: SettingsFormProps) {
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-6 h-6" />
                   <span className="font-bold">Email updated successfully! Your new email is now active.</span>
-                </div>
-              </div>
-            )}
-
-            {/* Confirmation message after sending email request */}
-            {emailChangeRequested && (
-              <div className="bg-[#0000FF] text-white p-6 rounded-xl border-4 border-black mb-6">
-                <div className="flex items-start gap-3">
-                  <MailIcon className="w-6 h-6 flex-shrink-0 mt-1" />
-                  <div className="flex-1">
-                    <p className="text-lg font-black mb-2">
-                      {emailMode === 'add' ? 'Verification link sent!' : 'Confirmation link sent!'}
-                    </p>
-                    <p className="text-sm font-bold mb-3">
-                      Please check <span className="bg-[#CCFF00] text-black px-2 py-1 rounded">{newEmail}</span> and click the link to complete.
-                    </p>
-                    {emailMode === 'change' && user.email && (
-                      <p className="text-xs font-bold opacity-90">
-                        A security notification was also sent to your current email: <span className="underline">{user.email}</span>
-                      </p>
-                    )}
-                  </div>
                 </div>
               </div>
             )}
@@ -449,8 +477,8 @@ export function SettingsForm({ user }: SettingsFormProps) {
               </form>
             )}
 
-            {/* State 3: Change mode with confirmation link */}
-            {emailMode === 'change' && (
+            {/* State 3: Change mode with OTP */}
+            {emailMode === 'change' && !otpSent && (
               <form onSubmit={handleChangeEmail} className="space-y-6">
                 {user.email && (
                   <div className="bg-gray-50 border-4 border-black rounded-xl p-4">
@@ -481,7 +509,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
                     className="border-4 border-black text-lg p-6 focus:ring-4 focus:ring-[#CCFF00]"
                     placeholder="your.email@example.com"
                     required
-                    disabled={emailChangeRequested || isSubmitting}
+                    disabled={isSubmitting}
                   />
                   {emailError && (
                     <p className="text-sm font-bold text-white bg-red-600 border-2 border-black rounded-lg px-3 py-2">
@@ -489,17 +517,22 @@ export function SettingsForm({ user }: SettingsFormProps) {
                     </p>
                   )}
                   <p className="text-sm text-gray-600 font-bold">
-                    You will receive a confirmation link at your new address
+                    You will receive a 6-digit verification code
                   </p>
+                  {user.email && (
+                    <p className="text-sm text-gray-600 font-bold">
+                      A security notification will be sent to your current email: <span className="underline">{user.email}</span>
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex gap-4">
                   <Button
                     type="submit"
-                    disabled={emailChangeRequested || isSubmitting}
+                    disabled={isSubmitting}
                     className="bg-[#CCFF00] hover:bg-[#B8E600] text-black border-4 border-black text-lg font-bold px-8 py-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {emailChangeRequested ? 'Confirmation Sent' : isSubmitting ? 'Sending...' : 'Send Confirmation Link'}
+                    {isSubmitting ? 'Sending...' : 'Send Code'}
                   </Button>
 
                   <Button
@@ -508,13 +541,95 @@ export function SettingsForm({ user }: SettingsFormProps) {
                       setEmailMode('view')
                       setNewEmail('')
                       setEmailError(null)
-                      setEmailChangeRequested(false)
                     }}
-                    disabled={emailChangeRequested || isSubmitting}
+                    disabled={isSubmitting}
                     variant="outline"
                     className="border-4 border-black text-lg font-bold px-8 py-6 hover:bg-gray-100 hover:text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Cancel
+                  </Button>
+                </div>
+              </form>
+            )}
+
+            {/* OTP Verification Step for Change */}
+            {emailMode === 'change' && otpSent && (
+              <form onSubmit={handleVerifyChangeOTP} className="space-y-6">
+                {user.email && (
+                  <div className="bg-gray-50 border-4 border-black rounded-xl p-4 mb-4">
+                    <Label className="text-sm font-bold text-gray-600 mb-1 block">Current Email</Label>
+                    <p className="text-lg font-black">{user.email}</p>
+                  </div>
+                )}
+
+                <div className="bg-[#0000FF] text-white p-6 rounded-xl border-4 border-black">
+                  <div className="flex items-start gap-3">
+                    <MailIcon className="w-6 h-6 shrink-0 mt-1" />
+                    <div className="flex-1">
+                      <p className="text-lg font-black mb-2">Code sent!</p>
+                      <p className="text-sm font-bold mb-2">
+                        We sent a 6-digit code to <span className="bg-[#CCFF00] text-black px-2 py-1 rounded">{newEmail}</span>
+                      </p>
+                      <p className="text-xs font-bold opacity-90">
+                        A security notification was also sent to your current email: <span className="underline">{user.email}</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="changeOtp" className="text-lg font-bold">
+                    Verification Code
+                  </Label>
+                  <Input
+                    id="changeOtp"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="\d{6}"
+                    maxLength={6}
+                    value={otp}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '')
+                      setOtp(value)
+                      setEmailError(null)
+                    }}
+                    className="border-4 border-black text-3xl font-black text-center p-6 focus:ring-4 focus:ring-[#CCFF00] tracking-widest"
+                    placeholder="000000"
+                    required
+                    disabled={isSubmitting}
+                    autoFocus
+                  />
+                  {emailError && (
+                    <p className="text-sm font-bold text-white bg-red-600 border-2 border-black rounded-lg px-3 py-2">
+                      {emailError}
+                    </p>
+                  )}
+                  <p className="text-sm text-gray-600 font-bold">
+                    Enter the 6-digit code from your new email
+                  </p>
+                </div>
+
+                <div className="flex gap-4">
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting || otp.length !== 6}
+                    className="bg-[#CCFF00] hover:bg-[#B8E600] text-black border-4 border-black text-lg font-bold px-8 py-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? 'Verifying...' : 'Verify Code'}
+                  </Button>
+
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      setOtpSent(false)
+                      setOtp('')
+                      setEmailError(null)
+                    }}
+                    disabled={isSubmitting}
+                    variant="outline"
+                    className="border-4 border-black text-lg font-bold px-8 py-6 hover:bg-gray-100 hover:text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Back
                   </Button>
                 </div>
               </form>
