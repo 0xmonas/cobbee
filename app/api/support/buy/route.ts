@@ -157,6 +157,12 @@ export async function POST(request: NextRequest) {
     // =========================================================================
 
     try {
+      // Log the payment header for debugging
+      console.log('[x402] Payment header received:', {
+        headerLength: paymentHeader.length,
+        headerPreview: paymentHeader.substring(0, 100),
+      })
+
       // Construct the resource URL (for paymentRequirements)
       const resourceUrl = new URL(request.url)
 
@@ -224,7 +230,20 @@ export async function POST(request: NextRequest) {
       }
 
       // Extract payer address from verification result
-      const paymentPayload = JSON.parse(paymentHeader)
+      let paymentPayload
+      try {
+        paymentPayload = JSON.parse(paymentHeader)
+        console.log('[x402] Payment payload parsed:', {
+          scheme: paymentPayload.scheme,
+          network: paymentPayload.network,
+          hasPayload: !!paymentPayload.payload,
+        })
+      } catch (parseError) {
+        console.error('[x402] Failed to parse payment header:', parseError)
+        console.error('[x402] Payment header content:', paymentHeader)
+        throw new Error('Invalid payment header format')
+      }
+
       const supporterWalletAddress = verificationResult.payer || paymentPayload.payload?.authorization?.from
 
       console.log('[x402] Payment verified:', {
@@ -348,11 +367,17 @@ export async function POST(request: NextRequest) {
         }
       )
     } catch (parseError) {
-      console.error('Failed to parse payment header:', parseError)
+      console.error('[x402] Payment processing error:', parseError)
+      if (parseError instanceof Error) {
+        console.error('[x402] Error details:', {
+          message: parseError.message,
+          stack: parseError.stack,
+        })
+      }
       return Response.json(
         {
           error: 'Invalid payment header',
-          details: 'Could not parse x-payment header',
+          details: parseError instanceof Error ? parseError.message : 'Could not parse x-payment header',
         },
         { status: 400 }
       )
