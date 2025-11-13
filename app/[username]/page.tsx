@@ -36,20 +36,27 @@ export default async function CreatorProfilePage({ params }: CreatorProfilePageP
     notFound()
   }
 
-  // Fetch public supports for this creator (not private, not hidden)
-  // Use correct column names: is_message_private, is_hidden_by_creator
-  const { data: supports } = await supabase
+  // Check if viewing own profile (before fetching supports)
+  const isOwnProfile = authUser?.id === creator.id
+
+  // Fetch supports based on who is viewing
+  // - If viewing own profile: fetch all supports (including hidden, but not private)
+  // - If viewing others' profile: fetch only public, non-hidden supports
+  let supportsQuery = supabase
     .from('supports')
     .select('*')
     .eq('creator_id', creator.id)
     .eq('status', 'confirmed')  // Only confirmed supports
-    .eq('is_message_private', false)  // Fixed column name
-    .eq('is_hidden_by_creator', false)  // Fixed column name
+    .eq('is_message_private', false)  // Never show private messages
+
+  // Only filter hidden messages if NOT viewing own profile
+  if (!isOwnProfile) {
+    supportsQuery = supportsQuery.eq('is_hidden_by_creator', false)
+  }
+
+  const { data: supports } = await supportsQuery
     .order('created_at', { ascending: false })
     .limit(50)
-
-  // Check if viewing own profile
-  const isOwnProfile = authUser?.id === creator.id
 
   // Get current user's profile if authenticated
   let currentUserProfile: { username: string } | null = null

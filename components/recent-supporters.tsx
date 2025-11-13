@@ -94,10 +94,9 @@ export function RecentSupporters({
     }
   }
 
-  // Filter out hidden messages if not own profile
-  const visibleSupports = isOwnProfile
-    ? supports
-    : supports.filter(support => !hiddenMessages[support.id] && !support.is_message_private)
+  // No need to filter here - server already filtered based on isOwnProfile
+  // Just use all supports passed from server
+  const visibleSupports = supports
 
   if (supports.length === 0) {
     return (
