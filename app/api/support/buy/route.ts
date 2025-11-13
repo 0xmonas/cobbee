@@ -195,10 +195,20 @@ export async function POST(request: NextRequest) {
         },
       }
 
-      // Parse payment header once for use in verify and settle
+      // Decode and parse payment header once for use in verify and settle
+      // The X-PAYMENT header is base64 encoded
       let paymentPayload
       try {
-        paymentPayload = JSON.parse(paymentHeader)
+        // Decode base64 to get JSON string
+        const decodedHeader = Buffer.from(paymentHeader, 'base64').toString('utf-8')
+        console.log('[x402] Payment header decoded:', {
+          originalLength: paymentHeader.length,
+          decodedLength: decodedHeader.length,
+          decodedPreview: decodedHeader.substring(0, 200),
+        })
+
+        // Parse JSON
+        paymentPayload = JSON.parse(decodedHeader)
         console.log('[x402] Payment payload parsed successfully:', {
           scheme: paymentPayload.scheme,
           network: paymentPayload.network,
