@@ -170,7 +170,9 @@ export async function POST(request: NextRequest) {
       // Log the payment header for debugging
       console.log('[x402] Payment header received:', {
         headerLength: paymentHeader.length,
-        headerPreview: paymentHeader.substring(0, 100),
+        headerType: typeof paymentHeader,
+        headerPreview: paymentHeader.substring(0, 200),
+        isJSON: paymentHeader.startsWith('{') || paymentHeader.startsWith('['),
       })
 
       // Construct the resource URL (for paymentRequirements)
@@ -197,15 +199,29 @@ export async function POST(request: NextRequest) {
       let paymentPayload
       try {
         paymentPayload = JSON.parse(paymentHeader)
-        console.log('[x402] Payment payload parsed:', {
+        console.log('[x402] Payment payload parsed successfully:', {
           scheme: paymentPayload.scheme,
           network: paymentPayload.network,
           hasPayload: !!paymentPayload.payload,
         })
       } catch (parseError) {
-        console.error('[x402] Failed to parse payment header:', parseError)
-        console.error('[x402] Payment header content:', paymentHeader)
-        throw new Error('Invalid payment header format')
+        console.error('[x402] Failed to parse payment header:', {
+          error: parseError instanceof Error ? parseError.message : String(parseError),
+          headerLength: paymentHeader.length,
+          headerPreview: paymentHeader.substring(0, 200),
+          headerType: typeof paymentHeader,
+        })
+        return Response.json(
+          {
+            error: 'Invalid payment header',
+            details: `Could not parse payment header: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`,
+            debug: {
+              headerLength: paymentHeader.length,
+              headerPreview: paymentHeader.substring(0, 100),
+            },
+          },
+          { status: 400 }
+        )
       }
 
       // Verify payment via Facilitator using x402 protocol format
