@@ -50,15 +50,21 @@ export function createViemWalletClient(address: `0x${string}`): WalletClient | n
 
 /**
  * Create x402-enabled fetch function with wallet
+ * @param address - Wallet address
+ * @param maxValue - Maximum payment amount in smallest units (default: 100 USDC = 100,000,000)
  */
-export function createX402Fetch(address: `0x${string}`) {
+export function createX402Fetch(address: `0x${string}`, maxValue?: bigint) {
   const walletClient = createViemWalletClient(address)
 
   if (!walletClient) {
     throw new Error('Failed to create wallet client')
   }
 
-  return wrapFetchWithPayment(fetch, walletClient)
+  // Default to 100 USDC (100 * 10^6 = 100,000,000 smallest units)
+  // This allows for reasonable coffee purchases (1-100 coffees at ~$1 each)
+  const maxPaymentValue = maxValue ?? BigInt(100 * 10 ** 6)
+
+  return wrapFetchWithPayment(fetch, walletClient, maxPaymentValue)
 }
 
 /**
