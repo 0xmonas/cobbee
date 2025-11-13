@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { validateSupporterName, validateSupportMessage } from '@/lib/utils/validation'
 import { getX402Config, usdcToSmallestUnit } from '@/lib/x402-config'
+import { isCDPFacilitatorConfigured } from '@/lib/cdp-facilitator'
 
 /**
  * x402 Payment Protocol Endpoint
@@ -33,6 +34,16 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
     const x402Config = getX402Config()
+
+    // Determine facilitator URL (CDP if configured, otherwise community facilitator)
+    const facilitatorUrl = isCDPFacilitatorConfigured()
+      ? 'https://api.cdp.coinbase.com/platform/v2/x402'
+      : x402Config.facilitatorUrl
+
+    console.log('[x402] Using facilitator:', {
+      type: isCDPFacilitatorConfigured() ? 'CDP (authenticated)' : 'Community',
+      url: facilitatorUrl,
+    })
 
     // Parse request body
     const body: SupportBuyRequest = await request.json()
@@ -188,20 +199,49 @@ export async function POST(request: NextRequest) {
         network: x402Config.network,
         amount: totalAmountSmallestUnit.toString(),
         recipient: creator.wallet_address,
-        facilitator: x402Config.facilitatorUrl,
+        facilitator: facilitatorUrl,
       })
 
-      const facilitatorResponse = await fetch(`${x402Config.facilitatorUrl}/verify`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          x402Version: 1,
-          paymentHeader: paymentHeader, // Raw X-PAYMENT header string
-          paymentRequirements: paymentRequirements,
-        }),
-      })
+      // Prepare headers for facilitator request
+      const facilitatorHeaders: Record<string, string> = {
+        'Content-Type': 'application/json',
+      }
+
+      // Add CDP authentication if configured
+      if (isCDPFacilitatorConfigured()) {
+        const apiKeyId = process.env.CDP_API_KEY_ID!
+        const apiKeySecret = process.env.CDP_API_KEY_SECRET!
+        // CDP uses Basic Auth with API key
+        const authString = Buffer.from(`${apiKeyId}:${apiKeySecret}`).toString('base64')
+        facilitatorHeaders['Authorization'] = `Basic ${authString}`
+      }
+
+      let facilitatorResponse
+      try {
+        facilitatorResponse = await fetch(`${facilitatorUrl}/verify`, {
+          method: 'POST',
+          headers: facilitatorHeaders,
+          body: JSON.stringify({
+            x402Version: 1,
+            paymentHeader: paymentHeader, // Raw X-PAYMENT header string
+            paymentRequirements: paymentRequirements,
+          }),
+          signal: AbortSignal.timeout(10000), // 10 second timeout
+        })
+      } catch (fetchError) {
+        console.error('[x402] Facilitator fetch failed:', {
+          error: fetchError instanceof Error ? fetchError.message : String(fetchError),
+          facilitatorUrl: facilitatorUrl,
+          network: x402Config.network,
+        })
+        return Response.json(
+          {
+            error: 'Facilitator connection failed',
+            details: `Could not connect to payment facilitator: ${fetchError instanceof Error ? fetchError.message : 'Unknown error'}`,
+          },
+          { status: 502 }
+        )
+      }
 
       if (!facilitatorResponse.ok) {
         const errorData = await facilitatorResponse.json().catch(() => ({}))
@@ -267,17 +307,31 @@ export async function POST(request: NextRequest) {
       // For "exact" scheme, the facilitator watches the blockchain and returns
       // the transaction hash once the payment is confirmed on-chain
       // -----------------------------------------------------------------------
-      const settlementResponse = await fetch(`${x402Config.facilitatorUrl}/settle`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          x402Version: 1,
-          paymentHeader: paymentHeader,
-          paymentRequirements: paymentRequirements,
-        }),
-      })
+      let settlementResponse
+      try {
+        settlementResponse = await fetch(`${facilitatorUrl}/settle`, {
+          method: 'POST',
+          headers: facilitatorHeaders,
+          body: JSON.stringify({
+            x402Version: 1,
+            paymentHeader: paymentHeader,
+            paymentRequirements: paymentRequirements,
+          }),
+          signal: AbortSignal.timeout(30000), // 30 second timeout for settlement
+        })
+      } catch (fetchError) {
+        console.error('[x402] Settlement fetch failed:', {
+          error: fetchError instanceof Error ? fetchError.message : String(fetchError),
+          facilitatorUrl: facilitatorUrl,
+        })
+        return Response.json(
+          {
+            error: 'Settlement connection failed',
+            details: `Could not connect to facilitator for settlement: ${fetchError instanceof Error ? fetchError.message : 'Unknown error'}`,
+          },
+          { status: 502 }
+        )
+      }
 
       if (!settlementResponse.ok) {
         const errorData = await settlementResponse.json().catch(() => ({}))

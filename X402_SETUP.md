@@ -116,8 +116,11 @@ Add the following x402 configuration to `.env.local`:
 # x402 Payment Protocol Configuration
 NEXT_PUBLIC_X402_NETWORK=base-sepolia  # Use "base" for mainnet
 
-# Facilitator URL (Coinbase-hosted)
-NEXT_PUBLIC_X402_FACILITATOR_URL=https://facilitator.x402.coinbase.com
+# Facilitator URL (Community facilitators - no API keys required)
+# Testnet: https://x402.org/facilitator (Base Sepolia, Solana Devnet)
+# Mainnet: https://facilitator.x402.rs (Base, Base Sepolia, XDC)
+# Note: Coinbase CDP facilitator (https://facilitator.x402.coinbase.com) requires API keys
+NEXT_PUBLIC_X402_FACILITATOR_URL=https://x402.org/facilitator
 
 # Base Sepolia Testnet
 NEXT_PUBLIC_BASE_SEPOLIA_CHAIN_ID=84532
@@ -403,18 +406,56 @@ WHERE username = 'alice';
    - Sepolia: `0x036CbD53842c5426634e7929541eC2318f3dCF7e`
    - Mainnet: `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`
 
+### Facilitator Connection Failed / "fetch failed"
+
+**Problem:** Backend cannot connect to facilitator
+
+**Root Cause:**
+- Coinbase's CDP facilitator (`https://facilitator.x402.coinbase.com`) requires API keys
+- Community facilitators are better for testing
+
+**Solutions:**
+1. **Use community facilitators** (no API keys required):
+   ```bash
+   # For testnet (Base Sepolia)
+   NEXT_PUBLIC_X402_FACILITATOR_URL=https://x402.org/facilitator
+
+   # For mainnet (Base)
+   NEXT_PUBLIC_X402_FACILITATOR_URL=https://facilitator.x402.rs
+   ```
+
+2. **Or get CDP API keys** (for production with Coinbase facilitator):
+   - Sign up at https://cdp.coinbase.com
+   - Create API credentials
+   - Set environment variables:
+     ```bash
+     CDP_API_KEY_ID=your-api-key-id
+     CDP_API_KEY_SECRET=your-api-key-secret
+     ```
+   - Use facilitator object instead of URL (see Coinbase docs)
+
+3. **Check network connectivity:**
+   ```bash
+   curl -X POST https://x402.org/facilitator/verify \
+     -H "Content-Type: application/json" \
+     -d '{"x402Version":1}'
+   ```
+
+4. **Verify Vercel environment variables:**
+   - Go to Vercel Dashboard → Your Project → Settings → Environment Variables
+   - Ensure `NEXT_PUBLIC_X402_FACILITATOR_URL` is set correctly
+   - Redeploy after changing env vars
+
 ### Facilitator Returns 402 / Verification Failed
 
 **Problem:** Payment executed but verification fails
 
 **Solutions:**
-1. Check facilitator URL is correct:
-   ```bash
-   NEXT_PUBLIC_X402_FACILITATOR_URL=https://facilitator.x402.coinbase.com
-   ```
+1. Check facilitator URL is correct and accessible
 2. Verify transaction was actually sent on-chain
 3. Check amount matches exactly (6 decimals for USDC)
 4. Ensure recipient address matches creator's wallet
+5. Check backend server logs for detailed error messages
 
 ### TypeScript Errors
 

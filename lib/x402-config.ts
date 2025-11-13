@@ -40,7 +40,9 @@ const BASE_SEPOLIA_CONFIG: X402Config = {
   chainId: 84532,
   rpcUrl: process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL || 'https://sepolia.base.org',
   usdcAddress: process.env.NEXT_PUBLIC_USDC_BASE_SEPOLIA || '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
-  facilitatorUrl: process.env.NEXT_PUBLIC_X402_FACILITATOR_URL || 'https://facilitator.x402.coinbase.com',
+  // Using community facilitator for Base Sepolia (testnet)
+  // Coinbase CDP facilitator requires API keys
+  facilitatorUrl: process.env.NEXT_PUBLIC_X402_FACILITATOR_URL || 'https://x402.org/facilitator',
   networkName: 'Base Sepolia Testnet',
 }
 
@@ -52,7 +54,9 @@ const BASE_MAINNET_CONFIG: X402Config = {
   chainId: 8453,
   rpcUrl: process.env.NEXT_PUBLIC_BASE_MAINNET_RPC_URL || 'https://mainnet.base.org',
   usdcAddress: process.env.NEXT_PUBLIC_USDC_BASE_MAINNET || '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-  facilitatorUrl: process.env.NEXT_PUBLIC_X402_FACILITATOR_URL || 'https://facilitator.x402.coinbase.com',
+  // Using x402.rs facilitator for Base mainnet (production-ready)
+  // Coinbase CDP facilitator requires API keys
+  facilitatorUrl: process.env.NEXT_PUBLIC_X402_FACILITATOR_URL || 'https://facilitator.x402.rs',
   networkName: 'Base Mainnet',
 }
 
