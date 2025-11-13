@@ -181,6 +181,7 @@ export async function POST(request: NextRequest) {
       const resourceUrl = new URL(request.url)
 
       // Build paymentRequirements object matching the 402 response
+      // IMPORTANT: Must use EIP-55 checksummed addresses for signature verification
       const paymentRequirements = {
         scheme: 'exact',
         network: x402Config.network,
@@ -188,11 +189,13 @@ export async function POST(request: NextRequest) {
         resource: resourceUrl.toString(),
         description: `Buy ${coffee_count} coffee${coffee_count > 1 ? 's' : ''} for ${creator.display_name}`,
         mimeType: 'application/json',
-        payTo: creator.wallet_address,
+        payTo: getAddress(creator.wallet_address), // EIP-55 checksum format required
         maxTimeoutSeconds: 300,
-        asset: x402Config.usdcAddress,
+        asset: getAddress(x402Config.usdcAddress), // EIP-55 checksum format required
         extra: {
-          name: 'USD Coin',
+          // EIP-3009 metadata for USDC token (Base Sepolia)
+          // Verified from contract: name() = "USDC", version() = "2"
+          name: 'USDC',
           version: '2',
         },
       }
