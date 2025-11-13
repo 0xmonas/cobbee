@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { validateSupporterName, validateSupportMessage } from '@/lib/utils/validation'
-import { getX402Config, usdcToSmallestUnit, smallestUnitToUSDC } from '@/lib/x402-config'
+import { getX402Config, usdcToSmallestUnit } from '@/lib/x402-config'
 
 /**
  * x402 Payment Protocol Endpoint
@@ -27,15 +27,6 @@ interface SupportBuyRequest {
   coffee_count: number
   message?: string
   is_private?: boolean
-}
-
-interface X402PaymentInstructions {
-  amount: string // Amount in smallest unit (e.g., "1000000" for 1 USDC)
-  currency: string // "USDC"
-  recipient: string // Creator's wallet address
-  network: string // "base-sepolia" or "base"
-  chainId: number
-  tokenAddress: string // USDC contract address
 }
 
 export async function POST(request: NextRequest) {
@@ -114,43 +105,48 @@ export async function POST(request: NextRequest) {
     const totalAmountSmallestUnit = usdcToSmallestUnit(totalAmount)
 
     // =========================================================================
-    // CHECK FOR x-payment HEADER
+    // CHECK FOR X-PAYMENT HEADER (x402 protocol uses uppercase)
     // =========================================================================
 
-    const paymentHeader = request.headers.get('x-payment')
+    const paymentHeader = request.headers.get('X-PAYMENT') || request.headers.get('x-payment')
 
     if (!paymentHeader) {
       // -----------------------------------------------------------------------
       // FIRST REQUEST (No payment yet)
-      // Return 402 Payment Required with payment instructions
+      // Return 402 Payment Required with x402 protocol format
       // -----------------------------------------------------------------------
 
-      const paymentInstructions: X402PaymentInstructions = {
-        amount: totalAmountSmallestUnit.toString(),
-        currency: 'USDC',
-        recipient: creator.wallet_address,
-        network: x402Config.network,
-        chainId: x402Config.chainId,
-        tokenAddress: x402Config.usdcAddress,
-      }
+      // Construct the resource URL (the current request URL)
+      const resourceUrl = new URL(request.url)
 
       return Response.json(
         {
-          error: 'Payment Required',
-          message: `Buy ${coffee_count} coffee${coffee_count > 1 ? 's' : ''} for ${creator.display_name}`,
-          payment: paymentInstructions,
+          x402Version: 1,
+          error: 'payment-required',
+          accepts: [
+            {
+              scheme: 'exact',
+              network: x402Config.network,
+              maxAmountRequired: totalAmountSmallestUnit.toString(),
+              resource: resourceUrl.toString(),
+              description: `Buy ${coffee_count} coffee${coffee_count > 1 ? 's' : ''} for ${creator.display_name}`,
+              mimeType: 'application/json',
+              outputSchema: null, // Optional: JSON schema for response
+              payTo: creator.wallet_address,
+              maxTimeoutSeconds: 300, // 5 minutes
+              asset: x402Config.usdcAddress,
+              extra: {
+                // EIP-3009 metadata for USDC token
+                name: 'USD Coin',
+                version: '2',
+              },
+            },
+          ],
         },
         {
           status: 402,
           headers: {
             'Content-Type': 'application/json',
-            'X-Payment-Required': 'true',
-            'X-Payment-Amount': totalAmountSmallestUnit.toString(),
-            'X-Payment-Currency': 'USDC',
-            'X-Payment-Recipient': creator.wallet_address,
-            'X-Payment-Network': x402Config.network,
-            'X-Payment-ChainId': x402Config.chainId.toString(),
-            'X-Payment-Token': x402Config.usdcAddress,
           },
         }
       )
@@ -162,21 +158,44 @@ export async function POST(request: NextRequest) {
     // =========================================================================
 
     try {
-      // Parse payment proof from header
-      const paymentProof = JSON.parse(paymentHeader)
+      // Construct the resource URL (for paymentRequirements)
+      const resourceUrl = new URL(request.url)
 
-      // Verify payment via Facilitator
+      // Build paymentRequirements object matching the 402 response
+      const paymentRequirements = {
+        scheme: 'exact',
+        network: x402Config.network,
+        maxAmountRequired: totalAmountSmallestUnit.toString(),
+        resource: resourceUrl.toString(),
+        description: `Buy ${coffee_count} coffee${coffee_count > 1 ? 's' : ''} for ${creator.display_name}`,
+        mimeType: 'application/json',
+        outputSchema: null,
+        payTo: creator.wallet_address,
+        maxTimeoutSeconds: 300,
+        asset: x402Config.usdcAddress,
+        extra: {
+          name: 'USD Coin',
+          version: '2',
+        },
+      }
+
+      // Verify payment via Facilitator using x402 protocol format
+      console.log('[x402] Verifying payment:', {
+        network: x402Config.network,
+        amount: totalAmountSmallestUnit.toString(),
+        recipient: creator.wallet_address,
+        facilitator: x402Config.facilitatorUrl,
+      })
+
       const facilitatorResponse = await fetch(`${x402Config.facilitatorUrl}/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          payment: paymentProof,
-          expectedAmount: totalAmountSmallestUnit.toString(),
-          expectedRecipient: creator.wallet_address,
-          expectedToken: x402Config.usdcAddress,
-          expectedNetwork: x402Config.network,
+          x402Version: 1,
+          paymentHeader: paymentHeader, // Raw X-PAYMENT header string
+          paymentRequirements: paymentRequirements,
         }),
       })
 
@@ -186,27 +205,35 @@ export async function POST(request: NextRequest) {
         return Response.json(
           {
             error: 'Payment verification failed',
-            details: errorData.error || 'Invalid payment proof',
+            details: errorData.error || errorData.invalidReason || 'Invalid payment proof',
           },
           { status: 402 }
         )
       }
 
       const verificationResult = await facilitatorResponse.json()
+      console.log('[x402] Verification result:', verificationResult)
 
-      if (!verificationResult.verified) {
+      // Protocol uses 'isValid' not 'verified'
+      if (!verificationResult.isValid) {
         return Response.json(
           {
             error: 'Payment verification failed',
-            details: 'Payment could not be verified',
+            details: verificationResult.invalidReason || 'Payment could not be verified',
           },
           { status: 402 }
         )
       }
 
-      // Extract transaction details from verification result
-      const transactionHash = verificationResult.transactionHash || paymentProof.transactionHash
-      const supporterWalletAddress = verificationResult.from || paymentProof.from
+      // Extract payer address from verification result
+      const paymentPayload = JSON.parse(paymentHeader)
+      const supporterWalletAddress = verificationResult.payer || paymentPayload.payload?.authorization?.from
+
+      console.log('[x402] Payment verified:', {
+        payer: supporterWalletAddress,
+        network: paymentPayload.network,
+        scheme: paymentPayload.scheme,
+      })
 
       if (!supporterWalletAddress) {
         return Response.json(
@@ -216,6 +243,55 @@ export async function POST(request: NextRequest) {
           },
           { status: 400 }
         )
+      }
+
+      // -----------------------------------------------------------------------
+      // Settle payment to get transaction hash
+      // For "exact" scheme, the facilitator watches the blockchain and returns
+      // the transaction hash once the payment is confirmed on-chain
+      // -----------------------------------------------------------------------
+      const settlementResponse = await fetch(`${x402Config.facilitatorUrl}/settle`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          x402Version: 1,
+          paymentHeader: paymentHeader,
+          paymentRequirements: paymentRequirements,
+        }),
+      })
+
+      if (!settlementResponse.ok) {
+        const errorData = await settlementResponse.json().catch(() => ({}))
+        console.error('[x402] Settlement failed:', errorData)
+        return Response.json(
+          {
+            error: 'Payment settlement failed',
+            details: errorData.error || 'Could not settle payment on-chain',
+          },
+          { status: 402 }
+        )
+      }
+
+      const settlementResult = await settlementResponse.json()
+      console.log('[x402] Settlement result:', settlementResult)
+
+      if (!settlementResult.success) {
+        return Response.json(
+          {
+            error: 'Payment settlement failed',
+            details: settlementResult.error || 'Settlement was not successful',
+          },
+          { status: 402 }
+        )
+      }
+
+      // Extract transaction hash from settlement result
+      const transactionHash = settlementResult.txHash || settlementResult.transaction
+
+      if (!transactionHash) {
+        console.warn('[x402] No transaction hash returned from settlement')
       }
 
       // -----------------------------------------------------------------------

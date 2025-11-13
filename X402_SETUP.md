@@ -266,22 +266,40 @@ POST /api/support/buy
 
 #### 2. **Backend Returns 402**
 
-Server calculates price and responds with 402:
+Server calculates price and responds with 402 in x402 protocol format:
 
 ```typescript
 HTTP 402 Payment Required
 {
-  "error": "Payment Required",
-  "payment": {
-    "amount": "5000000",  // 5 USDC (6 decimals)
-    "currency": "USDC",
-    "recipient": "0xCreatorWalletAddress",
+  "x402Version": 1,
+  "error": "payment-required",
+  "accepts": [{
+    "scheme": "exact",
     "network": "base-sepolia",
-    "chainId": 84532,
-    "tokenAddress": "0x036Cb..."
-  }
+    "maxAmountRequired": "5000000",  // 5 USDC (6 decimals)
+    "resource": "http://localhost:3000/api/support/buy",
+    "description": "Buy 5 coffees for Alice",
+    "mimeType": "application/json",
+    "payTo": "0xCreatorWalletAddress",
+    "maxTimeoutSeconds": 300,
+    "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e"  // USDC token address
+  }]
 }
 ```
+
+**Key fields:**
+- `x402Version`: Protocol version (currently 1)
+- `error`: Error reason enum value (e.g., "payment-required")
+- `accepts`: Array of payment requirements
+  - `scheme`: Payment scheme ("exact" for fixed amount)
+  - `network`: Network name (e.g., "base-sepolia", "base")
+  - `maxAmountRequired`: Maximum amount in smallest units (wei/satoshi equivalent)
+  - `resource`: URL of the resource being purchased
+  - `description`: Human-readable description
+  - `mimeType`: Response content type
+  - `payTo`: Recipient wallet address
+  - `maxTimeoutSeconds`: Payment validity timeout
+  - `asset`: Token contract address (USDC)
 
 #### 3. **x402-fetch Handles Payment**
 
