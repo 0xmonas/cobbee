@@ -131,7 +131,6 @@ export async function POST(request: NextRequest) {
               resource: resourceUrl.toString(),
               description: `Buy ${coffee_count} coffee${coffee_count > 1 ? 's' : ''} for ${creator.display_name}`,
               mimeType: 'application/json',
-              outputSchema: null, // Optional: JSON schema for response
               payTo: creator.wallet_address,
               maxTimeoutSeconds: 300, // 5 minutes
               asset: x402Config.usdcAddress,
@@ -169,7 +168,6 @@ export async function POST(request: NextRequest) {
         resource: resourceUrl.toString(),
         description: `Buy ${coffee_count} coffee${coffee_count > 1 ? 's' : ''} for ${creator.display_name}`,
         mimeType: 'application/json',
-        outputSchema: null,
         payTo: creator.wallet_address,
         maxTimeoutSeconds: 300,
         asset: x402Config.usdcAddress,
