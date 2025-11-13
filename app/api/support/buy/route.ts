@@ -437,11 +437,13 @@ export async function POST(request: NextRequest) {
           supporter_name: supporter_name.trim(),
           supporter_wallet_address: supporterWalletAddress,
           coffee_count,
+          coffee_price_at_time: coffeePrice, // Price at transaction time
           message: message?.trim() || null,
-          is_private: is_private || false,
-          is_hidden: false,
+          is_message_private: is_private || false,
+          is_hidden_by_creator: false,
           total_amount: totalAmount,
-          transaction_hash: transactionHash,
+          tx_hash: transactionHash,
+          chain_id: x402Config.chainId, // Base Sepolia = 84532, Base = 8453
           status: 'confirmed', // Payment verified, mark as confirmed
           created_at: new Date().toISOString(),
         })
