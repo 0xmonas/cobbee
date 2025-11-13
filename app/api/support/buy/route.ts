@@ -144,7 +144,12 @@ export async function POST(request: NextRequest) {
               payTo: creator.wallet_address,
               maxTimeoutSeconds: 300, // 5 minutes
               asset: x402Config.usdcAddress,
-              extra: null, // Let x402-fetch determine USDC metadata dynamically
+              extra: {
+                // EIP-3009 metadata for USDC token (Base Sepolia)
+                // Verified from contract: name() = "USDC", version() = "2"
+                name: 'USDC',
+                version: '2',
+              },
             },
           ],
         },
