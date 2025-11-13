@@ -144,11 +144,7 @@ export async function POST(request: NextRequest) {
               payTo: creator.wallet_address,
               maxTimeoutSeconds: 300, // 5 minutes
               asset: x402Config.usdcAddress,
-              extra: {
-                // EIP-3009 metadata for USDC token
-                name: 'USD Coin',
-                version: '2',
-              },
+              extra: null, // Let x402-fetch determine USDC metadata dynamically
             },
           ],
         },
