@@ -37,12 +37,14 @@ export default async function CreatorProfilePage({ params }: CreatorProfilePageP
   }
 
   // Fetch public supports for this creator (not private, not hidden)
+  // Use correct column names: is_message_private, is_hidden_by_creator
   const { data: supports } = await supabase
     .from('supports')
     .select('*')
     .eq('creator_id', creator.id)
-    .eq('is_private', false)
-    .eq('is_hidden', false)
+    .eq('status', 'confirmed')  // Only confirmed supports
+    .eq('is_message_private', false)  // Fixed column name
+    .eq('is_hidden_by_creator', false)  // Fixed column name
     .order('created_at', { ascending: false })
     .limit(50)
 
@@ -61,8 +63,9 @@ export default async function CreatorProfilePage({ params }: CreatorProfilePageP
     currentUserProfile = profile
   }
 
-  // Calculate total supports count
-  const totalSupports = supports?.length || 0
+  // Calculate total unique supporters (not total supports)
+  const uniqueSupporters = new Set(supports?.map(s => s.supporter_wallet_address) || [])
+  const totalSupports = uniqueSupporters.size
 
   return (
     <div className="min-h-screen bg-white">
