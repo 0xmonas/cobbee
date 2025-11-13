@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -31,6 +31,13 @@ export function RecentSupporters({
   const [hiddenMessages, setHiddenMessages] = useState<Record<string, boolean>>(
     supports.reduce((acc, support) => ({ ...acc, [support.id]: support.is_hidden_by_creator || false }), {})
   )
+
+  // Update hidden messages when supports prop changes (e.g., after page refresh)
+  useEffect(() => {
+    setHiddenMessages(
+      supports.reduce((acc, support) => ({ ...acc, [support.id]: support.is_hidden_by_creator || false }), {})
+    )
+  }, [supports])
 
   const handleReplySubmit = (supportId: string) => {
     if (replyText.trim()) {
@@ -64,8 +71,27 @@ export function RecentSupporters({
     setReplyText("")
   }
 
-  const toggleHidden = (supportId: string) => {
-    setHiddenMessages({ ...hiddenMessages, [supportId]: !hiddenMessages[supportId] })
+  const toggleHidden = async (supportId: string) => {
+    try {
+      // Optimistic update
+      const newHiddenStatus = !hiddenMessages[supportId]
+      setHiddenMessages({ ...hiddenMessages, [supportId]: newHiddenStatus })
+
+      // Call API to persist the change
+      const response = await fetch(`/api/support/${supportId}/hide`, {
+        method: 'PATCH',
+      })
+
+      if (!response.ok) {
+        // Revert optimistic update on error
+        setHiddenMessages({ ...hiddenMessages, [supportId]: !newHiddenStatus })
+        console.error('Failed to toggle hidden status')
+      }
+    } catch (error) {
+      // Revert optimistic update on error
+      setHiddenMessages({ ...hiddenMessages, [supportId]: !hiddenMessages[supportId] })
+      console.error('Error toggling hidden status:', error)
+    }
   }
 
   // Filter out hidden messages if not own profile

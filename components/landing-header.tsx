@@ -84,6 +84,12 @@ export function LandingHeader({ user }: LandingHeaderProps) {
           >
             Discover
           </Link>
+          <Link
+            href="/about"
+            className="relative px-4 py-2 hover:underline transition-colors cursor-pointer pointer-events-auto"
+          >
+            About
+          </Link>
         </div>
 
         <div className="flex items-center gap-4 z-50">
@@ -175,6 +181,13 @@ export function LandingHeader({ user }: LandingHeaderProps) {
                 className="text-left px-4 py-3 text-lg font-bold hover:bg-[#CCFF00] transition-colors rounded-2xl border-2 border-transparent hover:border-black"
               >
                 Discover
+              </Link>
+              <Link
+                href="/about"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="text-left px-4 py-3 text-lg font-bold hover:bg-[#CCFF00] transition-colors rounded-2xl border-2 border-transparent hover:border-black"
+              >
+                About
               </Link>
               <div className="border-t-4 border-black pt-4 mt-4 flex flex-col space-y-3">
                 {user ? (
