@@ -17,6 +17,8 @@ import {
 import { validateSupporterName, validateSupportMessage } from "@/lib/utils/validation"
 import type { Database } from "@/lib/types/database.types"
 import { useAppKit, useAppKitAccount, useDisconnect } from '@reown/appkit/react'
+import { createX402Fetch } from "@/lib/x402-client"
+import { isTestnet } from "@/lib/x402-config"
 
 type User = Database['public']['Tables']['users']['Row']
 
@@ -101,42 +103,52 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
   const handlePurchase = async () => {
     setPurchaseStep("processing")
 
+    if (!address) {
+      console.error('No wallet address available')
+      setPurchaseStep("error")
+      return
+    }
+
     try {
-      // TODO: Implement real payment transaction here
-      // For now, we simulate a transaction and store in database
+      // ========================================================================
+      // x402 Payment Flow Integration
+      // ========================================================================
+      // 1. Create x402-enabled fetch with supporter's wallet
+      // 2. Make request to /api/support/buy endpoint
+      // 3. x402-fetch automatically handles 402 Payment Required response
+      // 4. Payment is executed via supporter's wallet
+      // 5. Request is retried with payment proof
+      // 6. Backend verifies payment and creates support record
+      // ========================================================================
 
-      // Simulate transaction delay (3 seconds)
-      await new Promise(resolve => setTimeout(resolve, 3000))
+      const x402Fetch = createX402Fetch(address as `0x${string}`)
 
-      // Generate temporary mock transaction hash
-      // This will be replaced with real transaction hash once payment system is implemented
-      const mockTxHash = "0x" + Array.from({ length: 64 }, () =>
-        Math.floor(Math.random() * 16).toString(16)).join("")
-
-      setTxnHash(mockTxHash)
-
-      // Store support in database with real data
-      const response = await fetch('/api/support/create', {
+      const response = await x402Fetch('/api/support/buy', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           creator_id: creator.id,
           supporter_name: supporterName,
-          supporter_wallet_address: address, // Real wallet address from Reown
           coffee_count: isCustom ? Math.floor(totalAmount / Number(creator.coffee_price)) : coffeeCount,
           message: message || null,
           is_private: isPrivate,
-          total_amount: totalAmount,
-          transaction_hash: mockTxHash // Will be real once payment is implemented
         })
       })
 
-      const result = await response.json()
-
       if (!response.ok) {
-        console.error('Failed to create support:', result.error)
+        const error = await response.json().catch(() => ({ error: 'Payment failed' }))
+        console.error('Payment failed:', error)
         setPurchaseStep("error")
         return
+      }
+
+      const result = await response.json()
+
+      // Extract transaction hash from payment response
+      const transactionHash = result.payment?.transactionHash || result.support?.transaction_hash
+
+      if (transactionHash) {
+        setTxnHash(transactionHash)
       }
 
       // Success!
@@ -210,7 +222,11 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
           {/* Transaction Hash */}
           {txnHash && (
             <a
-              href={`https://etherscan.io/tx/${txnHash}`}
+              href={
+                isTestnet()
+                  ? `https://sepolia.basescan.org/tx/${txnHash}`
+                  : `https://basescan.org/tx/${txnHash}`
+              }
               target="_blank"
               rel="noopener noreferrer"
               className="block mb-6 bg-[#0000FF] border-4 border-black rounded-xl p-4 hover:bg-[#0000CC] transition-colors"
@@ -453,7 +469,8 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
               <div>
                 <p className="text-sm font-black mb-1">Network Fee</p>
                 <p className="text-xs font-bold text-gray-700">
-                  This transaction requires a small Ethereum gas fee (avg. $0.01 - $0.50) which goes to network validators, not to us.
+                  This transaction requires a small Base network fee (typically under $0.01) which goes to network validators, not to us.
+                  {isTestnet() && " You're on Base Sepolia testnet."}
                 </p>
               </div>
             </div>

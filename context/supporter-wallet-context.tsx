@@ -1,7 +1,7 @@
 'use client'
 
 import { createAppKit } from '@reown/appkit/react'
-import { base } from '@reown/appkit/networks'
+import { base, baseSepolia, type AppKitNetwork } from '@reown/appkit/networks'
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
 import { cookieStorage, createStorage } from '@wagmi/core'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -18,6 +18,26 @@ if (!projectId) {
   throw new Error('WalletConnect Project ID is not defined')
 }
 
+/**
+ * Get network configuration based on environment variable
+ * Defaults to Base Sepolia (testnet) for safety
+ */
+function getNetwork(): AppKitNetwork {
+  const networkEnv = process.env.NEXT_PUBLIC_X402_NETWORK
+
+  if (networkEnv === 'base') {
+    return base // Mainnet
+  }
+
+  return baseSepolia // Testnet (default)
+}
+
+/**
+ * All supported networks
+ * Always include both testnet and mainnet for flexibility
+ */
+const supportedNetworks: [AppKitNetwork, ...AppKitNetwork[]] = [baseSepolia, base]
+
 // Supporter için ayrı Wagmi Adapter
 const supporterWagmiAdapter = new WagmiAdapter({
   storage: createStorage({
@@ -25,7 +45,7 @@ const supporterWagmiAdapter = new WagmiAdapter({
   }),
   ssr: true,
   projectId,
-  networks: [base]
+  networks: supportedNetworks
 })
 
 // Supporter için ayrı metadata
@@ -40,8 +60,8 @@ const supporterMetadata = {
 const supporterAppKit = createAppKit({
   adapters: [supporterWagmiAdapter],
   projectId,
-  networks: [base],
-  defaultNetwork: base,
+  networks: supportedNetworks,
+  defaultNetwork: getNetwork(),
   metadata: supporterMetadata,
   features: {
     analytics: false // Supporter için analytics kapalı
