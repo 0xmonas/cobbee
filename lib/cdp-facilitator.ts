@@ -5,11 +5,16 @@
  * for x402 payment verification and settlement.
  */
 
-import { facilitator as cdpFacilitator } from '@coinbase/x402'
+import { createFacilitatorConfig } from '@coinbase/x402'
 
 /**
  * Get CDP facilitator instance
  * Requires CDP_API_KEY_ID and CDP_API_KEY_SECRET environment variables
+ *
+ * The @coinbase/x402 SDK provides a facilitator object that handles
+ * authentication and API requests internally. We can either:
+ * 1. Use the default `facilitator` (reads from env vars)
+ * 2. Create a custom config with `createFacilitatorConfig(keyId, keySecret)`
  */
 export function getCDPFacilitator() {
   const apiKeyId = process.env.CDP_API_KEY_ID
@@ -20,7 +25,9 @@ export function getCDPFacilitator() {
     return null
   }
 
-  return cdpFacilitator
+  // Create facilitator config with explicit credentials
+  // This is more reliable than relying on environment variables being set correctly
+  return createFacilitatorConfig(apiKeyId, apiKeySecret)
 }
 
 /**

@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { validateSupporterName, validateSupportMessage } from '@/lib/utils/validation'
 import { getX402Config, usdcToSmallestUnit } from '@/lib/x402-config'
-import { isCDPFacilitatorConfigured } from '@/lib/cdp-facilitator'
+import { getCDPFacilitator, isCDPFacilitatorConfigured } from '@/lib/cdp-facilitator'
 
 /**
  * x402 Payment Protocol Endpoint
@@ -35,13 +35,12 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
     const x402Config = getX402Config()
 
-    // Determine facilitator URL (CDP if configured, otherwise community facilitator)
-    const facilitatorUrl = isCDPFacilitatorConfigured()
-      ? 'https://api.cdp.coinbase.com/platform/v2/x402'
-      : x402Config.facilitatorUrl
+    // Get facilitator configuration (CDP if available, otherwise fallback)
+    const cdpFacilitator = getCDPFacilitator()
+    const facilitatorUrl = cdpFacilitator?.url || x402Config.facilitatorUrl
 
     console.log('[x402] Using facilitator:', {
-      type: isCDPFacilitatorConfigured() ? 'CDP (authenticated)' : 'Community',
+      type: cdpFacilitator ? 'CDP (authenticated)' : 'Community',
       url: facilitatorUrl,
     })
 
@@ -207,13 +206,15 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
       }
 
-      // Add CDP authentication if configured
-      if (isCDPFacilitatorConfigured()) {
-        const apiKeyId = process.env.CDP_API_KEY_ID!
-        const apiKeySecret = process.env.CDP_API_KEY_SECRET!
-        // CDP uses Basic Auth with API key
-        const authString = Buffer.from(`${apiKeyId}:${apiKeySecret}`).toString('base64')
-        facilitatorHeaders['Authorization'] = `Basic ${authString}`
+      // Get CDP authentication headers if configured
+      if (cdpFacilitator && cdpFacilitator.createAuthHeaders) {
+        const authHeaders = await cdpFacilitator.createAuthHeaders()
+        // Merge verify endpoint headers (includes Authorization and Correlation-Context)
+        Object.assign(facilitatorHeaders, authHeaders.verify)
+        console.log('[x402] Using CDP authentication headers:', {
+          hasAuthorization: !!authHeaders.verify.Authorization,
+          hasCorrelation: !!authHeaders.verify['Correlation-Context'],
+        })
       }
 
       let facilitatorResponse
@@ -244,12 +245,29 @@ export async function POST(request: NextRequest) {
       }
 
       if (!facilitatorResponse.ok) {
-        const errorData = await facilitatorResponse.json().catch(() => ({}))
-        console.error('Facilitator verification failed:', errorData)
+        const errorText = await facilitatorResponse.text()
+        console.error('[x402] Facilitator verification failed:', {
+          status: facilitatorResponse.status,
+          statusText: facilitatorResponse.statusText,
+          headers: Object.fromEntries(facilitatorResponse.headers.entries()),
+          body: errorText,
+        })
+
+        let errorData: any = {}
+        try {
+          errorData = JSON.parse(errorText)
+        } catch {
+          errorData = { rawError: errorText }
+        }
+
         return Response.json(
           {
             error: 'Payment verification failed',
-            details: errorData.error || errorData.invalidReason || 'Invalid payment proof',
+            details: errorData.error || errorData.message || errorData.invalidReason || 'Invalid payment proof',
+            debug: {
+              status: facilitatorResponse.status,
+              response: errorData,
+            },
           },
           { status: 402 }
         )
@@ -307,11 +325,22 @@ export async function POST(request: NextRequest) {
       // For "exact" scheme, the facilitator watches the blockchain and returns
       // the transaction hash once the payment is confirmed on-chain
       // -----------------------------------------------------------------------
+
+      // Get settle endpoint headers (regenerate in case of JWT expiry)
+      const settlementHeaders: Record<string, string> = {
+        'Content-Type': 'application/json',
+      }
+
+      if (cdpFacilitator && cdpFacilitator.createAuthHeaders) {
+        const authHeaders = await cdpFacilitator.createAuthHeaders()
+        Object.assign(settlementHeaders, authHeaders.settle)
+      }
+
       let settlementResponse
       try {
         settlementResponse = await fetch(`${facilitatorUrl}/settle`, {
           method: 'POST',
-          headers: facilitatorHeaders,
+          headers: settlementHeaders,
           body: JSON.stringify({
             x402Version: 1,
             paymentHeader: paymentHeader,
