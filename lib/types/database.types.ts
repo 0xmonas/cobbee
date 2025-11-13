@@ -116,6 +116,104 @@ export type Database = {
         }
         Relationships: []
       }
+      email_verifications: {
+        Row: {
+          created_at: string | null
+          email: string
+          expires_at: string
+          id: string
+          otp_code: string
+          user_id: string
+          verified: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          expires_at: string
+          id?: string
+          otp_code: string
+          user_id: string
+          verified?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          otp_code?: string
+          user_id?: string
+          verified?: boolean | null
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          metadata: Json | null
+          read: boolean | null
+          read_at: string | null
+          related_support_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          metadata?: Json | null
+          read?: boolean | null
+          read_at?: string | null
+          related_support_id?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          metadata?: Json | null
+          read?: boolean | null
+          read_at?: string | null
+          related_support_id?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_related_support_id_fkey"
+            columns: ["related_support_id"]
+            isOneToOne: false
+            referencedRelation: "supports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "creator_dashboard_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_creator_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supporter_wallets: {
         Row: {
           blacklist_reason: string | null
@@ -355,6 +453,8 @@ export type Database = {
       }
     }
     Functions: {
+      cleanup_expired_otps: { Args: never; Returns: undefined }
+      clear_all_notifications: { Args: never; Returns: number }
       create_audit_log: {
         Args: {
           p_actor_id: string
@@ -366,6 +466,17 @@ export type Database = {
           p_target_id?: string
           p_target_type?: string
           p_user_agent?: string
+        }
+        Returns: string
+      }
+      create_notification: {
+        Args: {
+          p_message: string
+          p_metadata?: Json
+          p_related_support_id?: string
+          p_title: string
+          p_type: string
+          p_user_id: string
         }
         Returns: string
       }
@@ -381,8 +492,18 @@ export type Database = {
         }
         Returns: Json
       }
+      delete_notification: {
+        Args: { p_notification_id: string }
+        Returns: boolean
+      }
+      get_unread_notification_count: { Args: never; Returns: number }
       is_wallet_blacklisted: {
         Args: { p_wallet_address: string }
+        Returns: boolean
+      }
+      mark_all_notifications_read: { Args: never; Returns: number }
+      mark_notification_read: {
+        Args: { p_notification_id: string }
         Returns: boolean
       }
     }

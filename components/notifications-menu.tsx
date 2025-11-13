@@ -1,106 +1,60 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
-import { Bell, Coffee, Heart, Users, X, Trash2 } from "lucide-react"
-
-interface Notification {
-  id: string
-  type: "support" | "follower" | "milestone"
-  message: string
-  time: string
-  read: boolean
-}
-
-const mockNotifications: Notification[] = [
-  {
-    id: "1",
-    type: "support",
-    message: "John Doe bought you 3 coffees!",
-    time: "2 minutes ago",
-    read: false,
-  },
-  {
-    id: "2",
-    type: "support",
-    message: "Jane Smith bought you a coffee!",
-    time: "1 hour ago",
-    read: false,
-  },
-  {
-    id: "3",
-    type: "milestone",
-    message: "Congratulations! You reached 100 supporters!",
-    time: "3 hours ago",
-    read: false,
-  },
-  {
-    id: "4",
-    type: "support",
-    message: "Alex Johnson bought you 5 coffees!",
-    time: "1 day ago",
-    read: true,
-  },
-  {
-    id: "5",
-    type: "follower",
-    message: "Mike Brown started following you!",
-    time: "2 days ago",
-    read: true,
-  },
-  {
-    id: "6",
-    type: "support",
-    message: "Sarah Wilson bought you 10 coffees!",
-    time: "3 days ago",
-    read: true,
-  },
-  {
-    id: "7",
-    type: "milestone",
-    message: "You've earned $500 this month!",
-    time: "5 days ago",
-    read: true,
-  },
-  {
-    id: "8",
-    type: "support",
-    message: "Emma Davis bought you 2 coffees!",
-    time: "1 week ago",
-    read: true,
-  },
-]
+import { Bell, Coffee, Heart, Trash2 } from "lucide-react"
+import { useNotifications } from "@/hooks/use-notifications"
 
 export function NotificationsMenu() {
   const [isOpen, setIsOpen] = useState(false)
-  const [notifications, setNotifications] = useState(mockNotifications)
-  const [swipedId, setSwipedId] = useState<string | null>(null)
+  const {
+    notifications,
+    unreadCount,
+    isLoading,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification,
+    clearAll,
+  } = useNotifications()
 
-  const unreadCount = notifications.filter((n) => !n.read).length
-
-  const markAsRead = (id: string) => {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)))
+  const handleMarkAsRead = async (id: string) => {
+    await markAsRead(id)
+    setIsOpen(false)
   }
 
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
+  const handleMarkAllAsRead = async () => {
+    await markAllAsRead()
   }
 
-  const deleteNotification = (id: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id))
-    setSwipedId(null)
+  const handleDelete = async (id: string) => {
+    await deleteNotification(id)
   }
 
-  const clearAll = () => {
-    setNotifications([])
+  const handleClearAll = async () => {
+    const confirmed = confirm("Are you sure you want to delete all notifications?")
+    if (confirmed) {
+      await clearAll()
+    }
+  }
+
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInMs = now.getTime() - date.getTime()
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60))
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60))
+    const diffInDays = Math.floor(diffInHours / 24)
+
+    if (diffInMinutes < 1) return 'Just now'
+    if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`
+    if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`
+    if (diffInDays < 7) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`
+    return date.toLocaleDateString()
   }
 
   const getIcon = (type: string) => {
     switch (type) {
       case "support":
         return <Coffee className="w-5 h-5" />
-      case "follower":
-        return <Users className="w-5 h-5" />
       case "milestone":
         return <Heart className="w-5 h-5" />
       default:
@@ -131,7 +85,7 @@ export function NotificationsMenu() {
               <div className="flex items-center gap-2">
                 {unreadCount > 0 && (
                   <button
-                    onClick={markAllAsRead}
+                    onClick={handleMarkAllAsRead}
                     className="text-xs md:text-sm font-bold hover:underline"
                   >
                     Mark all read
@@ -139,7 +93,7 @@ export function NotificationsMenu() {
                 )}
                 {notifications.length > 0 && (
                   <button
-                    onClick={clearAll}
+                    onClick={handleClearAll}
                     className="text-xs md:text-sm font-bold hover:underline text-red-600"
                   >
                     Clear all
@@ -148,7 +102,12 @@ export function NotificationsMenu() {
               </div>
             </div>
             <div className="overflow-y-auto flex-1 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
-              {notifications.length === 0 ? (
+              {isLoading ? (
+                <div className="p-8 text-center">
+                  <Bell className="w-12 h-12 mx-auto mb-4 text-gray-400 animate-pulse" />
+                  <p className="font-bold text-gray-600">Loading...</p>
+                </div>
+              ) : notifications.length === 0 ? (
                 <div className="p-8 text-center">
                   <Bell className="w-12 h-12 mx-auto mb-4 text-gray-400" />
                   <p className="font-bold text-gray-600">No notifications yet</p>
@@ -162,10 +121,7 @@ export function NotificationsMenu() {
                     }`}
                   >
                     <div
-                      onClick={() => {
-                        markAsRead(notification.id)
-                        setIsOpen(false)
-                      }}
+                      onClick={() => handleMarkAsRead(notification.id)}
                       className="p-4 border-b-2 border-gray-200 hover:bg-[#CCFF00] transition-colors cursor-pointer"
                     >
                       <div className="flex items-start gap-3">
@@ -178,7 +134,7 @@ export function NotificationsMenu() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-bold text-sm mb-1">{notification.message}</p>
-                          <p className="text-xs text-gray-600 font-bold">{notification.time}</p>
+                          <p className="text-xs text-gray-600 font-bold">{formatTimeAgo(notification.created_at)}</p>
                         </div>
                         {!notification.read && (
                           <div className="w-2 h-2 bg-[#0000FF] rounded-full mt-2 flex-shrink-0" />
@@ -189,7 +145,7 @@ export function NotificationsMenu() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
-                        deleteNotification(notification.id)
+                        handleDelete(notification.id)
                       }}
                       className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-red-500 text-white rounded-full border-2 border-black hover:bg-red-600 transition-all md:opacity-0 md:group-hover:opacity-100"
                       title="Delete notification"
