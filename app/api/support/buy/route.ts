@@ -193,6 +193,21 @@ export async function POST(request: NextRequest) {
         },
       }
 
+      // Parse payment header once for use in verify and settle
+      let paymentPayload
+      try {
+        paymentPayload = JSON.parse(paymentHeader)
+        console.log('[x402] Payment payload parsed:', {
+          scheme: paymentPayload.scheme,
+          network: paymentPayload.network,
+          hasPayload: !!paymentPayload.payload,
+        })
+      } catch (parseError) {
+        console.error('[x402] Failed to parse payment header:', parseError)
+        console.error('[x402] Payment header content:', paymentHeader)
+        throw new Error('Invalid payment header format')
+      }
+
       // Verify payment via Facilitator using x402 protocol format
       console.log('[x402] Verifying payment:', {
         network: x402Config.network,
@@ -224,7 +239,7 @@ export async function POST(request: NextRequest) {
           headers: facilitatorHeaders,
           body: JSON.stringify({
             x402Version: 1,
-            paymentHeader: paymentHeader, // Raw X-PAYMENT header string
+            paymentPayload: paymentPayload, // CDP expects 'paymentPayload', not 'paymentHeader'
             paymentRequirements: paymentRequirements,
           }),
           signal: AbortSignal.timeout(10000), // 10 second timeout
@@ -287,21 +302,7 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Extract payer address from verification result
-      let paymentPayload
-      try {
-        paymentPayload = JSON.parse(paymentHeader)
-        console.log('[x402] Payment payload parsed:', {
-          scheme: paymentPayload.scheme,
-          network: paymentPayload.network,
-          hasPayload: !!paymentPayload.payload,
-        })
-      } catch (parseError) {
-        console.error('[x402] Failed to parse payment header:', parseError)
-        console.error('[x402] Payment header content:', paymentHeader)
-        throw new Error('Invalid payment header format')
-      }
-
+      // Extract payer address from verification result or payment payload
       const supporterWalletAddress = verificationResult.payer || paymentPayload.payload?.authorization?.from
 
       console.log('[x402] Payment verified:', {
@@ -343,7 +344,7 @@ export async function POST(request: NextRequest) {
           headers: settlementHeaders,
           body: JSON.stringify({
             x402Version: 1,
-            paymentHeader: paymentHeader,
+            paymentPayload: paymentPayload, // CDP expects 'paymentPayload', not 'paymentHeader'
             paymentRequirements: paymentRequirements,
           }),
           signal: AbortSignal.timeout(30000), // 30 second timeout for settlement
