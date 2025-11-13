@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { validateSupporterName, validateSupportMessage } from '@/lib/utils/validation'
 import { getX402Config, usdcToSmallestUnit } from '@/lib/x402-config'
 import { getCDPFacilitator, isCDPFacilitatorConfigured } from '@/lib/cdp-facilitator'
+import { getAddress } from 'viem'
 
 /**
  * x402 Payment Protocol Endpoint
@@ -141,9 +142,9 @@ export async function POST(request: NextRequest) {
               resource: resourceUrl.toString(),
               description: `Buy ${coffee_count} coffee${coffee_count > 1 ? 's' : ''} for ${creator.display_name}`,
               mimeType: 'application/json',
-              payTo: creator.wallet_address,
+              payTo: getAddress(creator.wallet_address), // EIP-55 checksum format required
               maxTimeoutSeconds: 300, // 5 minutes
-              asset: x402Config.usdcAddress,
+              asset: getAddress(x402Config.usdcAddress), // EIP-55 checksum format required
               extra: {
                 // EIP-3009 metadata for USDC token (Base Sepolia)
                 // Verified from contract: name() = "USDC", version() = "2"
