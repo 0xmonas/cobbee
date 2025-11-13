@@ -2,11 +2,11 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Coffee, HelpCircle, Wallet, CheckCircle, XCircle, Copy, Check, ExternalLink } from "lucide-react"
+import { Coffee, HelpCircle, Wallet, CheckCircle, XCircle, Copy, Check, ExternalLink, Loader2 } from "lucide-react"
 import Image from "next/image"
 import {
   Tooltip,
@@ -18,7 +18,8 @@ import { validateSupporterName, validateSupportMessage } from "@/lib/utils/valid
 import type { Database } from "@/lib/types/database.types"
 import { useAppKit, useAppKitAccount, useDisconnect } from '@reown/appkit/react'
 import { createX402Fetch } from "@/lib/x402-client"
-import { isTestnet } from "@/lib/x402-config"
+import { isTestnet, getX402Config } from "@/lib/x402-config"
+import { createPublicClient, http, formatUnits } from "viem"
 
 type User = Database['public']['Tables']['users']['Row']
 
@@ -45,12 +46,77 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
   const [txnHash, setTxnHash] = useState("")
   const [nameError, setNameError] = useState<string | null>(null)
   const [messageError, setMessageError] = useState<string | null>(null)
+  const [usdcBalance, setUsdcBalance] = useState<string | null>(null)
+  const [isLoadingBalance, setIsLoadingBalance] = useState(false)
 
   const presetAmounts = [1, 3, 5]
   const isCustom = !presetAmounts.includes(coffeeCount)
   const totalAmount = isCustom
     ? (Number.parseInt(customAmount) || 0) * Number(creator.coffee_price)
     : coffeeCount * Number(creator.coffee_price)
+
+  // Fetch USDC balance when wallet is connected
+  useEffect(() => {
+    const fetchUsdcBalance = async () => {
+      if (!address || !isConnected) {
+        setUsdcBalance(null)
+        return
+      }
+
+      setIsLoadingBalance(true)
+
+      try {
+        const x402Config = getX402Config()
+
+        // Create public client for reading contract data
+        const publicClient = createPublicClient({
+          chain: {
+            id: x402Config.chainId,
+            name: x402Config.networkName,
+            network: x402Config.network,
+            nativeCurrency: {
+              decimals: 18,
+              name: 'Ether',
+              symbol: 'ETH',
+            },
+            rpcUrls: {
+              default: { http: [x402Config.rpcUrl] },
+              public: { http: [x402Config.rpcUrl] },
+            },
+          },
+          transport: http(x402Config.rpcUrl),
+        })
+
+        // USDC ERC-20 ABI for balanceOf function
+        const balanceOfAbi = [{
+          name: 'balanceOf',
+          type: 'function',
+          stateMutability: 'view',
+          inputs: [{ name: 'account', type: 'address' }],
+          outputs: [{ name: 'balance', type: 'uint256' }],
+        }] as const
+
+        // Read USDC balance
+        const balance = await publicClient.readContract({
+          address: x402Config.usdcAddress as `0x${string}`,
+          abi: balanceOfAbi,
+          functionName: 'balanceOf',
+          args: [address as `0x${string}`],
+        })
+
+        // Format balance (USDC has 6 decimals)
+        const formattedBalance = formatUnits(balance, 6)
+        setUsdcBalance(formattedBalance)
+      } catch (error) {
+        console.error('Failed to fetch USDC balance:', error)
+        setUsdcBalance(null)
+      } finally {
+        setIsLoadingBalance(false)
+      }
+    }
+
+    fetchUsdcBalance()
+  }, [address, isConnected])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -416,6 +482,35 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
                   {copiedSupporterWallet ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                 </button>
               </div>
+
+              {/* USDC Balance Display */}
+              <div className="bg-[#CCFF00] border-2 border-black rounded-lg p-3 mb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-black text-gray-700">USDC Balance:</span>
+                    {isLoadingBalance ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : usdcBalance !== null ? (
+                      <span className="text-lg font-black">
+                        {Number(usdcBalance).toFixed(2)} USDC
+                      </span>
+                    ) : (
+                      <span className="text-sm font-bold text-gray-600">Unable to fetch</span>
+                    )}
+                  </div>
+                  {usdcBalance !== null && Number(usdcBalance) < totalAmount && (
+                    <div className="flex items-center gap-1 text-red-600">
+                      <span className="text-xs font-bold">⚠️ Low balance</span>
+                    </div>
+                  )}
+                </div>
+                {usdcBalance !== null && Number(usdcBalance) < totalAmount && (
+                  <p className="text-xs font-bold text-red-700 mt-1">
+                    Your balance is insufficient for this transaction
+                  </p>
+                )}
+              </div>
+
               <div className="flex gap-2">
                 <button
                   onClick={handleDisconnectWallet}
