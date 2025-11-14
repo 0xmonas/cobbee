@@ -31,11 +31,20 @@ export const metadata: Metadata = {
     siteName: 'Cobbee',
     title: 'Cobbee - Support Creators You Love',
     description: 'Accept donations, build community, and get support from people who love your work. Support your favorite creators with crypto coffee.',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Cobbee - Support Creators You Love',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Cobbee - Support Creators You Love',
     description: 'Accept donations, build community, and get support from people who love your work. Support your favorite creators with crypto coffee.',
+    images: ['/og-image.jpg'],
   },
 }
 

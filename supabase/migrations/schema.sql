@@ -43,7 +43,7 @@ CREATE TABLE public.users (
   opensea_handle TEXT,
 
   -- Creator Settings
-  coffee_price DECIMAL(10, 2) DEFAULT 5.00,
+  coffee_price DECIMAL(10, 2) DEFAULT 1.00,
   thank_you_message TEXT,
   is_active BOOLEAN DEFAULT true,
 

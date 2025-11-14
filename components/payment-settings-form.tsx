@@ -36,7 +36,7 @@ interface PaymentSettingsFormProps {
 
 export function PaymentSettingsForm({ user, supports }: PaymentSettingsFormProps) {
   const router = useRouter()
-  const [coffeePrice, setCoffeePrice] = useState(user.coffee_price?.toString() || "0.50")
+  const [coffeePrice, setCoffeePrice] = useState(user.coffee_price?.toString() || "1.00")
   const [ethereumAddress] = useState(user.wallet_address || "")
   const [copiedWallet, setCopiedWallet] = useState(false)
   const [thankYouMessage, setThankYouMessage] = useState(
@@ -228,12 +228,12 @@ export function PaymentSettingsForm({ user, supports }: PaymentSettingsFormProps
                   <button
                     type="button"
                     onClick={() => {
-                      const currentPrice = parseFloat(coffeePrice) || 0.10
-                      const newPrice = Math.max(0.10, currentPrice - 0.10)
+                      const currentPrice = parseFloat(coffeePrice) || 1.00
+                      const newPrice = Math.max(1.00, currentPrice - 1.00)
                       setCoffeePrice(newPrice.toFixed(2))
                       setPriceError(null)
                     }}
-                    disabled={parseFloat(coffeePrice) <= 0.10 || isSubmitting}
+                    disabled={parseFloat(coffeePrice) <= 1.00 || isSubmitting}
                     className="bg-[#FF6B35] hover:bg-[#E55A25] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-black text-2xl w-12 h-12 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
                   >
                     -
@@ -244,12 +244,12 @@ export function PaymentSettingsForm({ user, supports }: PaymentSettingsFormProps
                   <button
                     type="button"
                     onClick={() => {
-                      const currentPrice = parseFloat(coffeePrice) || 0.10
-                      const newPrice = Math.min(1.00, currentPrice + 0.10)
+                      const currentPrice = parseFloat(coffeePrice) || 1.00
+                      const newPrice = Math.min(10.00, currentPrice + 1.00)
                       setCoffeePrice(newPrice.toFixed(2))
                       setPriceError(null)
                     }}
-                    disabled={parseFloat(coffeePrice) >= 1.00 || isSubmitting}
+                    disabled={parseFloat(coffeePrice) >= 10.00 || isSubmitting}
                     className="bg-[#0000FF] hover:bg-[#0000CC] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-black text-2xl w-12 h-12 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
                   >
                     +
@@ -262,7 +262,7 @@ export function PaymentSettingsForm({ user, supports }: PaymentSettingsFormProps
                   </p>
                 )}
                 <p className="text-sm text-gray-600 font-bold">
-                  This is the base price supporters will pay for one coffee. Currently only $0.10 - $1.00 is supported.
+                  This is the base price supporters will pay for one coffee. Currently only $1.00 - $10.00 is supported.
                 </p>
               </div>
             </form>

@@ -260,7 +260,7 @@ export default function SignupPage() {
           username: username.toLowerCase(),
           display_name: name,
           bio: null,
-          coffee_price: 5.00,
+          coffee_price: 1.00,
           is_active: true,
           email_verified: false
         })

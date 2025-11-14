@@ -195,12 +195,12 @@ export function validateCoffeePrice(price: string | number): string | null {
     return "Please enter a valid price"
   }
 
-  if (numPrice < 0.10) {
-    return "Minimum price is $0.10"
+  if (numPrice < 1.00) {
+    return "Minimum price is $1.00"
   }
 
-  if (numPrice > 1.00) {
-    return "Maximum price is $1.00"
+  if (numPrice > 10.00) {
+    return "Maximum price is $10.00"
   }
 
   // Check if it has more than 2 decimal places
