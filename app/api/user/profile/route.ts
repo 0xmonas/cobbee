@@ -7,6 +7,8 @@ import {
   validateBio,
   validateSocialUsername
 } from '@/lib/utils/validation'
+import { apiRateLimit, getRateLimitIdentifier } from '@/lib/security/ratelimit'
+import { sanitizeText, sanitizeName } from '@/lib/security/sanitize'
 
 /**
  * User Profile Update API
@@ -24,6 +26,25 @@ import {
  */
 export async function PATCH(request: NextRequest) {
   try {
+    // Rate limiting - 30 profile updates per minute per IP
+    const identifier = getRateLimitIdentifier(request)
+    const { success: rateLimitOk, reset } = await apiRateLimit.limit(identifier)
+
+    if (!rateLimitOk) {
+      return Response.json(
+        {
+          error: 'Too many profile update requests. Please try again later.',
+          retryAfter: reset
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(Math.ceil((reset - Date.now()) / 1000))
+          }
+        }
+      )
+    }
+
     // Get authenticated user
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -132,18 +153,27 @@ export async function PATCH(request: NextRequest) {
       }
     }
 
+    // Sanitize user inputs before storing (XSS protection)
+    const sanitizedDisplayName = sanitizeName(displayName)
+    const sanitizedBio = bio ? sanitizeText(bio) : null
+    const sanitizedTwitter = twitter ? sanitizeText(twitter) : null
+    const sanitizedInstagram = instagram ? sanitizeText(instagram) : null
+    const sanitizedGithub = github ? sanitizeText(github) : null
+    const sanitizedTiktok = tiktok ? sanitizeText(tiktok) : null
+    const sanitizedOpensea = opensea ? sanitizeText(opensea) : null
+
     // Update user profile in database (RLS protected)
     const { error: updateError } = await supabase
       .from('users')
       .update({
-        display_name: displayName,
-        username: username,
-        bio: bio || null,
-        twitter_handle: twitter || null,
-        instagram_handle: instagram || null,
-        github_handle: github || null,
-        tiktok_handle: tiktok || null,
-        opensea_handle: opensea || null,
+        display_name: sanitizedDisplayName,
+        username: username, // Username already validated with strict rules, no need to sanitize
+        bio: sanitizedBio,
+        twitter_handle: sanitizedTwitter,
+        instagram_handle: sanitizedInstagram,
+        github_handle: sanitizedGithub,
+        tiktok_handle: sanitizedTiktok,
+        opensea_handle: sanitizedOpensea,
         updated_at: new Date().toISOString(),
       })
       .eq('id', user.id)

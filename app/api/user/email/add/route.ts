@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { validateEmail } from '@/lib/utils/validation'
 import { generateOTP, getOTPExpiry, hashOTP, sendOtpEmail } from '@/lib/email'
+import { authRateLimit, getRateLimitIdentifier } from '@/lib/security/ratelimit'
+import { sanitizeEmail } from '@/lib/security/sanitize'
 
 /**
  * Add Email API (Custom OTP-based with Resend)
@@ -15,6 +17,25 @@ import { generateOTP, getOTPExpiry, hashOTP, sendOtpEmail } from '@/lib/email'
  */
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting - 5 email add requests per 15 minutes per IP
+    const identifier = getRateLimitIdentifier(request)
+    const { success: rateLimitOk, reset } = await authRateLimit.limit(identifier)
+
+    if (!rateLimitOk) {
+      return Response.json(
+        {
+          error: 'Too many email add requests. Please try again later.',
+          retryAfter: reset
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(Math.ceil((reset - Date.now()) / 1000))
+          }
+        }
+      )
+    }
+
     // Get authenticated user
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -37,8 +58,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Sanitize email input (XSS protection)
+    const sanitizedEmail = sanitizeEmail(email)
+    if (!sanitizedEmail) {
+      return Response.json(
+        { error: 'Invalid email format' },
+        { status: 400 }
+      )
+    }
+
     // Server-side email validation
-    const emailError = validateEmail(email)
+    const emailError = validateEmail(sanitizedEmail)
     if (emailError) {
       return Response.json(
         { error: emailError },
@@ -65,7 +95,7 @@ export async function POST(request: NextRequest) {
     const { data: existingUser } = await supabase
       .from('users')
       .select('id')
-      .eq('email', email)
+      .eq('email', sanitizedEmail)
       .single()
 
     if (existingUser) {
@@ -92,7 +122,7 @@ export async function POST(request: NextRequest) {
       .from('email_verifications')
       .insert({
         user_id: user.id,
-        email: email,
+        email: sanitizedEmail,
         otp_code: hashedOTP,
         expires_at: expiresAt.toISOString(),
         verified: false,
@@ -108,7 +138,7 @@ export async function POST(request: NextRequest) {
 
     // Send OTP via Resend
     try {
-      await sendOtpEmail(email, otpCode)
+      await sendOtpEmail(sanitizedEmail, otpCode)
     } catch (emailError) {
       console.error('Failed to send OTP email:', emailError)
 
@@ -117,7 +147,7 @@ export async function POST(request: NextRequest) {
         .from('email_verifications')
         .delete()
         .eq('user_id', user.id)
-        .eq('email', email)
+        .eq('email', sanitizedEmail)
         .eq('verified', false)
 
       return Response.json(
@@ -129,7 +159,7 @@ export async function POST(request: NextRequest) {
     return Response.json({
       success: true,
       message: 'Verification code sent! Please check your email.',
-      email,
+      email: sanitizedEmail,
       requiresOTP: true
     }, { status: 200 })
 

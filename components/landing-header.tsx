@@ -59,40 +59,54 @@ export function LandingHeader({ user }: LandingHeaderProps) {
           </span>
         </Link>
 
-        <div className="absolute inset-0 hidden flex-1 flex-row items-center justify-center space-x-2 text-sm font-bold md:flex md:space-x-2 pointer-events-none">
+        <div className={`absolute inset-0 hidden flex-1 flex-row items-center justify-center text-sm font-bold md:flex pointer-events-none transition-all duration-300 ${
+          isScrolled ? "gap-1" : "gap-2"
+        }`}>
           <button
             onClick={() => scrollToSection("features")}
-            className="relative px-4 py-2 hover:underline transition-colors cursor-pointer pointer-events-auto"
+            className={`relative hover:underline transition-all cursor-pointer pointer-events-auto ${
+              isScrolled ? "px-2 py-1" : "px-4 py-2"
+            }`}
           >
             Features
           </button>
           <button
             onClick={() => scrollToSection("support")}
-            className="relative px-4 py-2 hover:underline transition-colors cursor-pointer pointer-events-auto"
+            className={`relative hover:underline transition-all cursor-pointer pointer-events-auto ${
+              isScrolled ? "px-2 py-1" : "px-4 py-2"
+            }`}
           >
             Support
           </button>
           <button
             onClick={() => scrollToSection("how-it-works")}
-            className="relative px-4 py-2 hover:underline transition-colors cursor-pointer pointer-events-auto"
+            className={`relative hover:underline transition-all cursor-pointer pointer-events-auto ${
+              isScrolled ? "px-2 py-1" : "px-4 py-2"
+            }`}
           >
             How it works
           </button>
           <Link
             href="/discover"
-            className="relative px-4 py-2 hover:underline transition-colors cursor-pointer pointer-events-auto"
+            className={`relative hover:underline transition-all cursor-pointer pointer-events-auto ${
+              isScrolled ? "px-2 py-1" : "px-4 py-2"
+            }`}
           >
             Discover
           </Link>
           <Link
             href="/about"
-            className="relative px-4 py-2 hover:underline transition-colors cursor-pointer pointer-events-auto"
+            className={`relative hover:underline transition-all cursor-pointer pointer-events-auto ${
+              isScrolled ? "px-2 py-1" : "px-4 py-2"
+            }`}
           >
             About
           </Link>
         </div>
 
-        <div className="flex items-center gap-4 z-50">
+        <div className={`flex items-center z-50 transition-all duration-300 ${
+          isScrolled ? "gap-2" : "gap-4"
+        }`}>
           {user ? (
             <>
               <Link href="/dashboard" className="font-bold transition-colors hover:underline text-sm cursor-pointer">

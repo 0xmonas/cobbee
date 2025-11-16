@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { validateEmail } from '@/lib/utils/validation'
 import { generateOTP, getOTPExpiry, hashOTP, sendOtpEmail, sendSecurityNotification } from '@/lib/email'
+import { authRateLimit, getRateLimitIdentifier } from '@/lib/security/ratelimit'
+import { sanitizeEmail } from '@/lib/security/sanitize'
 
 /**
  * Email Change Request API (Custom OTP with Resend)
@@ -15,6 +17,25 @@ import { generateOTP, getOTPExpiry, hashOTP, sendOtpEmail, sendSecurityNotificat
  */
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting - 5 email change requests per 15 minutes per IP
+    const identifier = getRateLimitIdentifier(request)
+    const { success: rateLimitOk, reset } = await authRateLimit.limit(identifier)
+
+    if (!rateLimitOk) {
+      return Response.json(
+        {
+          error: 'Too many email change requests. Please try again later.',
+          retryAfter: reset
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(Math.ceil((reset - Date.now()) / 1000))
+          }
+        }
+      )
+    }
+
     // Get authenticated user
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -37,8 +58,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Sanitize email input (XSS protection)
+    const sanitizedEmail = sanitizeEmail(newEmail)
+    if (!sanitizedEmail) {
+      return Response.json(
+        { error: 'Invalid email format' },
+        { status: 400 }
+      )
+    }
+
     // Server-side email validation
-    const emailError = validateEmail(newEmail)
+    const emailError = validateEmail(sanitizedEmail)
     if (emailError) {
       return Response.json(
         { error: emailError },
@@ -64,7 +94,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if new email is same as current
-    if (currentUser.email === newEmail) {
+    if (currentUser.email === sanitizedEmail) {
       return Response.json(
         { error: 'This is already your current email address' },
         { status: 400 }
@@ -75,7 +105,7 @@ export async function POST(request: NextRequest) {
     const { data: existingUser } = await supabase
       .from('users')
       .select('id')
-      .eq('email', newEmail)
+      .eq('email', sanitizedEmail)
       .single()
 
     if (existingUser && existingUser.id !== user.id) {
@@ -102,7 +132,7 @@ export async function POST(request: NextRequest) {
       .from('email_verifications')
       .insert({
         user_id: user.id,
-        email: newEmail,
+        email: sanitizedEmail,
         otp_code: hashedOTP,
         expires_at: expiresAt.toISOString(),
         verified: false,
@@ -118,7 +148,7 @@ export async function POST(request: NextRequest) {
 
     // Send OTP to NEW email via Resend
     try {
-      await sendOtpEmail(newEmail, otpCode)
+      await sendOtpEmail(sanitizedEmail, otpCode)
     } catch (emailError) {
       console.error('Failed to send OTP email:', emailError)
 
@@ -127,7 +157,7 @@ export async function POST(request: NextRequest) {
         .from('email_verifications')
         .delete()
         .eq('user_id', user.id)
-        .eq('email', newEmail)
+        .eq('email', sanitizedEmail)
         .eq('verified', false)
 
       return Response.json(
@@ -139,7 +169,7 @@ export async function POST(request: NextRequest) {
     // Send security notification to CURRENT email (non-blocking)
     if (currentUser.email) {
       try {
-        await sendSecurityNotification(currentUser.email, newEmail)
+        await sendSecurityNotification(currentUser.email, sanitizedEmail)
       } catch (notificationError) {
         console.error('Failed to send security notification:', notificationError)
         // Don't fail the request if security notification fails
@@ -150,7 +180,7 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'Verification code sent! Please check your new email.',
       currentEmail: currentUser.email,
-      newEmail,
+      newEmail: sanitizedEmail,
       requiresOTP: true
     }, { status: 200 })
 

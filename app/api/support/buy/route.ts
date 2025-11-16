@@ -2,8 +2,10 @@ import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { validateSupporterName, validateSupportMessage } from '@/lib/utils/validation'
 import { getX402Config, usdcToSmallestUnit } from '@/lib/x402-config'
-import { getCDPFacilitator, isCDPFacilitatorConfigured } from '@/lib/cdp-facilitator'
+import { getCDPFacilitator } from '@/lib/cdp-facilitator'
 import { getAddress } from 'viem'
+import { paymentRateLimit, getRateLimitIdentifier } from '@/lib/security/ratelimit'
+import { sanitizeText, sanitizeName } from '@/lib/security/sanitize'
 
 /**
  * x402 Payment Protocol Endpoint
@@ -33,6 +35,25 @@ interface SupportBuyRequest {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting - 10 payment requests per minute per IP
+    const identifier = getRateLimitIdentifier(request)
+    const { success: rateLimitOk, reset } = await paymentRateLimit.limit(identifier)
+
+    if (!rateLimitOk) {
+      return Response.json(
+        {
+          error: 'Too many payment requests. Please try again later.',
+          retryAfter: reset
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(Math.ceil((reset - Date.now()) / 1000))
+          }
+        }
+      )
+    }
+
     const supabase = await createClient()
     const x402Config = getX402Config()
 
@@ -430,15 +451,19 @@ export async function POST(request: NextRequest) {
       // Create support record in database
       // -----------------------------------------------------------------------
 
+      // Sanitize user inputs before storing in database (XSS protection)
+      const sanitizedName = sanitizeName(supporter_name)
+      const sanitizedMessage = message ? sanitizeText(message) : null
+
       const { data: support, error: insertError } = await supabase
         .from('supports')
         .insert({
           creator_id,
-          supporter_name: supporter_name.trim(),
+          supporter_name: sanitizedName,
           supporter_wallet_address: supporterWalletAddress,
           coffee_count,
           coffee_price_at_time: coffeePrice, // Price at transaction time
-          message: message?.trim() || null,
+          message: sanitizedMessage,
           is_message_private: is_private || false,
           is_hidden_by_creator: false,
           total_amount: totalAmount,

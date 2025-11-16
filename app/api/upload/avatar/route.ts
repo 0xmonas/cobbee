@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { uploadAvatar, deleteAvatar } from '@/lib/storage-utils'
 import { revalidatePath } from 'next/cache'
+import { apiRateLimit, getRateLimitIdentifier } from '@/lib/security/ratelimit'
 
 /**
  * Avatar Upload API
@@ -13,6 +14,25 @@ import { revalidatePath } from 'next/cache'
  */
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting - 30 upload requests per minute per IP
+    const identifier = getRateLimitIdentifier(request)
+    const { success: rateLimitOk, reset } = await apiRateLimit.limit(identifier)
+
+    if (!rateLimitOk) {
+      return Response.json(
+        {
+          error: 'Too many upload requests. Please try again later.',
+          retryAfter: reset
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(Math.ceil((reset - Date.now()) / 1000))
+          }
+        }
+      )
+    }
+
     // Get authenticated user
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
