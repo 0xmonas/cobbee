@@ -4,15 +4,15 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { isAdminWallet } from '@/lib/utils/admin'
 import Link from 'next/link'
 import {
-  ArrowLeft,
   BarChart3,
   TrendingUp,
   Users,
   DollarSign,
   Coffee,
   Calendar,
-  AlertTriangle,
 } from 'lucide-react'
+import { AdminPageHeader } from '@/components/admin/admin-page-header'
+import { AdminStatCard } from '@/components/admin/admin-stat-card'
 
 export const metadata = {
   title: 'Analytics - Admin - Cobbee',
@@ -98,26 +98,7 @@ export default async function AdminAnalyticsPage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="border-b-4 border-black bg-[#0000FF]">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link
-                href="/admin"
-                className="flex items-center gap-2 text-white hover:text-[#CCFF00] transition-colors"
-              >
-                <ArrowLeft className="h-6 w-6" />
-                <span className="font-bold">Back</span>
-              </Link>
-              <div className="flex items-center gap-3">
-                <BarChart3 className="w-8 h-8 text-white" />
-                <h1 className="text-3xl font-black text-white">Analytics</h1>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <AdminPageHeader title="Analytics" icon={<BarChart3 className="w-8 h-8" />} />
 
       <div className="container mx-auto px-4 py-12 max-w-7xl space-y-8">
         {/* Time Range Selector */}
@@ -145,41 +126,34 @@ export default async function AdminAnalyticsPage({
 
         {/* Summary Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="border-4 border-black bg-white p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-            <div className="flex items-center gap-3 mb-2">
-              <Users className="w-6 h-6 text-[#0000FF]" />
-              <span className="font-bold text-gray-600">New Creators</span>
-            </div>
-            <div className="text-3xl font-black">{totalNewCreators}</div>
-            <div className="text-xs font-bold text-gray-500 mt-1">Last {days} days</div>
-          </div>
-
-          <div className="border-4 border-black bg-white p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-            <div className="flex items-center gap-3 mb-2">
-              <Coffee className="w-6 h-6 text-orange-600" />
-              <span className="font-bold text-gray-600">New Supports</span>
-            </div>
-            <div className="text-3xl font-black">{totalNewSupports}</div>
-            <div className="text-xs font-bold text-gray-500 mt-1">Last {days} days</div>
-          </div>
-
-          <div className="border-4 border-black bg-white p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-            <div className="flex items-center gap-3 mb-2">
-              <DollarSign className="w-6 h-6 text-green-600" />
-              <span className="font-bold text-gray-600">Total Volume</span>
-            </div>
-            <div className="text-3xl font-black">${totalVolume.toFixed(2)}</div>
-            <div className="text-xs font-bold text-gray-500 mt-1">Last {days} days</div>
-          </div>
-
-          <div className="border-4 border-black bg-white p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-            <div className="flex items-center gap-3 mb-2">
-              <TrendingUp className="w-6 h-6 text-purple-600" />
-              <span className="font-bold text-gray-600">Avg Daily</span>
-            </div>
-            <div className="text-3xl font-black">${avgDailyVolume.toFixed(2)}</div>
-            <div className="text-xs font-bold text-gray-500 mt-1">Per day average</div>
-          </div>
+          <AdminStatCard
+            icon={<Users className="w-6 h-6" />}
+            iconColor="text-[#0000FF]"
+            label="New Creators"
+            value={totalNewCreators}
+            subtitle={`Last ${days} days`}
+          />
+          <AdminStatCard
+            icon={<Coffee className="w-6 h-6" />}
+            iconColor="text-orange-600"
+            label="New Supports"
+            value={totalNewSupports}
+            subtitle={`Last ${days} days`}
+          />
+          <AdminStatCard
+            icon={<DollarSign className="w-6 h-6" />}
+            iconColor="text-green-600"
+            label="Total Volume"
+            value={`$${totalVolume.toFixed(2)}`}
+            subtitle={`Last ${days} days`}
+          />
+          <AdminStatCard
+            icon={<TrendingUp className="w-6 h-6" />}
+            iconColor="text-purple-600"
+            label="Avg Daily"
+            value={`$${avgDailyVolume.toFixed(2)}`}
+            subtitle="Per day average"
+          />
         </div>
 
         {/* Error Display (Debug) */}

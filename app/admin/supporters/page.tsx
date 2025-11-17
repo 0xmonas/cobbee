@@ -2,18 +2,17 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { isAdminWallet } from '@/lib/utils/admin'
-import Link from 'next/link'
 import {
-  ArrowLeft,
   Users,
-  Search,
   Shield,
   AlertTriangle,
   TrendingUp,
-  DollarSign,
 } from 'lucide-react'
 import { SupporterSearchForm } from '@/components/admin/supporter-search-form'
 import { SupportersTable } from '@/components/admin/supporters-table'
+import { AdminPageHeader } from '@/components/admin/admin-page-header'
+import { AdminStatCard } from '@/components/admin/admin-stat-card'
+import { AdminFilterTabs } from '@/components/admin/admin-filter-tabs'
 
 export const metadata = {
   title: 'Supporter Management - Admin - Cobbee',
@@ -94,26 +93,7 @@ export default async function AdminSupportersPage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="border-b-4 border-black bg-[#0000FF]">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link
-                href="/admin"
-                className="flex items-center gap-2 text-white hover:text-[#CCFF00] transition-colors"
-              >
-                <ArrowLeft className="h-6 w-6" />
-                <span className="font-bold">Back</span>
-              </Link>
-              <div className="flex items-center gap-3">
-                <Users className="w-8 h-8 text-white" />
-                <h1 className="text-3xl font-black text-white">Supporter Management</h1>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <AdminPageHeader title="Supporter Management" icon={<Users className="w-8 h-8" />} />
 
       <div className="container mx-auto px-4 py-12 max-w-7xl space-y-8">
         {/* Search Bar */}
@@ -126,74 +106,43 @@ export default async function AdminSupportersPage({
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="border-4 border-black bg-white p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-            <div className="flex items-center gap-3 mb-2">
-              <Users className="w-6 h-6 text-[#0000FF]" />
-              <span className="font-bold text-gray-600">Total Supporters</span>
-            </div>
-            <div className="text-3xl font-black">{totalSupporters}</div>
-          </div>
-
-          <div className="border-4 border-black bg-white p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-            <div className="flex items-center gap-3 mb-2">
-              <TrendingUp className="w-6 h-6 text-green-600" />
-              <span className="font-bold text-gray-600">Total Supports</span>
-            </div>
-            <div className="text-3xl font-black">{totalSupports}</div>
-          </div>
-
-          <div className="border-4 border-black bg-white p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-            <div className="flex items-center gap-3 mb-2">
-              <AlertTriangle className="w-6 h-6 text-orange-600" />
-              <span className="font-bold text-gray-600">Suspicious</span>
-            </div>
-            <div className="text-3xl font-black">{suspiciousCount}</div>
-          </div>
-
-          <div className="border-4 border-black bg-white p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-            <div className="flex items-center gap-3 mb-2">
-              <Shield className="w-6 h-6 text-red-600" />
-              <span className="font-bold text-gray-600">Blacklisted</span>
-            </div>
-            <div className="text-3xl font-black">{blacklistedCount}</div>
-          </div>
+          <AdminStatCard
+            icon={<Users className="w-6 h-6" />}
+            iconColor="text-[#0000FF]"
+            label="Total Supporters"
+            value={totalSupporters}
+          />
+          <AdminStatCard
+            icon={<TrendingUp className="w-6 h-6" />}
+            iconColor="text-green-600"
+            label="Total Supports"
+            value={totalSupports}
+          />
+          <AdminStatCard
+            icon={<AlertTriangle className="w-6 h-6" />}
+            iconColor="text-orange-600"
+            label="Suspicious"
+            value={suspiciousCount}
+          />
+          <AdminStatCard
+            icon={<Shield className="w-6 h-6" />}
+            iconColor="text-red-600"
+            label="Blacklisted"
+            value={blacklistedCount}
+          />
         </div>
 
         {/* Tabs */}
-        <div className="border-4 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-4">
-          <div className="flex items-center gap-3 flex-wrap">
-            <Link
-              href={`/admin/supporters${searchQuery ? `?search=${searchQuery}` : ''}`}
-              className={`px-6 py-3 rounded-xl border-4 border-black font-bold transition-all ${
-                activeTab === 'all'
-                  ? 'bg-[#0000FF] text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
-                  : 'bg-white hover:bg-gray-100 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
-              }`}
-            >
-              All Supporters ({totalSupporters})
-            </Link>
-            <Link
-              href={`/admin/supporters?tab=suspicious${searchQuery ? `&search=${searchQuery}` : ''}`}
-              className={`px-6 py-3 rounded-xl border-4 border-black font-bold transition-all ${
-                activeTab === 'suspicious'
-                  ? 'bg-orange-500 text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
-                  : 'bg-white hover:bg-gray-100 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
-              }`}
-            >
-              Suspicious ({suspiciousCount})
-            </Link>
-            <Link
-              href={`/admin/supporters?tab=blacklisted${searchQuery ? `&search=${searchQuery}` : ''}`}
-              className={`px-6 py-3 rounded-xl border-4 border-black font-bold transition-all ${
-                activeTab === 'blacklisted'
-                  ? 'bg-red-600 text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
-                  : 'bg-white hover:bg-gray-100 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
-              }`}
-            >
-              Blacklisted ({blacklistedCount})
-            </Link>
-          </div>
-        </div>
+        <AdminFilterTabs
+          basePath="/admin/supporters"
+          activeFilter={activeTab}
+          filters={[
+            { value: 'all', label: 'All Supporters', count: totalSupporters, color: 'blue' },
+            { value: 'suspicious', label: 'Suspicious', count: suspiciousCount, color: 'orange' },
+            { value: 'blacklisted', label: 'Blacklisted', count: blacklistedCount, color: 'red' },
+          ]}
+          preserveParams={{ search: searchQuery }}
+        />
 
         {/* Supporters List */}
         <SupportersTable

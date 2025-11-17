@@ -2,9 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { isAdminWallet } from '@/lib/utils/admin'
-import Link from 'next/link'
 import {
-  ArrowLeft,
   Wallet,
   AlertTriangle,
   Ban,
@@ -12,6 +10,8 @@ import {
   TrendingUp,
 } from 'lucide-react'
 import { WalletBlacklistActions } from '@/components/admin/wallet-blacklist-actions'
+import { AdminPageHeader } from '@/components/admin/admin-page-header'
+import { AdminStatCard } from '@/components/admin/admin-stat-card'
 
 export const metadata = {
   title: 'Wallets & Blacklist - Admin - Cobbee',
@@ -89,48 +89,23 @@ export default async function AdminWalletsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="border-b-4 border-black bg-[#0000FF]">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link
-                href="/admin"
-                className="flex items-center gap-2 text-white hover:text-[#CCFF00] transition-colors"
-              >
-                <ArrowLeft className="h-6 w-6" />
-                <span className="font-bold">Back</span>
-              </Link>
-              <div className="flex items-center gap-3">
-                <Wallet className="w-8 h-8 text-white" />
-                <h1 className="text-3xl font-black text-white">
-                  Wallets & Blacklist
-                </h1>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <AdminPageHeader title="Wallets & Blacklist" icon={<Wallet className="w-8 h-8" />} />
 
       <div className="container mx-auto px-4 py-12 max-w-7xl space-y-8">
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="border-4 border-black bg-white p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-            <div className="flex items-center gap-3 mb-2">
-              <AlertTriangle className="w-6 h-6 text-orange-600" />
-              <span className="font-bold text-gray-600">Suspicious Wallets</span>
-            </div>
-            <div className="text-3xl font-black">{suspiciousWallets?.length || 0}</div>
-          </div>
-          <div className="border-4 border-black bg-white p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-            <div className="flex items-center gap-3 mb-2">
-              <Ban className="w-6 h-6 text-red-600" />
-              <span className="font-bold text-gray-600">Blacklisted Wallets</span>
-            </div>
-            <div className="text-3xl font-black">
-              {blacklistedWallets?.length || 0}
-            </div>
-          </div>
+          <AdminStatCard
+            icon={<AlertTriangle className="w-6 h-6" />}
+            iconColor="text-orange-600"
+            label="Suspicious Wallets"
+            value={suspiciousWallets?.length || 0}
+          />
+          <AdminStatCard
+            icon={<Ban className="w-6 h-6" />}
+            iconColor="text-red-600"
+            label="Blacklisted Wallets"
+            value={blacklistedWallets?.length || 0}
+          />
         </div>
 
         {/* Suspicious Wallets */}

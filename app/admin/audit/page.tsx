@@ -4,17 +4,16 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { isAdminWallet } from '@/lib/utils/admin'
 import Link from 'next/link'
 import {
-  ArrowLeft,
   Activity,
-  User,
   Shield,
-  Clock,
-  Filter,
-  Search,
-  X,
   Coffee,
+  User,
+  Filter,
+  Clock,
 } from 'lucide-react'
 import { AuditSearchForm } from '@/components/admin/audit-search-form'
+import { AdminPageHeader } from '@/components/admin/admin-page-header'
+import { AdminStatCard } from '@/components/admin/admin-stat-card'
 
 export const metadata = {
   title: 'Audit Logs - Admin - Cobbee',
@@ -98,26 +97,7 @@ export default async function AdminAuditPage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="border-b-4 border-black bg-[#0000FF]">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link
-                href="/admin"
-                className="flex items-center gap-2 text-white hover:text-[#CCFF00] transition-colors"
-              >
-                <ArrowLeft className="h-6 w-6" />
-                <span className="font-bold">Back</span>
-              </Link>
-              <div className="flex items-center gap-3">
-                <Activity className="w-8 h-8 text-white" />
-                <h1 className="text-3xl font-black text-white">Audit Logs</h1>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <AdminPageHeader title="Audit Logs" icon={<Activity className="w-8 h-8" />} />
 
       <div className="container mx-auto px-4 py-12 max-w-7xl space-y-8">
         {/* Search Bar */}
@@ -163,40 +143,30 @@ export default async function AdminAuditPage({
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="border-4 border-black bg-white p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-            <div className="flex items-center gap-3 mb-2">
-              <Activity className="w-6 h-6 text-[#0000FF]" />
-              <span className="font-bold text-gray-600">Total Events</span>
-            </div>
-            <div className="text-3xl font-black">{auditLogs?.length || 0}</div>
-          </div>
-          <div className="border-4 border-black bg-white p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-            <div className="flex items-center gap-3 mb-2">
-              <User className="w-6 h-6 text-green-600" />
-              <span className="font-bold text-gray-600">User Events</span>
-            </div>
-            <div className="text-3xl font-black">
-              {auditLogs?.filter((log) => log.actor_type === 'user').length || 0}
-            </div>
-          </div>
-          <div className="border-4 border-black bg-white p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-            <div className="flex items-center gap-3 mb-2">
-              <Shield className="w-6 h-6 text-purple-600" />
-              <span className="font-bold text-gray-600">Admin Events</span>
-            </div>
-            <div className="text-3xl font-black">
-              {auditLogs?.filter((log) => log.actor_type === 'admin').length || 0}
-            </div>
-          </div>
-          <div className="border-4 border-black bg-white p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-            <div className="flex items-center gap-3 mb-2">
-              <Coffee className="w-6 h-6 text-orange-600" />
-              <span className="font-bold text-gray-600">Support Events</span>
-            </div>
-            <div className="text-3xl font-black">
-              {auditLogs?.filter((log) => log.event_type.includes('support_')).length || 0}
-            </div>
-          </div>
+          <AdminStatCard
+            icon={<Activity className="w-6 h-6" />}
+            iconColor="text-[#0000FF]"
+            label="Total Events"
+            value={auditLogs?.length || 0}
+          />
+          <AdminStatCard
+            icon={<User className="w-6 h-6" />}
+            iconColor="text-green-600"
+            label="User Events"
+            value={auditLogs?.filter((log) => log.actor_type === 'user').length || 0}
+          />
+          <AdminStatCard
+            icon={<Shield className="w-6 h-6" />}
+            iconColor="text-purple-600"
+            label="Admin Events"
+            value={auditLogs?.filter((log) => log.actor_type === 'admin').length || 0}
+          />
+          <AdminStatCard
+            icon={<Coffee className="w-6 h-6" />}
+            iconColor="text-orange-600"
+            label="Support Events"
+            value={auditLogs?.filter((log) => log.event_type?.includes('support_')).length || 0}
+          />
         </div>
 
         {/* Audit Logs Table */}
