@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { validateSupporterName, validateSupportMessage } from '@/lib/utils/validation'
+import { createAuditLog } from '@/lib/utils/audit-logger'
 
 /**
  * Support Creation API
@@ -117,6 +118,28 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
+
+    // Create audit log for support creation
+    await createAuditLog({
+      request,
+      supabase,
+      eventType: 'support_created',
+      actorType: 'anonymous',
+      actorId: null,
+      targetType: 'user',
+      targetId: creator_id,
+      metadata: {
+        support_id: support.id,
+        supporter_name,
+        supporter_wallet_address,
+        coffee_count,
+        total_amount,
+        transaction_hash,
+        is_private,
+        has_message: !!message,
+        creator_name: creator.display_name,
+      },
+    })
 
     return Response.json({
       success: true,

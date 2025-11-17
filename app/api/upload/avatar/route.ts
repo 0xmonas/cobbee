@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { uploadAvatar, deleteAvatar } from '@/lib/storage-utils'
 import { revalidatePath } from 'next/cache'
 import { apiRateLimit, getRateLimitIdentifier } from '@/lib/security/ratelimit'
+import { createAuditLog } from '@/lib/utils/audit-logger'
 
 /**
  * Avatar Upload API
@@ -103,6 +104,22 @@ export async function POST(request: NextRequest) {
       .select('username')
       .eq('id', user.id)
       .single()
+
+    // Create audit log
+    await createAuditLog({
+      request,
+      supabase,
+      eventType: 'avatar_uploaded',
+      actorType: 'user',
+      actorId: user.id,
+      targetType: 'user',
+      targetId: user.id,
+      metadata: {
+        file_type: file.type,
+        file_size: file.size,
+        url: result.url,
+      },
+    })
 
     // Revalidate cached pages (Next.js cache strategy)
     revalidatePath('/profile/edit')
