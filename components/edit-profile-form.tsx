@@ -59,6 +59,7 @@ export function EditProfileForm({ user }: EditProfileFormProps) {
   const [deletingAvatar, setDeletingAvatar] = useState(false)
   const [deletingCover, setDeletingCover] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   const validateField = (
     field: "displayName" | "username" | "bio" | "twitter" | "instagram" | "github" | "tiktok" | "opensea",
@@ -188,12 +189,28 @@ export function EditProfileForm({ user }: EditProfileFormProps) {
         } else {
           setFormErrors({ ...formErrors, displayName: profileResult.error || 'Profile update failed' })
         }
+        setSuccessMessage(null)
         setSaving(false)
         return
       }
 
-      // Success - refresh page to show updated data (clears Router Cache)
-      router.refresh()
+      // Success - show inline success message
+      if (profileResult.usernameChanged) {
+        setSuccessMessage('Profile updated successfully! Redirecting to your new URL...')
+        // If username changed, redirect to new profile URL
+        setTimeout(() => {
+          router.push(profileResult.redirectUrl)
+        }, 2000)
+      } else {
+        setSuccessMessage('Profile updated successfully!')
+        // Refresh page to show updated data (clears Router Cache)
+        router.refresh()
+        // Clear success message after 5 seconds
+        setTimeout(() => {
+          setSuccessMessage(null)
+        }, 5000)
+      }
+
       setSaving(false)
     } catch (error) {
       setFormErrors({
@@ -703,6 +720,20 @@ export function EditProfileForm({ user }: EditProfileFormProps) {
               </div>
             </div>
           </div>
+
+          {/* Success Message */}
+          {successMessage && (
+            <div className="border-4 border-black bg-green-50 rounded-xl p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <div className="flex items-center gap-3">
+                <div className="flex-shrink-0">
+                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <p className="text-base font-bold text-green-800">{successMessage}</p>
+              </div>
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-end">

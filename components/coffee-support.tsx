@@ -273,7 +273,9 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
             <CheckCircle className="w-20 h-20 text-green-500" />
           </div>
           <h3 className="text-3xl font-black mb-2">Payment Successful!</h3>
-          <p className="text-xl font-bold text-gray-600 mb-6">Your support means the world to {creator.display_name}!</p>
+          <p className="text-xl font-bold text-gray-600 mb-6">
+            {creator.thank_you_message || `Your support means the world to ${creator.display_name}!`}
+          </p>
           <div className="bg-gray-50 border-4 border-black rounded-xl p-4 mb-4">
             <div className="flex justify-between items-center mb-2">
               <span className="font-bold text-gray-600">Amount:</span>

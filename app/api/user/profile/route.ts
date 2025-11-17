@@ -184,9 +184,37 @@ export async function PATCH(request: NextRequest) {
 
       // Handle specific database errors
       if (updateError.code === '23505') {
-        // Unique constraint violation
+        // Unique constraint violation - check which field
+        const constraintName = updateError.message
+        const errors: Record<string, string> = {}
+        let errorMessage = 'Duplicate value detected'
+
+        if (constraintName.includes('users_username_key')) {
+          errors.username = 'This username is already taken'
+          errorMessage = 'Username already taken'
+        } else if (constraintName.includes('users_twitter_handle_key')) {
+          errors.twitter = 'This Twitter handle is already claimed by another creator'
+          errorMessage = 'Twitter handle already taken'
+        } else if (constraintName.includes('users_instagram_handle_key')) {
+          errors.instagram = 'This Instagram handle is already claimed by another creator'
+          errorMessage = 'Instagram handle already taken'
+        } else if (constraintName.includes('users_github_handle_key')) {
+          errors.github = 'This GitHub handle is already claimed by another creator'
+          errorMessage = 'GitHub handle already taken'
+        } else if (constraintName.includes('users_tiktok_handle_key')) {
+          errors.tiktok = 'This TikTok handle is already claimed by another creator'
+          errorMessage = 'TikTok handle already taken'
+        } else if (constraintName.includes('users_opensea_handle_key')) {
+          errors.opensea = 'This OpenSea handle is already claimed by another creator'
+          errorMessage = 'OpenSea handle already taken'
+        } else {
+          // Generic unique constraint error
+          errors.displayName = 'One of your profile fields is already taken by another user'
+          errorMessage = 'Duplicate profile information'
+        }
+
         return Response.json(
-          { error: 'Username already taken', errors: { username: 'This username is already taken' } },
+          { error: errorMessage, errors },
           { status: 409 }
         )
       }
