@@ -8,10 +8,10 @@ import {
   Wallet,
   AlertTriangle,
   Ban,
-  Shield,
   Coffee,
   TrendingUp,
 } from 'lucide-react'
+import { WalletBlacklistActions } from '@/components/admin/wallet-blacklist-actions'
 
 export const metadata = {
   title: 'Wallets & Blacklist - Admin - Cobbee',
@@ -156,26 +156,26 @@ export default async function AdminWalletsPage() {
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
                           <span className="font-mono text-lg font-black">
-                            {wallet.wallet_address.slice(0, 12)}...
-                            {wallet.wallet_address.slice(-10)}
+                            {wallet.wallet_address?.slice(0, 12) || ''}...
+                            {wallet.wallet_address?.slice(-10) || ''}
                           </span>
                           <span
                             className={`px-3 py-1 rounded-full text-xs font-black border-2 border-black ${
-                              wallet.fraud_risk_score >= 6
+                              (wallet.fraud_risk_score ?? 0) >= 6
                                 ? 'bg-red-500 text-white'
-                                : wallet.fraud_risk_score >= 4
+                                : (wallet.fraud_risk_score ?? 0) >= 4
                                 ? 'bg-orange-400 text-black'
                                 : 'bg-yellow-300 text-black'
                             }`}
                           >
-                            Risk: {wallet.fraud_risk_score}/8
+                            Risk: {wallet.fraud_risk_score ?? 0}/8
                           </span>
                         </div>
 
                         {/* Used Names */}
                         <div className="mb-3">
                           <span className="text-sm font-bold text-gray-600">
-                            Used Names ({wallet.name_variation_count}):
+                            Used Names ({wallet.name_variation_count ?? 0}):
                           </span>
                           <div className="flex flex-wrap gap-2 mt-1">
                             {JSON.parse(wallet.used_names as any).slice(0, 5).map((name: string, idx: number) => (
@@ -186,9 +186,9 @@ export default async function AdminWalletsPage() {
                                 {name}
                               </span>
                             ))}
-                            {wallet.name_variation_count > 5 && (
+                            {(wallet.name_variation_count ?? 0) > 5 && (
                               <span className="px-2 py-1 bg-gray-200 border-2 border-black rounded-lg text-xs font-bold">
-                                +{wallet.name_variation_count - 5} more
+                                +{(wallet.name_variation_count ?? 0) - 5} more
                               </span>
                             )}
                           </div>
@@ -225,7 +225,7 @@ export default async function AdminWalletsPage() {
                               Volume (7d)
                             </div>
                             <div className="text-xl font-black">
-                              ${wallet.volume_last_7_days.toFixed(2)}
+                              ${(wallet.volume_last_7_days ?? 0).toFixed(2)}
                             </div>
                           </div>
                         </div>
@@ -233,19 +233,20 @@ export default async function AdminWalletsPage() {
                         {/* Dates */}
                         <div className="mt-3 flex items-center gap-4 text-xs font-bold text-gray-600">
                           <span>
-                            First seen: {new Date(wallet.first_seen_at).toLocaleDateString()}
+                            First seen: {wallet.first_seen_at ? new Date(wallet.first_seen_at).toLocaleDateString() : 'N/A'}
                           </span>
                           <span>
-                            Last seen: {new Date(wallet.last_seen_at).toLocaleDateString()}
+                            Last seen: {wallet.last_seen_at ? new Date(wallet.last_seen_at).toLocaleDateString() : 'N/A'}
                           </span>
                         </div>
                       </div>
 
                       {/* Action Button */}
                       <div>
-                        <button className="bg-red-600 hover:bg-red-700 text-white font-black px-6 py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">
-                          <Ban className="w-5 h-5 mx-auto" />
-                        </button>
+                        <WalletBlacklistActions
+                          walletAddress={wallet.wallet_address || ''}
+                          isBlacklisted={false}
+                        />
                       </div>
                     </div>
                   </div>
@@ -304,10 +305,10 @@ export default async function AdminWalletsPage() {
                           )}
                           <div className="flex items-center gap-4 text-xs font-bold text-gray-600">
                             <span>
-                              Blacklisted by: {wallet.blacklisted_by.slice(0, 10)}...
+                              Blacklisted by: {wallet.blacklisted_by?.slice(0, 10) || 'Unknown'}...
                             </span>
                             <span>
-                              Date: {new Date(wallet.blacklisted_at).toLocaleDateString()}
+                              Date: {wallet.blacklisted_at ? new Date(wallet.blacklisted_at).toLocaleDateString() : 'N/A'}
                             </span>
                           </div>
                         </div>
@@ -315,9 +316,11 @@ export default async function AdminWalletsPage() {
 
                       {/* Action Button */}
                       <div>
-                        <button className="bg-green-600 hover:bg-green-700 text-white font-black px-6 py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">
-                          <Shield className="w-5 h-5 mx-auto" />
-                        </button>
+                        <WalletBlacklistActions
+                          walletAddress={wallet.wallet_address}
+                          isBlacklisted={true}
+                          currentReason={wallet.reason}
+                        />
                       </div>
                     </div>
                   </div>

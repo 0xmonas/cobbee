@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_wallets: {
+        Row: {
+          added_at: string
+          added_by: string | null
+          notes: string | null
+          wallet_address: string
+        }
+        Insert: {
+          added_at?: string
+          added_by?: string | null
+          notes?: string | null
+          wallet_address: string
+        }
+        Update: {
+          added_at?: string
+          added_by?: string | null
+          notes?: string | null
+          wallet_address?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           actor_id: string | null
@@ -672,6 +693,10 @@ export type Database = {
       }
     }
     Functions: {
+      add_admin_wallet: {
+        Args: { p_notes?: string; p_wallet_address: string }
+        Returns: boolean
+      }
       admin_blacklist_wallet: {
         Args: {
           p_admin_wallet?: string
@@ -686,10 +711,6 @@ export type Database = {
         Args: { p_admin_id: string; p_reason?: string; p_user_id: string }
         Returns: Json
       }
-      admin_deactivate_user: {
-        Args: { p_admin_wallet?: string; p_reason?: string; p_user_id: string }
-        Returns: Json
-      }
       admin_get_analytics: {
         Args: { p_days?: number }
         Returns: {
@@ -700,28 +721,19 @@ export type Database = {
           unique_supporters: number
         }[]
       }
-      admin_reactivate_user: {
-        Args: { p_admin_wallet?: string; p_user_id: string }
-        Returns: Json
-      }
       admin_search_users: {
         Args: { p_limit?: number; p_search_term: string }
         Returns: {
           blocked_at: string
           blocked_reason: string
-          coffee_price: number
           created_at: string
           display_name: string
-          earnings_last_30_days: number
           email: string
           id: string
           is_active: boolean
           is_blocked: boolean
-          last_support_at: string
-          supports_last_30_days: number
           total_earnings: number
           total_supporters: number
-          total_supports: number
           username: string
           wallet_address: string
         }[]
@@ -778,6 +790,7 @@ export type Database = {
         Returns: boolean
       }
       get_unread_notification_count: { Args: never; Returns: number }
+      is_admin_user: { Args: never; Returns: boolean }
       is_wallet_blacklisted: {
         Args: { p_wallet_address: string }
         Returns: boolean
@@ -785,6 +798,10 @@ export type Database = {
       mark_all_notifications_read: { Args: never; Returns: number }
       mark_notification_read: {
         Args: { p_notification_id: string }
+        Returns: boolean
+      }
+      remove_admin_wallet: {
+        Args: { p_wallet_address: string }
         Returns: boolean
       }
     }
