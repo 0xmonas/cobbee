@@ -11,6 +11,7 @@ import {
   DollarSign,
   Coffee,
   Calendar,
+  AlertTriangle,
 } from 'lucide-react'
 
 export const metadata = {
@@ -68,7 +69,20 @@ export default async function AdminAnalyticsPage({
     { p_days: days }
   )
 
+  if (error) {
+    console.error('Analytics RPC error:', error)
+  }
+
   const analytics: DailyAnalytics[] = analyticsData || []
+
+  // Debug logging
+  console.log('Analytics query result:', {
+    days,
+    rowCount: analytics.length,
+    hasError: !!error,
+    error: error?.message,
+    firstRow: analytics[0],
+  })
 
   // Calculate totals
   const totalNewCreators = analytics.reduce((sum, day) => sum + day.new_creators, 0)
@@ -167,6 +181,22 @@ export default async function AdminAnalyticsPage({
             <div className="text-xs font-bold text-gray-500 mt-1">Per day average</div>
           </div>
         </div>
+
+        {/* Error Display (Debug) */}
+        {error && (
+          <div className="border-4 border-black bg-red-50 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-6">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-6 h-6 text-red-600 mt-1" />
+              <div>
+                <h3 className="font-black text-lg mb-2 text-red-600">Analytics Error</h3>
+                <p className="font-bold text-sm text-gray-700">{error.message}</p>
+                <pre className="mt-2 text-xs bg-white border-2 border-black rounded p-2 overflow-auto">
+                  {JSON.stringify(error, null, 2)}
+                </pre>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Daily Breakdown */}
         <div className="border-4 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
@@ -272,7 +302,7 @@ export default async function AdminAnalyticsPage({
                 <div className="border-2 border-black rounded-xl p-4 bg-gray-50">
                   <div className="text-sm font-bold text-gray-600 mb-1">All-Time Volume</div>
                   <div className="text-3xl font-black">
-                    ${parseFloat(platformStats.total_platform_volume_usd.toString()).toFixed(2)}
+                    ${parseFloat((platformStats.total_platform_volume_usd ?? 0).toString()).toFixed(2)}
                   </div>
                   <div className="text-xs font-bold text-gray-500 mt-1">
                     {platformStats.total_unique_supporters} unique supporters
