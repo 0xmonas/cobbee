@@ -6,6 +6,7 @@ import { getCDPFacilitator } from '@/lib/cdp-facilitator'
 import { getAddress } from 'viem'
 import { paymentRateLimit, getRateLimitIdentifier } from '@/lib/security/ratelimit'
 import { sanitizeText, sanitizeName } from '@/lib/security/sanitize'
+import { createAuditLog } from '@/lib/utils/audit-logger'
 
 /**
  * x402 Payment Protocol Endpoint
@@ -345,6 +346,24 @@ export async function POST(request: NextRequest) {
 
       // Protocol uses 'isValid' not 'verified'
       if (!verificationResult.isValid) {
+        // Create audit log for failed support
+        await createAuditLog({
+          request,
+          supabase,
+          eventType: 'support_failed',
+          actorType: 'anonymous',
+          actorId: null,
+          targetType: 'user',
+          targetId: creator_id,
+          metadata: {
+            supporter_name,
+            coffee_count,
+            total_amount: totalAmount,
+            failure_reason: 'payment_verification_failed',
+            failure_details: verificationResult.invalidReason || 'Payment could not be verified',
+          },
+        })
+
         return Response.json(
           {
             error: 'Payment verification failed',
@@ -431,6 +450,25 @@ export async function POST(request: NextRequest) {
       console.log('[x402] Settlement result:', settlementResult)
 
       if (!settlementResult.success) {
+        // Create audit log for failed support
+        await createAuditLog({
+          request,
+          supabase,
+          eventType: 'support_failed',
+          actorType: 'anonymous',
+          actorId: null,
+          targetType: 'user',
+          targetId: creator_id,
+          metadata: {
+            supporter_name,
+            supporter_wallet_address: supporterWalletAddress,
+            coffee_count,
+            total_amount: totalAmount,
+            failure_reason: 'payment_settlement_failed',
+            failure_details: settlementResult.error || 'Settlement was not successful',
+          },
+        })
+
         return Response.json(
           {
             error: 'Payment settlement failed',
@@ -482,6 +520,28 @@ export async function POST(request: NextRequest) {
           { status: 500 }
         )
       }
+
+      // Create audit log for confirmed support
+      await createAuditLog({
+        request,
+        supabase,
+        eventType: 'support_confirmed',
+        actorType: 'anonymous',
+        actorId: null,
+        targetType: 'user',
+        targetId: creator_id,
+        metadata: {
+          support_id: support.id,
+          supporter_name: sanitizedName,
+          supporter_wallet_address: supporterWalletAddress,
+          coffee_count,
+          total_amount: totalAmount,
+          transaction_hash: transactionHash,
+          chain_id: x402Config.chainId,
+          network: x402Config.network,
+          payment_method: 'x402',
+        },
+      })
 
       // Success! Return support details with payment response header
       return Response.json(
