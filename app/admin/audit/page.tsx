@@ -10,7 +10,11 @@ import {
   Shield,
   Clock,
   Filter,
+  Search,
+  X,
+  Coffee,
 } from 'lucide-react'
+import { AuditSearchForm } from '@/components/admin/audit-search-form'
 
 export const metadata = {
   title: 'Audit Logs - Admin - Cobbee',
@@ -35,10 +39,11 @@ interface AuditLog {
 export default async function AdminAuditPage({
   searchParams,
 }: {
-  searchParams: Promise<{ event?: string }>
+  searchParams: Promise<{ event?: string; search?: string }>
 }) {
   const params = await searchParams
   const eventFilter = params.event || ''
+  const searchQuery = params.search || ''
 
   const supabase = await createClient()
 
@@ -77,6 +82,10 @@ export default async function AdminAuditPage({
     query = query.eq('event_type', eventFilter)
   }
 
+  if (searchQuery) {
+    query = query.or(`actor_username.ilike.%${searchQuery}%,actor_display_name.ilike.%${searchQuery}%,event_type.ilike.%${searchQuery}%,ip_address.ilike.%${searchQuery}%`)
+  }
+
   const { data: auditLogs } = await query.limit(100)
 
   // Get unique event types for filter
@@ -111,6 +120,14 @@ export default async function AdminAuditPage({
       </header>
 
       <div className="container mx-auto px-4 py-12 max-w-7xl space-y-8">
+        {/* Search Bar */}
+        <div className="border-4 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-6">
+          <AuditSearchForm
+            initialSearch={searchQuery}
+            currentEvent={eventFilter}
+          />
+        </div>
+
         {/* Filter Bar */}
         <div className="border-4 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-6">
           <div className="flex items-center gap-4">
@@ -118,7 +135,7 @@ export default async function AdminAuditPage({
             <span className="font-black text-lg">Filter by Event Type:</span>
             <div className="flex-1 flex items-center gap-2 flex-wrap">
               <Link
-                href="/admin/audit"
+                href={`/admin/audit${searchQuery ? `?search=${searchQuery}` : ''}`}
                 className={`px-4 py-2 rounded-lg border-4 border-black font-bold transition-all ${
                   !eventFilter
                     ? 'bg-[#0000FF] text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
@@ -130,7 +147,7 @@ export default async function AdminAuditPage({
               {eventTypes.slice(0, 6).map((type) => (
                 <Link
                   key={type}
-                  href={`/admin/audit?event=${type}`}
+                  href={`/admin/audit?event=${type}${searchQuery ? `&search=${searchQuery}` : ''}`}
                   className={`px-4 py-2 rounded-lg border-4 border-black font-bold transition-all ${
                     eventFilter === type
                       ? 'bg-[#0000FF] text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
@@ -145,7 +162,7 @@ export default async function AdminAuditPage({
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="border-4 border-black bg-white p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
             <div className="flex items-center gap-3 mb-2">
               <Activity className="w-6 h-6 text-[#0000FF]" />
@@ -169,6 +186,15 @@ export default async function AdminAuditPage({
             </div>
             <div className="text-3xl font-black">
               {auditLogs?.filter((log) => log.actor_type === 'admin').length || 0}
+            </div>
+          </div>
+          <div className="border-4 border-black bg-white p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+            <div className="flex items-center gap-3 mb-2">
+              <Coffee className="w-6 h-6 text-orange-600" />
+              <span className="font-bold text-gray-600">Support Events</span>
+            </div>
+            <div className="text-3xl font-black">
+              {auditLogs?.filter((log) => log.event_type.includes('support_')).length || 0}
             </div>
           </div>
         </div>

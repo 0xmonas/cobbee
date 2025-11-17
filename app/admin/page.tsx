@@ -300,16 +300,21 @@ export default async function AdminDashboardPage() {
             <h2 className="text-2xl font-black">Quick Actions</h2>
           </div>
           <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <ActionButton
                 href="/admin/users"
                 icon={<Users className="w-6 h-6" />}
                 label="Manage Users"
               />
               <ActionButton
-                href="/admin/wallets"
+                href="/admin/supporters"
                 icon={<Wallet className="w-6 h-6" />}
-                label="Wallets & Blacklist"
+                label="Manage Supporters"
+              />
+              <ActionButton
+                href="/admin/wallets"
+                icon={<AlertTriangle className="w-6 h-6" />}
+                label="Suspicious Wallets"
               />
               <ActionButton
                 href="/admin/audit"
