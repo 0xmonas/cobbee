@@ -8,6 +8,7 @@ import Link from "next/link"
 import NextImage from "next/image"
 import { Button } from "@/components/ui/button"
 import { UserMenu } from "@/components/user-menu"
+import { getInitials } from "@/lib/avatar-utils"
 import { SimpleFooter } from "@/components/simple-footer"
 import { Logo } from "@/components/logo"
 import { TwitterIcon, InstagramIcon, GitHubIcon, TikTokIcon, OpenSeaIcon } from "@/components/icons/social-icons"
@@ -184,7 +185,7 @@ export default async function CreatorProfilePage({ params }: CreatorProfilePageP
                 <Avatar className="w-32 h-32 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
                   <AvatarImage src={creator.avatar_url || undefined} alt={creator.display_name} />
                   <AvatarFallback className="text-3xl font-black bg-[#CCFF00]">
-                    {creator.display_name.charAt(0)}
+                    {getInitials(creator.display_name)}
                   </AvatarFallback>
                 </Avatar>
 

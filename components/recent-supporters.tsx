@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Coffee, MessageCircle, Pencil, Trash2, Eye, EyeOff, Lock } from "lucide-react"
 import type { Database } from "@/lib/types/database.types"
+import { getInitials } from "@/lib/avatar-utils"
 
 type Support = Database['public']['Tables']['supports']['Row']
 
@@ -117,7 +118,7 @@ export function RecentSupporters({
               <Avatar className="w-14 h-14 border-4 border-black">
                 <AvatarImage src={support.supporter_avatar_url || "/placeholder.svg"} alt={support.supporter_name} />
                 <AvatarFallback className="text-lg font-black bg-[#0000FF] text-white">
-                  {support.supporter_name.charAt(0)}
+                  {getInitials(support.supporter_name)}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
@@ -168,7 +169,7 @@ export function RecentSupporters({
                   <Avatar className="w-10 h-10 border-2 border-black">
                     <AvatarImage src={creatorAvatar || "/placeholder.svg"} alt={creatorDisplayName} />
                     <AvatarFallback className="text-sm font-black bg-[#0000FF] text-white">
-                      {creatorDisplayName.charAt(0)}
+                      {getInitials(creatorDisplayName)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">

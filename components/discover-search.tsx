@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Search, Coffee, Users } from "lucide-react"
 import type { Database } from "@/lib/types/database.types"
+import { getInitials } from "@/lib/avatar-utils"
 
 type User = Database['public']['Tables']['users']['Row'] & {
   supporter_count?: number
@@ -101,7 +102,7 @@ export function DiscoverSearch({ creators }: DiscoverSearchProps) {
                             <Avatar className="w-16 h-16 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                               <AvatarImage src={creator.avatar_url || undefined} alt={creator.display_name} />
                               <AvatarFallback className="text-xl font-black bg-white">
-                                {creator.display_name.charAt(0)}
+                                {getInitials(creator.display_name)}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1">

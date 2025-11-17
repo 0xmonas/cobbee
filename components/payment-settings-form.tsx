@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { getInitials } from "@/lib/avatar-utils"
 import {
   ArrowLeft,
   Wallet,
@@ -478,7 +479,7 @@ export function PaymentSettingsForm({ user, supports }: PaymentSettingsFormProps
                         <Avatar className="w-14 h-14 border-4 border-black">
                           <AvatarImage src={payment.supporter_avatar_url || undefined} alt={payment.supporter_name} />
                           <AvatarFallback className="text-lg font-black bg-[#0000FF] text-white">
-                            {payment.supporter_name.charAt(0)}
+                            {getInitials(payment.supporter_name)}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">

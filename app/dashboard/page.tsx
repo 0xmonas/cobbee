@@ -9,6 +9,7 @@ import { SimpleFooter } from "@/components/simple-footer"
 import { Logo } from "@/components/logo"
 import { DashboardActions } from "@/components/dashboard-actions"
 import { createClient } from "@/lib/supabase/server"
+import { getInitials } from "@/lib/avatar-utils"
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -194,7 +195,7 @@ export default async function DashboardPage() {
                               alt={support.supporter_name}
                             />
                             <AvatarFallback className="font-black bg-[#0000FF] text-white">
-                              {support.supporter_name.charAt(0)}
+                              {getInitials(support.supporter_name)}
                             </AvatarFallback>
                           </Avatar>
                           <div>
@@ -227,7 +228,7 @@ export default async function DashboardPage() {
                   <Avatar className="w-16 h-16 border-4 border-black">
                     <AvatarImage src={currentCreator.avatar_url || undefined} alt={currentCreator.display_name} />
                     <AvatarFallback className="font-black bg-white">
-                      {currentCreator.display_name.charAt(0)}
+                      {getInitials(currentCreator.display_name)}
                     </AvatarFallback>
                   </Avatar>
                   <div>

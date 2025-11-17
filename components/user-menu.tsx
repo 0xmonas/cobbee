@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import { User, Settings, LogOut, Eye, Wallet } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useDisconnect } from '@reown/appkit/react'
+import { getInitials } from "@/lib/avatar-utils"
 
 export function UserMenu() {
   const [isOpen, setIsOpen] = useState(false)
@@ -70,7 +71,7 @@ export function UserMenu() {
         <Avatar className="w-full h-full">
           <AvatarImage src={user.avatar_url || undefined} alt={user.display_name} />
           <AvatarFallback className="text-xl font-black bg-white">
-            {user.display_name?.charAt(0) || 'U'}
+            {getInitials(user.display_name || 'User')}
           </AvatarFallback>
         </Avatar>
       </button>
