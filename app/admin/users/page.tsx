@@ -78,15 +78,15 @@ export default async function AdminUsersPage({
   // Use admin client to fetch users
   const adminSupabase = createAdminClient()
 
-  // Fetch creators
+  // Fetch creators from admin_top_creators view (includes support stats)
   let creators: Creator[] = []
+
   if (searchQuery) {
-    // Search users - using direct query until migration is applied
-    const { data, error } = await adminSupabase
-      .from('users')
-      .select('*')
-      .or(`username.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%,wallet_address.ilike.%${searchQuery}%`)
-      .limit(50)
+    // Search users using RPC function
+    const { data, error } = await adminSupabase.rpc('admin_search_users', {
+      p_search_term: searchQuery,
+      p_limit: 50
+    })
 
     if (!error && data) {
       creators = data.map((user: any) => ({
@@ -96,19 +96,18 @@ export default async function AdminUsersPage({
         blocked_at: user.blocked_at ?? null,
         blocked_reason: user.blocked_reason ?? null,
         total_supports: 0,
-        total_supporters: 0,
-        total_earnings: 0,
+        total_supporters: user.total_supporters ?? 0,
+        total_earnings: user.total_earnings ?? 0,
         supports_last_30_days: 0,
         earnings_last_30_days: 0,
         last_support_at: null,
       })) as Creator[]
     }
   } else {
-    // Get all creators (sorted by earnings) - simplified until migration
+    // Get all creators from view (includes stats)
     const { data, error } = await adminSupabase
-      .from('users')
+      .from('admin_top_creators')
       .select('*')
-      .order('created_at', { ascending: false })
       .limit(50)
 
     if (!error && data) {
@@ -118,15 +117,21 @@ export default async function AdminUsersPage({
         is_blocked: user.is_blocked ?? false,
         blocked_at: user.blocked_at ?? null,
         blocked_reason: user.blocked_reason ?? null,
-        total_supports: 0,
-        total_supporters: 0,
-        total_earnings: 0,
-        supports_last_30_days: 0,
-        earnings_last_30_days: 0,
-        last_support_at: null,
+        total_supports: user.total_supports ?? 0,
+        total_supporters: user.total_supporters ?? 0,
+        total_earnings: user.total_earnings ?? 0,
+        supports_last_30_days: user.supports_last_30_days ?? 0,
+        earnings_last_30_days: user.earnings_last_30_days ?? 0,
+        last_support_at: user.last_support_at ?? null,
       })) as Creator[]
     }
   }
+
+  // Calculate active/inactive based on recent activity
+  // Active = received support in last 30 days
+  // Inactive = no support in last 30 days OR never received support
+  const activeCreators = creators.filter(c => c.supports_last_30_days > 0)
+  const inactiveCreators = creators.filter(c => c.supports_last_30_days === 0)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -196,8 +201,9 @@ export default async function AdminUsersPage({
               <CheckCircle className="w-6 h-6 text-green-600" />
               <span className="font-bold text-gray-600">Active Users</span>
             </div>
-            <div className="text-3xl font-black">
-              {creators.filter((c) => c.is_active).length}
+            <div className="text-3xl font-black">{activeCreators.length}</div>
+            <div className="text-xs font-bold text-gray-500 mt-1">
+              Received support in last 30 days
             </div>
           </div>
           <div className="border-4 border-black bg-white p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
@@ -205,8 +211,9 @@ export default async function AdminUsersPage({
               <XCircle className="w-6 h-6 text-red-600" />
               <span className="font-bold text-gray-600">Inactive Users</span>
             </div>
-            <div className="text-3xl font-black">
-              {creators.filter((c) => !c.is_active).length}
+            <div className="text-3xl font-black">{inactiveCreators.length}</div>
+            <div className="text-xs font-bold text-gray-500 mt-1">
+              No support in last 30 days
             </div>
           </div>
         </div>
@@ -311,13 +318,13 @@ export default async function AdminUsersPage({
 
                         {/* Status */}
                         <td className="p-4 text-center">
-                          {creator.is_active ? (
+                          {creator.supports_last_30_days > 0 ? (
                             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-800 border-2 border-green-600 text-xs font-black">
                               <CheckCircle className="w-3 h-3" />
                               Active
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 text-red-800 border-2 border-red-600 text-xs font-black">
+                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-100 text-gray-800 border-2 border-gray-400 text-xs font-black">
                               <XCircle className="w-3 h-3" />
                               Inactive
                             </span>
