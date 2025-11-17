@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { createAuditLog } from '@/lib/utils/audit-logger'
 
 /**
  * Auth Callback Handler
@@ -33,6 +34,7 @@ export async function GET(request: NextRequest) {
     // If this is an email change confirmation, update public.users
     if (type === 'email_change' && data.user) {
       const newEmail = data.user.email
+      const oldEmail = data.user.user_metadata?.old_email
 
       if (newEmail) {
         // Update email in public.users table
@@ -54,6 +56,27 @@ export async function GET(request: NextRequest) {
             .select('username')
             .eq('id', data.user.id)
             .single()
+
+          // Create audit log for email change
+          await createAuditLog({
+            request,
+            supabase,
+            eventType: 'email_changed',
+            actorType: 'user',
+            actorId: data.user.id,
+            targetType: 'user',
+            targetId: data.user.id,
+            changes: {
+              email: {
+                old: oldEmail || null,
+                new: newEmail,
+              },
+            },
+            metadata: {
+              verification_method: 'email_otp',
+              email_verified: true,
+            },
+          })
 
           // Revalidate cached pages
           revalidatePath('/settings')

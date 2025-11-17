@@ -9,6 +9,7 @@ import {
 } from '@/lib/utils/validation'
 import { apiRateLimit, getRateLimitIdentifier } from '@/lib/security/ratelimit'
 import { sanitizeText, sanitizeName } from '@/lib/security/sanitize'
+import { createAuditLog } from '@/lib/utils/audit-logger'
 
 /**
  * User Profile Update API
@@ -120,10 +121,10 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    // Get current user data to check username change
+    // Get current user data to check username change and track changes
     const { data: currentUser, error: fetchError } = await supabase
       .from('users')
-      .select('username')
+      .select('username, display_name, bio, twitter_handle, instagram_handle, github_handle, tiktok_handle, opensea_handle')
       .eq('id', user.id)
       .single()
 
@@ -195,6 +196,49 @@ export async function PATCH(request: NextRequest) {
         { status: 500 }
       )
     }
+
+    // Track what changed for audit log
+    const changes: Record<string, { old: any; new: any }> = {}
+    if (currentUser.display_name !== sanitizedDisplayName) {
+      changes.display_name = { old: currentUser.display_name, new: sanitizedDisplayName }
+    }
+    if (currentUser.username !== username) {
+      changes.username = { old: currentUser.username, new: username }
+    }
+    if (currentUser.bio !== sanitizedBio) {
+      changes.bio = { old: currentUser.bio, new: sanitizedBio }
+    }
+    if (currentUser.twitter_handle !== sanitizedTwitter) {
+      changes.twitter_handle = { old: currentUser.twitter_handle, new: sanitizedTwitter }
+    }
+    if (currentUser.instagram_handle !== sanitizedInstagram) {
+      changes.instagram_handle = { old: currentUser.instagram_handle, new: sanitizedInstagram }
+    }
+    if (currentUser.github_handle !== sanitizedGithub) {
+      changes.github_handle = { old: currentUser.github_handle, new: sanitizedGithub }
+    }
+    if (currentUser.tiktok_handle !== sanitizedTiktok) {
+      changes.tiktok_handle = { old: currentUser.tiktok_handle, new: sanitizedTiktok }
+    }
+    if (currentUser.opensea_handle !== sanitizedOpensea) {
+      changes.opensea_handle = { old: currentUser.opensea_handle, new: sanitizedOpensea }
+    }
+
+    // Create audit log with geolocation and device info
+    await createAuditLog({
+      request,
+      supabase,
+      eventType: 'profile_updated',
+      actorType: 'user',
+      actorId: user.id,
+      targetType: 'user',
+      targetId: user.id,
+      changes,
+      metadata: {
+        fields_changed: Object.keys(changes),
+        username_changed: usernameChanged,
+      },
+    })
 
     // Revalidate cached pages
     revalidatePath('/profile/edit')
