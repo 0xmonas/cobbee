@@ -28,7 +28,7 @@
 
 import { SupabaseClient } from '@supabase/supabase-js'
 import { geolocation } from '@vercel/functions'
-import UAParser from 'ua-parser-js'
+import { UAParser } from 'ua-parser-js'
 
 /**
  * Audit log event types (standardized)

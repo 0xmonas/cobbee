@@ -145,6 +145,15 @@ export async function POST(
       )
     }
 
+    // Type the result from RPC
+    const unblockResult = result as unknown as {
+      success: boolean
+      user_id: string
+      username: string
+      unblocked_at: string
+      unblocked_by: string
+    }
+
     // Audit log is created inside admin_unblock_user function,
     // but we also create one here with enriched geolocation/device info
     await createAuditLog({
@@ -161,7 +170,7 @@ export async function POST(
       },
       metadata: {
         admin_username: adminProfile?.username,
-        target_username: result?.username,
+        target_username: unblockResult?.username,
       },
     })
 
@@ -169,7 +178,9 @@ export async function POST(
       {
         success: true,
         message: 'User unblocked successfully',
-        ...result,
+        userId: unblockResult?.user_id,
+        username: unblockResult?.username,
+        unblockedAt: unblockResult?.unblocked_at,
       },
       { status: 200 }
     )

@@ -164,6 +164,16 @@ export async function POST(
       )
     }
 
+    // Type the result from RPC
+    const blockResult = result as unknown as {
+      success: boolean
+      user_id: string
+      username: string
+      blocked_at: string
+      blocked_by: string
+      reason: string
+    }
+
     // Audit log is created inside admin_block_user function,
     // but we also create one here with enriched geolocation/device info
     await createAuditLog({
@@ -180,7 +190,7 @@ export async function POST(
       },
       metadata: {
         admin_username: adminProfile?.username,
-        target_username: result?.username,
+        target_username: blockResult?.username,
         reason: sanitizedReason,
       },
     })
@@ -189,7 +199,9 @@ export async function POST(
       {
         success: true,
         message: 'User blocked successfully',
-        ...result,
+        userId: blockResult?.user_id,
+        username: blockResult?.username,
+        blockedAt: blockResult?.blocked_at,
       },
       { status: 200 }
     )

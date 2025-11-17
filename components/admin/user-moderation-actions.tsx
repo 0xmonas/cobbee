@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Ban, ShieldCheck, AlertCircle } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
@@ -19,6 +20,7 @@ export function UserModerationActions({
   blockedReason,
   onStatusChange,
 }: UserModerationActionsProps) {
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [showBlockModal, setShowBlockModal] = useState(false)
   const [blockReason, setBlockReason] = useState('')
@@ -55,6 +57,7 @@ export function UserModerationActions({
 
       setShowBlockModal(false)
       setBlockReason('')
+      router.refresh() // Auto-refresh page to show updated status
       onStatusChange?.()
     } catch (error) {
       console.error('Block user error:', error)
@@ -91,6 +94,7 @@ export function UserModerationActions({
         description: `@${username} has been unblocked successfully`,
       })
 
+      router.refresh() // Auto-refresh page to show updated status
       onStatusChange?.()
     } catch (error) {
       console.error('Unblock user error:', error)
