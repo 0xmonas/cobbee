@@ -189,21 +189,23 @@ export default async function AdminAuditPage({
                         <div className="flex items-center gap-3 mb-2">
                           {/* Event Type Badge */}
                           <span className="px-3 py-1 rounded-full bg-[#0000FF] text-white text-xs font-black border-2 border-black">
-                            {log.event_type.replace(/_/g, ' ').toUpperCase()}
+                            {log.event_type?.replace(/_/g, ' ').toUpperCase() || 'UNKNOWN'}
                           </span>
 
                           {/* Actor Type Badge */}
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-black border-2 border-black ${
-                              log.actor_type === 'admin'
-                                ? 'bg-purple-500 text-white'
-                                : log.actor_type === 'user'
-                                ? 'bg-green-500 text-white'
-                                : 'bg-gray-500 text-white'
-                            }`}
-                          >
-                            {log.actor_type.toUpperCase()}
-                          </span>
+                          {log.actor_type && (
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-black border-2 border-black ${
+                                log.actor_type === 'admin'
+                                  ? 'bg-purple-500 text-white'
+                                  : log.actor_type === 'user'
+                                  ? 'bg-green-500 text-white'
+                                  : 'bg-gray-500 text-white'
+                              }`}
+                            >
+                              {log.actor_type.toUpperCase()}
+                            </span>
+                          )}
 
                           {/* Actor Info */}
                           {log.actor_username && (
@@ -221,25 +223,25 @@ export default async function AdminAuditPage({
                         )}
 
                         {/* Metadata */}
-                        {log.metadata && Object.keys(log.metadata).length > 0 && (
+                        {log.metadata && typeof log.metadata === 'object' && Object.keys(log.metadata).length > 0 && (
                           <div className="bg-white border-2 border-gray-300 rounded-lg p-3 mb-2">
                             <div className="text-xs font-bold text-gray-600 mb-1">
                               Metadata:
                             </div>
                             <pre className="text-xs font-mono overflow-x-auto">
-                              {JSON.stringify(log.metadata, null, 2)}
+                              {String(JSON.stringify(log.metadata, null, 2))}
                             </pre>
                           </div>
                         )}
 
                         {/* Changes */}
-                        {log.changes && Object.keys(log.changes).length > 0 && (
+                        {log.changes && typeof log.changes === 'object' && Object.keys(log.changes).length > 0 && (
                           <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-3 mb-2">
                             <div className="text-xs font-bold text-yellow-800 mb-1">
                               Changes:
                             </div>
                             <pre className="text-xs font-mono overflow-x-auto">
-                              {JSON.stringify(log.changes, null, 2)}
+                              {String(JSON.stringify(log.changes, null, 2))}
                             </pre>
                           </div>
                         )}
@@ -248,11 +250,11 @@ export default async function AdminAuditPage({
                         <div className="flex items-center gap-4 text-xs font-bold text-gray-500">
                           <div className="flex items-center gap-1">
                             <Clock className="w-3 h-3" />
-                            {new Date(log.created_at).toLocaleString()}
+                            {log.created_at ? new Date(log.created_at).toLocaleString() : 'N/A'}
                           </div>
-                          {log.ip_address && (
-                            <span className="font-mono">IP: {log.ip_address}</span>
-                          )}
+                          {log.ip_address ? (
+                            <span className="font-mono">IP: {String(log.ip_address)}</span>
+                          ) : null}
                         </div>
                       </div>
                     </div>
