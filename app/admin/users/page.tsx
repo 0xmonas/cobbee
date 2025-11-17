@@ -14,8 +14,8 @@ import {
   Coffee,
   Mail,
   Wallet,
-  Shield,
 } from 'lucide-react'
+import { UserModerationActions } from '@/components/admin/user-moderation-actions'
 
 export const metadata = {
   title: 'Users Management - Admin - Cobbee',
@@ -30,6 +30,9 @@ interface Creator {
   wallet_address: string | null
   coffee_price: number
   is_active: boolean
+  is_blocked: boolean
+  blocked_at: string | null
+  blocked_reason: string | null
   created_at: string
   total_supports: number
   total_supporters: number
@@ -78,24 +81,50 @@ export default async function AdminUsersPage({
   // Fetch creators
   let creators: Creator[] = []
   if (searchQuery) {
-    // Search users
-    const { data, error } = await adminSupabase.rpc('admin_search_users', {
-      p_search_term: searchQuery,
-      p_limit: 50,
-    })
-
-    if (!error && data) {
-      creators = data
-    }
-  } else {
-    // Get all creators (sorted by earnings)
+    // Search users - using direct query until migration is applied
     const { data, error } = await adminSupabase
-      .from('admin_top_creators')
+      .from('users')
       .select('*')
+      .or(`username.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%,wallet_address.ilike.%${searchQuery}%`)
       .limit(50)
 
     if (!error && data) {
-      creators = data
+      creators = data.map((user: any) => ({
+        ...user,
+        coffee_price: user.coffee_price ?? 5.00,
+        is_blocked: user.is_blocked ?? false,
+        blocked_at: user.blocked_at ?? null,
+        blocked_reason: user.blocked_reason ?? null,
+        total_supports: 0,
+        total_supporters: 0,
+        total_earnings: 0,
+        supports_last_30_days: 0,
+        earnings_last_30_days: 0,
+        last_support_at: null,
+      })) as Creator[]
+    }
+  } else {
+    // Get all creators (sorted by earnings) - simplified until migration
+    const { data, error } = await adminSupabase
+      .from('users')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(50)
+
+    if (!error && data) {
+      creators = data.map((user: any) => ({
+        ...user,
+        coffee_price: user.coffee_price ?? 5.00,
+        is_blocked: user.is_blocked ?? false,
+        blocked_at: user.blocked_at ?? null,
+        blocked_reason: user.blocked_reason ?? null,
+        total_supports: 0,
+        total_supporters: 0,
+        total_earnings: 0,
+        supports_last_30_days: 0,
+        earnings_last_30_days: 0,
+        last_support_at: null,
+      })) as Creator[]
     }
   }
 
@@ -297,12 +326,20 @@ export default async function AdminUsersPage({
 
                         {/* Actions */}
                         <td className="p-4 text-center">
-                          <Link
-                            href={`/${creator.username}`}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-[#0000FF] hover:bg-[#0000DD] text-white font-bold text-sm rounded-lg border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
-                          >
-                            View Profile
-                          </Link>
+                          <div className="flex flex-col gap-2">
+                            <Link
+                              href={`/${creator.username}`}
+                              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#0000FF] hover:bg-[#0000DD] text-white font-bold text-sm rounded-lg border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+                            >
+                              View Profile
+                            </Link>
+                            <UserModerationActions
+                              userId={creator.id}
+                              username={creator.username}
+                              isBlocked={creator.is_blocked}
+                              blockedReason={creator.blocked_reason}
+                            />
+                          </div>
                         </td>
                       </tr>
                     ))}

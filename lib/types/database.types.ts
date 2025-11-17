@@ -18,12 +18,27 @@ export type Database = {
         Row: {
           actor_id: string | null
           actor_type: string
+          browser_name: string | null
+          browser_version: string | null
           changes: Json | null
           created_at: string | null
+          device_brand: string | null
+          device_model: string | null
+          device_type: string | null
           event_type: string
+          geo_city: string | null
+          geo_country: string | null
+          geo_country_code: string | null
+          geo_flag: string | null
+          geo_latitude: number | null
+          geo_longitude: number | null
+          geo_region: string | null
           id: string
           ip_address: unknown
           metadata: Json | null
+          os_name: string | null
+          os_version: string | null
+          session_id: string | null
           target_id: string | null
           target_type: string | null
           user_agent: string | null
@@ -31,12 +46,27 @@ export type Database = {
         Insert: {
           actor_id?: string | null
           actor_type: string
+          browser_name?: string | null
+          browser_version?: string | null
           changes?: Json | null
           created_at?: string | null
+          device_brand?: string | null
+          device_model?: string | null
+          device_type?: string | null
           event_type: string
+          geo_city?: string | null
+          geo_country?: string | null
+          geo_country_code?: string | null
+          geo_flag?: string | null
+          geo_latitude?: number | null
+          geo_longitude?: number | null
+          geo_region?: string | null
           id?: string
           ip_address?: unknown
           metadata?: Json | null
+          os_name?: string | null
+          os_version?: string | null
+          session_id?: string | null
           target_id?: string | null
           target_type?: string | null
           user_agent?: string | null
@@ -44,12 +74,27 @@ export type Database = {
         Update: {
           actor_id?: string | null
           actor_type?: string
+          browser_name?: string | null
+          browser_version?: string | null
           changes?: Json | null
           created_at?: string | null
+          device_brand?: string | null
+          device_model?: string | null
+          device_type?: string | null
           event_type?: string
+          geo_city?: string | null
+          geo_country?: string | null
+          geo_country_code?: string | null
+          geo_flag?: string | null
+          geo_latitude?: number | null
+          geo_longitude?: number | null
+          geo_region?: string | null
           id?: string
           ip_address?: unknown
           metadata?: Json | null
+          os_name?: string | null
+          os_version?: string | null
+          session_id?: string | null
           target_id?: string | null
           target_type?: string | null
           user_agent?: string | null
@@ -188,7 +233,21 @@ export type Database = {
             foreignKeyName: "notifications_related_support_id_fkey"
             columns: ["related_support_id"]
             isOneToOne: false
+            referencedRelation: "admin_failed_payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_related_support_id_fkey"
+            columns: ["related_support_id"]
+            isOneToOne: false
             referencedRelation: "supports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_top_creators"
             referencedColumns: ["id"]
           },
           {
@@ -325,6 +384,13 @@ export type Database = {
             foreignKeyName: "supports_creator_id_fkey"
             columns: ["creator_id"]
             isOneToOne: false
+            referencedRelation: "admin_top_creators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supports_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
             referencedRelation: "creator_dashboard_stats"
             referencedColumns: ["id"]
           },
@@ -348,6 +414,9 @@ export type Database = {
         Row: {
           avatar_url: string | null
           bio: string | null
+          blocked_at: string | null
+          blocked_by: string | null
+          blocked_reason: string | null
           coffee_price: number | null
           cover_image_url: string | null
           created_at: string | null
@@ -360,6 +429,7 @@ export type Database = {
           id: string
           instagram_handle: string | null
           is_active: boolean | null
+          is_blocked: boolean
           opensea_handle: string | null
           thank_you_message: string | null
           tiktok_handle: string | null
@@ -371,6 +441,9 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           bio?: string | null
+          blocked_at?: string | null
+          blocked_by?: string | null
+          blocked_reason?: string | null
           coffee_price?: number | null
           cover_image_url?: string | null
           created_at?: string | null
@@ -383,6 +456,7 @@ export type Database = {
           id: string
           instagram_handle?: string | null
           is_active?: boolean | null
+          is_blocked?: boolean
           opensea_handle?: string | null
           thank_you_message?: string | null
           tiktok_handle?: string | null
@@ -394,6 +468,9 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           bio?: string | null
+          blocked_at?: string | null
+          blocked_by?: string | null
+          blocked_reason?: string | null
           coffee_price?: number | null
           cover_image_url?: string | null
           created_at?: string | null
@@ -406,6 +483,7 @@ export type Database = {
           id?: string
           instagram_handle?: string | null
           is_active?: boolean | null
+          is_blocked?: boolean
           opensea_handle?: string | null
           thank_you_message?: string | null
           tiktok_handle?: string | null
@@ -418,6 +496,147 @@ export type Database = {
       }
     }
     Views: {
+      admin_failed_payments: {
+        Row: {
+          chain_id: number | null
+          coffee_count: number | null
+          created_at: string | null
+          creator_display_name: string | null
+          creator_id: string | null
+          creator_username: string | null
+          id: string | null
+          message: string | null
+          supporter_name: string | null
+          supporter_wallet_address: string | null
+          total_amount: number | null
+          tx_hash: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supports_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "admin_top_creators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supports_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_dashboard_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supports_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "public_creator_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supports_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_platform_stats: {
+        Row: {
+          new_creators_last_30_days: number | null
+          new_creators_last_7_days: number | null
+          notifications_sent_24h: number | null
+          signups_last_24h: number | null
+          supports_last_24h: number | null
+          total_active_creators: number | null
+          total_blacklisted_wallets: number | null
+          total_confirmed_supports: number | null
+          total_failed_supports: number | null
+          total_flagged_wallets: number | null
+          total_inactive_creators: number | null
+          total_pending_supports: number | null
+          total_platform_volume_usd: number | null
+          total_unique_supporters: number | null
+          total_unread_notifications: number | null
+          volume_last_24h: number | null
+        }
+        Relationships: []
+      }
+      admin_recent_activity: {
+        Row: {
+          actor_display_name: string | null
+          actor_id: string | null
+          actor_type: string | null
+          actor_username: string | null
+          browser_name: string | null
+          browser_version: string | null
+          changes: Json | null
+          created_at: string | null
+          device_brand: string | null
+          device_model: string | null
+          device_type: string | null
+          event_type: string | null
+          geo_city: string | null
+          geo_country: string | null
+          geo_country_code: string | null
+          geo_flag: string | null
+          geo_latitude: number | null
+          geo_longitude: number | null
+          geo_region: string | null
+          id: string | null
+          ip_address: unknown
+          metadata: Json | null
+          os_name: string | null
+          os_version: string | null
+          session_id: string | null
+          target_id: string | null
+          target_type: string | null
+          user_agent: string | null
+        }
+        Relationships: []
+      }
+      admin_suspicious_wallets: {
+        Row: {
+          blacklist_reason: string | null
+          creators_last_7_days: number | null
+          first_seen_at: string | null
+          fraud_risk_score: number | null
+          id: string | null
+          is_blacklisted: boolean | null
+          last_seen_at: string | null
+          name_variation_count: number | null
+          supports_last_7_days: number | null
+          total_creators_supported: number | null
+          total_support_count: number | null
+          used_names: Json | null
+          volume_last_7_days: number | null
+          wallet_address: string | null
+        }
+        Relationships: []
+      }
+      admin_top_creators: {
+        Row: {
+          blocked_at: string | null
+          blocked_reason: string | null
+          coffee_price: number | null
+          created_at: string | null
+          display_name: string | null
+          earnings_last_30_days: number | null
+          email: string | null
+          id: string | null
+          is_active: boolean | null
+          is_blocked: boolean | null
+          last_support_at: string | null
+          supports_last_30_days: number | null
+          total_earnings: number | null
+          total_supporters: number | null
+          total_supports: number | null
+          username: string | null
+          wallet_address: string | null
+        }
+        Relationships: []
+      }
       creator_dashboard_stats: {
         Row: {
           display_name: string | null
@@ -453,6 +672,68 @@ export type Database = {
       }
     }
     Functions: {
+      admin_blacklist_wallet: {
+        Args: {
+          p_admin_wallet?: string
+          p_ban_scope?: string
+          p_notes?: string
+          p_reason: string
+          p_wallet_address: string
+        }
+        Returns: Json
+      }
+      admin_block_user: {
+        Args: { p_admin_id: string; p_reason?: string; p_user_id: string }
+        Returns: Json
+      }
+      admin_deactivate_user: {
+        Args: { p_admin_wallet?: string; p_reason?: string; p_user_id: string }
+        Returns: Json
+      }
+      admin_get_analytics: {
+        Args: { p_days?: number }
+        Returns: {
+          date: string
+          new_creators: number
+          new_supports: number
+          total_volume: number
+          unique_supporters: number
+        }[]
+      }
+      admin_reactivate_user: {
+        Args: { p_admin_wallet?: string; p_user_id: string }
+        Returns: Json
+      }
+      admin_search_users: {
+        Args: { p_limit?: number; p_search_term: string }
+        Returns: {
+          blocked_at: string
+          blocked_reason: string
+          coffee_price: number
+          created_at: string
+          display_name: string
+          earnings_last_30_days: number
+          email: string
+          id: string
+          is_active: boolean
+          is_blocked: boolean
+          last_support_at: string
+          supports_last_30_days: number
+          total_earnings: number
+          total_supporters: number
+          total_supports: number
+          username: string
+          wallet_address: string
+        }[]
+      }
+      admin_unblacklist_wallet: {
+        Args: { p_admin_wallet?: string; p_wallet_address: string }
+        Returns: Json
+      }
+      admin_unblock_user: {
+        Args: { p_admin_id: string; p_user_id: string }
+        Returns: Json
+      }
       cleanup_expired_otps: { Args: never; Returns: undefined }
       clear_all_notifications: { Args: never; Returns: number }
       create_audit_log: {
