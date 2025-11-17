@@ -13,6 +13,7 @@ import {
   DollarSign,
 } from 'lucide-react'
 import { SupporterSearchForm } from '@/components/admin/supporter-search-form'
+import { SupportersTable } from '@/components/admin/supporters-table'
 
 export const metadata = {
   title: 'Supporter Management - Admin - Cobbee',
@@ -195,109 +196,17 @@ export default async function AdminSupportersPage({
         </div>
 
         {/* Supporters List */}
-        <div className="border-4 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-          <div className="bg-[#CCFF00] border-b-4 border-black p-4">
-            <h2 className="text-2xl font-black">
-              {activeTab === 'all' && 'All Supporters'}
-              {activeTab === 'suspicious' && 'Suspicious Supporters'}
-              {activeTab === 'blacklisted' && 'Blacklisted Supporters'}
-            </h2>
-          </div>
-          <div className="p-6">
-            {displayedSupporters && displayedSupporters.length > 0 ? (
-              <div className="space-y-4">
-                {displayedSupporters.map((supporter) => (
-                  <div
-                    key={supporter.id}
-                    className={`border-4 border-black rounded-2xl p-6 transition-colors ${
-                      supporter.is_blacklisted
-                        ? 'bg-red-50 hover:bg-red-100'
-                        : 'bg-gray-50 hover:bg-gray-100'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-3">
-                          <span className="font-mono text-lg font-black">
-                            {supporter.wallet_address?.slice(0, 12)}...
-                            {supporter.wallet_address?.slice(-10)}
-                          </span>
-
-                          {supporter.is_blacklisted && (
-                            <span className="px-3 py-1 rounded-full bg-red-600 text-white text-xs font-black border-2 border-black">
-                              BLACKLISTED
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Stats Grid */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-                          <div className="bg-white border-2 border-black rounded-lg p-3">
-                            <div className="text-xs font-bold text-gray-600 mb-1">
-                              Total Supports
-                            </div>
-                            <div className="text-xl font-black">
-                              {supporter.total_support_count || 0}
-                            </div>
-                          </div>
-                          <div className="bg-white border-2 border-black rounded-lg p-3">
-                            <div className="text-xs font-bold text-gray-600 mb-1">
-                              Creators Supported
-                            </div>
-                            <div className="text-xl font-black">
-                              {supporter.total_creators_supported || 0}
-                            </div>
-                          </div>
-                          <div className="bg-white border-2 border-black rounded-lg p-3">
-                            <div className="text-xs font-bold text-gray-600 mb-1">
-                              First Seen
-                            </div>
-                            <div className="text-sm font-black">
-                              {supporter.first_seen_at ? new Date(supporter.first_seen_at).toLocaleDateString() : 'N/A'}
-                            </div>
-                          </div>
-                          <div className="bg-white border-2 border-black rounded-lg p-3">
-                            <div className="text-xs font-bold text-gray-600 mb-1">
-                              Last Seen
-                            </div>
-                            <div className="text-sm font-black">
-                              {supporter.last_seen_at ? new Date(supporter.last_seen_at).toLocaleDateString() : 'N/A'}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Blacklist Reason */}
-                        {supporter.is_blacklisted && supporter.blacklist_reason && (
-                          <div className="bg-red-100 border-2 border-red-600 rounded-lg p-3">
-                            <div className="text-xs font-bold text-red-800 mb-1">
-                              Blacklist Reason:
-                            </div>
-                            <p className="text-sm font-bold text-red-900">{supporter.blacklist_reason}</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <Users className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-                <p className="text-xl font-bold text-gray-500">
-                  {searchQuery ? 'No supporters found matching your search' : 'No supporters found'}
-                </p>
-                {searchQuery && (
-                  <Link
-                    href={`/admin/supporters${activeTab !== 'all' ? `?tab=${activeTab}` : ''}`}
-                    className="text-sm font-bold text-[#0000FF] hover:underline mt-2 inline-block"
-                  >
-                    Clear search
-                  </Link>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
+        <SupportersTable
+          supporters={displayedSupporters}
+          title={
+            activeTab === 'all'
+              ? 'All Supporters'
+              : activeTab === 'suspicious'
+              ? 'Suspicious Supporters'
+              : 'Blacklisted Supporters'
+          }
+          searchQuery={searchQuery}
+        />
 
         {/* Info Box */}
         <div className="border-4 border-black bg-blue-50 p-6 rounded-2xl">

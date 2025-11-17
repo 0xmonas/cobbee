@@ -9,38 +9,15 @@ import {
   Search,
   CheckCircle,
   XCircle,
-  Calendar,
-  DollarSign,
-  Coffee,
-  Mail,
-  Wallet,
 } from 'lucide-react'
-import { UserModerationActions } from '@/components/admin/user-moderation-actions'
+import { UserSearchForm } from '@/components/admin/user-search-form'
+import { CreatorsTable } from '@/components/admin/creators-table'
 
 export const metadata = {
   title: 'Users Management - Admin - Cobbee',
   description: 'Manage creator accounts',
 }
 
-interface Creator {
-  id: string
-  username: string
-  display_name: string
-  email: string | null
-  wallet_address: string | null
-  coffee_price: number
-  is_active: boolean
-  is_blocked: boolean
-  blocked_at: string | null
-  blocked_reason: string | null
-  created_at: string
-  total_supports: number
-  total_supporters: number
-  total_earnings: number
-  supports_last_30_days: number
-  earnings_last_30_days: number
-  last_support_at: string | null
-}
 
 export default async function AdminUsersPage({
   searchParams,
@@ -219,143 +196,11 @@ export default async function AdminUsersPage({
         </div>
 
         {/* Users Table */}
-        <div className="border-4 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-          <div className="bg-[#CCFF00] border-b-4 border-black p-4">
-            <h2 className="text-2xl font-black">
-              {searchQuery ? `Search Results: "${searchQuery}"` : 'All Creators'}
-            </h2>
-          </div>
-          <div className="p-6">
-            {creators.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-xl font-bold text-gray-500">No users found</p>
-                {searchQuery && (
-                  <p className="text-sm text-gray-400 font-bold mt-2">
-                    Try a different search term
-                  </p>
-                )}
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b-4 border-black">
-                      <th className="text-left p-4 font-black">User</th>
-                      <th className="text-left p-4 font-black">Contact</th>
-                      <th className="text-right p-4 font-black">Stats</th>
-                      <th className="text-right p-4 font-black">Earnings</th>
-                      <th className="text-center p-4 font-black">Status</th>
-                      <th className="text-center p-4 font-black">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {creators.map((creator) => (
-                      <tr
-                        key={creator.id}
-                        className="border-b-2 border-gray-200 hover:bg-gray-50 transition-colors"
-                      >
-                        {/* User Info */}
-                        <td className="p-4">
-                          <div>
-                            <div className="font-black text-lg">{creator.display_name}</div>
-                            <div className="text-sm font-bold text-gray-600">
-                              @{creator.username}
-                            </div>
-                            <div className="flex items-center gap-2 mt-1 text-xs font-bold text-gray-500">
-                              <Calendar className="w-3 h-3" />
-                              {new Date(creator.created_at).toLocaleDateString()}
-                            </div>
-                          </div>
-                        </td>
-
-                        {/* Contact */}
-                        <td className="p-4">
-                          <div className="space-y-1">
-                            {creator.email && (
-                              <div className="flex items-center gap-2 text-sm font-bold">
-                                <Mail className="w-4 h-4 text-gray-500" />
-                                <span className="truncate max-w-[200px]">{creator.email}</span>
-                              </div>
-                            )}
-                            {creator.wallet_address && (
-                              <div className="flex items-center gap-2 text-sm font-mono font-bold">
-                                <Wallet className="w-4 h-4 text-gray-500" />
-                                <span>
-                                  {creator.wallet_address.slice(0, 6)}...
-                                  {creator.wallet_address.slice(-4)}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </td>
-
-                        {/* Stats */}
-                        <td className="p-4 text-right">
-                          <div className="space-y-1">
-                            <div className="flex items-center justify-end gap-2 text-sm font-bold">
-                              <Coffee className="w-4 h-4" />
-                              {creator.total_supports} supports
-                            </div>
-                            <div className="flex items-center justify-end gap-2 text-sm font-bold text-gray-600">
-                              <Users className="w-4 h-4" />
-                              {creator.total_supporters} supporters
-                            </div>
-                          </div>
-                        </td>
-
-                        {/* Earnings */}
-                        <td className="p-4 text-right">
-                          <div className="space-y-1">
-                            <div className="flex items-center justify-end gap-2 font-black text-lg">
-                              <DollarSign className="w-5 h-5" />
-                              {creator.total_earnings.toFixed(2)}
-                            </div>
-                            <div className="text-xs font-bold text-gray-600">
-                              ${creator.earnings_last_30_days.toFixed(2)} (30d)
-                            </div>
-                          </div>
-                        </td>
-
-                        {/* Status */}
-                        <td className="p-4 text-center">
-                          {creator.supports_last_30_days > 0 ? (
-                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-800 border-2 border-green-600 text-xs font-black">
-                              <CheckCircle className="w-3 h-3" />
-                              Active
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-100 text-gray-800 border-2 border-gray-400 text-xs font-black">
-                              <XCircle className="w-3 h-3" />
-                              Inactive
-                            </span>
-                          )}
-                        </td>
-
-                        {/* Actions */}
-                        <td className="p-4 text-center">
-                          <div className="flex flex-col gap-2">
-                            <Link
-                              href={`/${creator.username}`}
-                              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#0000FF] hover:bg-[#0000DD] text-white font-bold text-sm rounded-lg border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
-                            >
-                              View Profile
-                            </Link>
-                            <UserModerationActions
-                              userId={creator.id}
-                              username={creator.username}
-                              isBlocked={creator.is_blocked}
-                              blockedReason={creator.blocked_reason}
-                            />
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
+        <CreatorsTable
+          creators={creators}
+          title={searchQuery ? `Search Results: "${searchQuery}"` : 'All Creators'}
+          searchQuery={searchQuery}
+        />
       </div>
     </div>
   )
