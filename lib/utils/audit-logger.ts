@@ -48,6 +48,8 @@ export type AuditEventType =
   | 'email_changed'
   // Support/Payments
   | 'support_created'
+  | 'support_confirmed'
+  | 'support_failed'
   | 'payment_received'
   | 'payout_initiated'
   | 'payout_completed'
