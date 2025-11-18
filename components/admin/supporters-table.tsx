@@ -2,6 +2,7 @@
 
 import { AdminDataTable, ColumnConfig } from './admin-data-table'
 import { Calendar, TrendingUp, Users as UsersIcon, Shield } from 'lucide-react'
+import { WalletModerationActions } from './wallet-moderation-actions'
 
 interface SupporterWallet {
   id: string
@@ -86,23 +87,26 @@ export function SupportersTable({ supporters, title, searchQuery }: SupportersTa
       render: (supporter) => (
         <div>
           {supporter.is_blacklisted ? (
-            <div className="space-y-2">
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 text-red-800 border-2 border-red-600 text-xs font-black">
-                Blacklisted
-              </span>
-              {supporter.blacklist_reason && (
-                <div className="bg-red-50 border-2 border-red-300 rounded-lg p-2 max-w-xs">
-                  <div className="text-xs font-bold text-red-800 mb-1">Reason:</div>
-                  <p className="text-xs font-bold text-red-900">{supporter.blacklist_reason}</p>
-                </div>
-              )}
-            </div>
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 text-red-800 border-2 border-red-600 text-xs font-black">
+              Blacklisted
+            </span>
           ) : (
             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-800 border-2 border-green-600 text-xs font-black">
               Active
             </span>
           )}
         </div>
+      ),
+    },
+    {
+      header: 'Actions',
+      align: 'center',
+      render: (supporter) => (
+        <WalletModerationActions
+          walletAddress={supporter.wallet_address}
+          isBlacklisted={supporter.is_blacklisted}
+          blacklistReason={supporter.blacklist_reason}
+        />
       ),
     },
   ]
