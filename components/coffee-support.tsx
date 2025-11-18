@@ -16,10 +16,11 @@ import {
 } from "@/components/ui/tooltip"
 import { validateSupporterName, validateSupportMessage } from "@/lib/utils/validation"
 import type { Database } from "@/lib/types/database.types"
-import { useAppKit, useAppKitAccount, useDisconnect } from '@reown/appkit/react'
+import { useAppKit, useAppKitAccount, useDisconnect, useAppKitNetwork } from '@reown/appkit/react'
 import { createX402Fetch } from "@/lib/x402-client"
 import { isTestnet, getX402Config } from "@/lib/x402-config"
 import { createPublicClient, http, formatUnits } from "viem"
+import { useToast } from "@/hooks/use-toast"
 
 type User = Database['public']['Tables']['users']['Row']
 
@@ -33,7 +34,9 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
   // Reown AppKit hooks for supporter wallet
   const { open } = useAppKit()
   const { address, isConnected } = useAppKitAccount()
+  const { chainId } = useAppKitNetwork()
   const { disconnect } = useDisconnect()
+  const { toast } = useToast()
 
   const [coffeeCount, setCoffeeCount] = useState(1)
   const [customAmount, setCustomAmount] = useState("")
@@ -63,10 +66,22 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
         return
       }
 
+      // ⚠️ CRITICAL: Check if user is on correct network
+      const x402Config = getX402Config()
+      if (chainId && chainId !== x402Config.chainId) {
+        setPurchaseStep("error")
+        setUsdcBalance(null)
+        toast({
+          title: "Wrong Network",
+          description: `Please switch to ${x402Config.networkName} (Chain ID: ${x402Config.chainId})`,
+          variant: "destructive",
+        })
+        return
+      }
+
       setIsLoadingBalance(true)
 
       try {
-        const x402Config = getX402Config()
 
         // Create public client for reading contract data
         const publicClient = createPublicClient({

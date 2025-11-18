@@ -168,9 +168,10 @@ export async function POST(request: NextRequest) {
               maxTimeoutSeconds: 300, // 5 minutes
               asset: getAddress(x402Config.usdcAddress), // EIP-55 checksum format required
               extra: {
-                // EIP-3009 metadata for USDC token (Base Sepolia)
-                // Verified from contract: name() = "USDC", version() = "2"
-                name: 'USDC',
+                // EIP-3009 metadata for USDC token
+                // Base Sepolia: name() = "USDC", version() = "2"
+                // Base Mainnet: name() = "USD Coin", version() = "2"
+                name: x402Config.network === 'base' ? 'USD Coin' : 'USDC',
                 version: '2',
               },
             },
@@ -215,9 +216,10 @@ export async function POST(request: NextRequest) {
         maxTimeoutSeconds: 300,
         asset: getAddress(x402Config.usdcAddress), // EIP-55 checksum format required
         extra: {
-          // EIP-3009 metadata for USDC token (Base Sepolia)
-          // Verified from contract: name() = "USDC", version() = "2"
-          name: 'USDC',
+          // EIP-3009 metadata for USDC token
+          // Base Sepolia: name() = "USDC", version() = "2"
+          // Base Mainnet: name() = "USD Coin", version() = "2"
+          name: x402Config.network === 'base' ? 'USD Coin' : 'USDC',
           version: '2',
         },
       }
@@ -448,6 +450,22 @@ export async function POST(request: NextRequest) {
 
       const settlementResult = await settlementResponse.json()
       console.log('[x402] Settlement result:', settlementResult)
+
+      // ⚠️ CRITICAL: Verify transaction is on correct network
+      const ALLOWED_CHAIN_IDS = [8453, 84532] // Base Mainnet, Base Sepolia
+      if (!ALLOWED_CHAIN_IDS.includes(x402Config.chainId)) {
+        console.error('[x402] Invalid chain_id:', {
+          received: x402Config.chainId,
+          allowed: ALLOWED_CHAIN_IDS,
+        })
+        return Response.json(
+          {
+            error: 'Invalid network',
+            message: `Only Base network is supported. Current network: ${x402Config.network}`,
+          },
+          { status: 400 }
+        )
+      }
 
       if (!settlementResult.success) {
         // Create audit log for failed support
