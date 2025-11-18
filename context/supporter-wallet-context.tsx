@@ -69,7 +69,7 @@ const supporterAppKit = createAppKit({
   // Farklı modal ID ile ayrı instance
   themeMode: 'light',
   themeVariables: {
-    '--w3m-z-index': '9999' // Creator modal'ından daha üstte
+    '--w3m-z-index': 9999 // Creator modal'ından daha üstte
   }
 })
 

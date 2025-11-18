@@ -10,6 +10,7 @@ import {
   DollarSign,
   Coffee,
   Calendar,
+  AlertTriangle,
 } from 'lucide-react'
 import { AdminPageHeader } from '@/components/admin/admin-page-header'
 import { AdminStatCard } from '@/components/admin/admin-stat-card'

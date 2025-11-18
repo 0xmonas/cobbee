@@ -80,23 +80,23 @@ export default async function AdminDashboardPage() {
     console.error('Failed to fetch admin stats:', statsError)
   }
 
-  const platformStats: PlatformStats = stats || {
-    total_active_creators: 0,
-    total_inactive_creators: 0,
-    new_creators_last_7_days: 0,
-    new_creators_last_30_days: 0,
-    total_confirmed_supports: 0,
-    total_pending_supports: 0,
-    total_failed_supports: 0,
-    total_platform_volume_usd: 0,
-    total_unique_supporters: 0,
-    supports_last_24h: 0,
-    volume_last_24h: 0,
-    signups_last_24h: 0,
-    total_blacklisted_wallets: 0,
-    total_flagged_wallets: 0,
-    notifications_sent_24h: 0,
-    total_unread_notifications: 0,
+  const platformStats: PlatformStats = {
+    total_active_creators: stats?.total_active_creators ?? 0,
+    total_inactive_creators: stats?.total_inactive_creators ?? 0,
+    new_creators_last_7_days: stats?.new_creators_last_7_days ?? 0,
+    new_creators_last_30_days: stats?.new_creators_last_30_days ?? 0,
+    total_confirmed_supports: stats?.total_confirmed_supports ?? 0,
+    total_pending_supports: stats?.total_pending_supports ?? 0,
+    total_failed_supports: stats?.total_failed_supports ?? 0,
+    total_platform_volume_usd: stats?.total_platform_volume_usd ?? 0,
+    total_unique_supporters: stats?.total_unique_supporters ?? 0,
+    supports_last_24h: stats?.supports_last_24h ?? 0,
+    volume_last_24h: stats?.volume_last_24h ?? 0,
+    signups_last_24h: stats?.signups_last_24h ?? 0,
+    total_blacklisted_wallets: stats?.total_blacklisted_wallets ?? 0,
+    total_flagged_wallets: stats?.total_flagged_wallets ?? 0,
+    notifications_sent_24h: stats?.notifications_sent_24h ?? 0,
+    total_unread_notifications: stats?.total_unread_notifications ?? 0,
   }
 
   // Fetch recent failed payments
@@ -225,19 +225,19 @@ export default async function AdminDashboardPage() {
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-mono text-sm font-bold">
-                          {wallet.wallet_address.slice(0, 10)}...
-                          {wallet.wallet_address.slice(-8)}
+                          {wallet.wallet_address?.slice(0, 10) ?? 'N/A'}...
+                          {wallet.wallet_address?.slice(-8) ?? ''}
                         </span>
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-black border-2 border-black ${
-                            wallet.fraud_risk_score >= 6
+                            (wallet.fraud_risk_score ?? 0) >= 6
                               ? 'bg-red-500 text-white'
-                              : wallet.fraud_risk_score >= 4
+                              : (wallet.fraud_risk_score ?? 0) >= 4
                               ? 'bg-orange-400 text-black'
                               : 'bg-yellow-300 text-black'
                           }`}
                         >
-                          Risk: {wallet.fraud_risk_score}/8
+                          Risk: {wallet.fraud_risk_score ?? 0}/8
                         </span>
                       </div>
                       <div className="flex items-center gap-4 text-xs font-bold text-gray-600">
@@ -280,7 +280,7 @@ export default async function AdminDashboardPage() {
                       </div>
                       <div className="text-xs font-bold text-gray-600">
                         {payment.coffee_count}x coffees •{' '}
-                        {new Date(payment.created_at).toLocaleDateString()}
+                        {payment.created_at ? new Date(payment.created_at).toLocaleDateString() : 'N/A'}
                       </div>
                     </div>
                   ))}

@@ -38,7 +38,7 @@ export function createViemWalletClient(address: `0x${string}`): WalletClient | n
           public: { http: [x402Config.rpcUrl] },
         },
       },
-      transport: custom(window.ethereum),
+      transport: custom(window.ethereum as any),
     })
 
     return walletClient
@@ -64,7 +64,7 @@ export function createX402Fetch(address: `0x${string}`, maxValue?: bigint) {
   // This allows for reasonable coffee purchases (1-100 coffees at ~$1 each)
   const maxPaymentValue = maxValue ?? BigInt(100 * 10 ** 6)
 
-  return wrapFetchWithPayment(fetch, walletClient, maxPaymentValue)
+  return wrapFetchWithPayment(fetch, walletClient as any, maxPaymentValue)
 }
 
 /**
@@ -106,7 +106,16 @@ export async function makeX402Request<T = any>(
 
   if (paymentResponseHeader) {
     try {
-      payment = decodeXPaymentResponse(paymentResponseHeader)
+      const decoded = decodeXPaymentResponse(paymentResponseHeader)
+      // Map x402-fetch response to our interface
+      if (decoded) {
+        payment = {
+          verified: decoded.success,
+          transactionHash: decoded.transaction,
+          amount: 0, // x402-fetch doesn't return amount in response, would need to parse from transaction
+          network: decoded.network,
+        }
+      }
     } catch (error) {
       console.warn('Failed to decode payment response:', error)
     }

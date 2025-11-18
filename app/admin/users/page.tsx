@@ -17,6 +17,21 @@ export const metadata = {
   description: 'Manage creator accounts',
 }
 
+interface Creator {
+  id: string
+  username: string
+  display_name: string
+  email: string | null
+  wallet_address: string | null
+  created_at: string
+  total_supports: number
+  total_supporters: number
+  total_earnings: number
+  earnings_last_30_days: number
+  supports_last_30_days: number
+  is_blocked: boolean
+  blocked_reason: string | null
+}
 
 export default async function AdminUsersPage({
   searchParams,

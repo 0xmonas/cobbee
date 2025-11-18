@@ -7,11 +7,11 @@ import { WalletModerationActions } from './wallet-moderation-actions'
 interface SupporterWallet {
   id: string
   wallet_address: string
-  total_support_count: number
-  total_creators_supported: number
+  total_support_count: number | null
+  total_creators_supported: number | null
   first_seen_at: string | null
   last_seen_at: string | null
-  is_blacklisted: boolean
+  is_blacklisted: boolean | null
   blacklist_reason: string | null
 }
 
@@ -32,7 +32,7 @@ export function SupportersTable({ supporters, title, searchQuery }: SupportersTa
             {supporter.wallet_address?.slice(0, 12)}...
             {supporter.wallet_address?.slice(-10)}
           </div>
-          {supporter.is_blacklisted && (
+          {supporter.is_blacklisted === true && (
             <span className="inline-flex items-center gap-1 px-3 py-1 mt-2 rounded-full bg-red-600 text-white text-xs font-black border-2 border-black">
               <Shield className="w-3 h-3" />
               BLACKLISTED
@@ -86,7 +86,7 @@ export function SupportersTable({ supporters, title, searchQuery }: SupportersTa
       align: 'center',
       render: (supporter) => (
         <div>
-          {supporter.is_blacklisted ? (
+          {supporter.is_blacklisted === true ? (
             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 text-red-800 border-2 border-red-600 text-xs font-black">
               Blacklisted
             </span>
@@ -104,7 +104,7 @@ export function SupportersTable({ supporters, title, searchQuery }: SupportersTa
       render: (supporter) => (
         <WalletModerationActions
           walletAddress={supporter.wallet_address}
-          isBlacklisted={supporter.is_blacklisted}
+          isBlacklisted={supporter.is_blacklisted ?? false}
           blacklistReason={supporter.blacklist_reason}
         />
       ),
