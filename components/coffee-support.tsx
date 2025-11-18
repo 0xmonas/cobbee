@@ -51,6 +51,7 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
   const [messageError, setMessageError] = useState<string | null>(null)
   const [usdcBalance, setUsdcBalance] = useState<string | null>(null)
   const [isLoadingBalance, setIsLoadingBalance] = useState(false)
+  const [thankYouMessage, setThankYouMessage] = useState<string | null>(null)
 
   const presetAmounts = [1, 3, 5]
   const isCustom = !presetAmounts.includes(coffeeCount)
@@ -232,6 +233,11 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
         setTxnHash(transactionHash)
       }
 
+      // Extract creator's thank you message from response
+      if (result.creator?.thank_you_message) {
+        setThankYouMessage(result.creator.thank_you_message)
+      }
+
       // Success!
       setPurchaseStep("success")
 
@@ -262,6 +268,7 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
     setCustomAmount("")
     setIsPrivate(false)
     setTxnHash("")
+    setThankYouMessage(null)
   }
 
   // Processing Screen
@@ -289,7 +296,7 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
           </div>
           <h3 className="text-3xl font-black mb-2">Payment Successful!</h3>
           <p className="text-xl font-bold text-gray-600 mb-6">
-            {creator.thank_you_message || `Your support means the world to ${creator.display_name}!`}
+            {thankYouMessage || creator.thank_you_message || `Your support means the world to ${creator.display_name}!`}
           </p>
           <div className="bg-gray-50 border-4 border-black rounded-xl p-4 mb-4">
             <div className="flex justify-between items-center mb-2">

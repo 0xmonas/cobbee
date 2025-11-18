@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
     // Fetch creator details (including wallet and coffee price)
     const { data: creator, error: creatorError } = await supabase
       .from('users')
-      .select('id, display_name, wallet_address, coffee_price')
+      .select('id, display_name, wallet_address, coffee_price, thank_you_message')
       .eq('id', creator_id)
       .single()
 
@@ -567,6 +567,10 @@ export async function POST(request: NextRequest) {
           success: true,
           message: `Successfully bought ${coffee_count} coffee${coffee_count > 1 ? 's' : ''} for ${creator.display_name}!`,
           support,
+          creator: {
+            thank_you_message: creator.thank_you_message,
+            display_name: creator.display_name,
+          },
           payment: {
             transactionHash,
             amount: totalAmount,
