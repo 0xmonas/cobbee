@@ -782,7 +782,7 @@ export function Providers({ children }) {
 2. Coffee sayısı ve miktar hesaplama
 3. **Ağ kontrolü** (desteklenen bir ağda mı?)
 4. **Gerçek blockchain transaction** gönderme
-5. Transaction hash ile **etherscan linki**
+5. Transaction hash ile **basescan linki**
 6. **Recent transactions** listesine ekleme
 
 #### B. Dashboard Page
@@ -903,7 +903,7 @@ const cobbeeTheme = darkTheme({
 5. **Transaction gönderme**
 6. **Bekleme durumu** - Pending animation
 7. **Onay** - Success ekranı
-8. **Transaction tracking** - Etherscan linki
+8. **Transaction tracking** - Basescan linki
 
 ### 10. Güvenlik Önerileri
 

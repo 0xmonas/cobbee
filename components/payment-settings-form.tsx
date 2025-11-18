@@ -497,7 +497,7 @@ export function PaymentSettingsForm({ user, supports }: PaymentSettingsFormProps
                             <span>{formatTimeAgo(payment.created_at)}</span>
                             <span>•</span>
                             <a
-                              href={`https://etherscan.io/tx/${payment.tx_hash}`}
+                              href={`https://basescan.org/tx/${payment.tx_hash}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="font-mono text-[#0000FF] hover:text-[#0000CC] underline flex items-center gap-1 transition-colors"
