@@ -350,6 +350,8 @@ export type Database = {
           confirmed_at: string | null
           created_at: string | null
           creator_id: string
+          creator_reply: string | null
+          creator_reply_at: string | null
           currency: string | null
           id: string
           is_hidden_by_creator: boolean | null
@@ -369,6 +371,8 @@ export type Database = {
           confirmed_at?: string | null
           created_at?: string | null
           creator_id: string
+          creator_reply?: string | null
+          creator_reply_at?: string | null
           currency?: string | null
           id?: string
           is_hidden_by_creator?: boolean | null
@@ -388,6 +392,8 @@ export type Database = {
           confirmed_at?: string | null
           created_at?: string | null
           creator_id?: string
+          creator_reply?: string | null
+          creator_reply_at?: string | null
           currency?: string | null
           id?: string
           is_hidden_by_creator?: boolean | null

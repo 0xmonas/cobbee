@@ -28,10 +28,25 @@ export function RecentSupporters({
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [editingReply, setEditingReply] = useState<string | null>(null)
   const [replyText, setReplyText] = useState("")
-  const [replies, setReplies] = useState<Record<string, string>>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [localReplies, setLocalReplies] = useState<Record<string, { text: string, timestamp: string }>>({})
   const [hiddenMessages, setHiddenMessages] = useState<Record<string, boolean>>(
     supports.reduce((acc, support) => ({ ...acc, [support.id]: support.is_hidden_by_creator || false }), {})
   )
+
+  // Initialize local replies from database on mount
+  useEffect(() => {
+    const initialReplies: Record<string, { text: string, timestamp: string }> = {}
+    supports.forEach(support => {
+      if (support.creator_reply) {
+        initialReplies[support.id] = {
+          text: support.creator_reply,
+          timestamp: support.creator_reply_at || new Date().toISOString()
+        }
+      }
+    })
+    setLocalReplies(initialReplies)
+  }, [supports])
 
   // Update hidden messages when supports prop changes (e.g., after page refresh)
   useEffect(() => {
@@ -40,31 +55,115 @@ export function RecentSupporters({
     )
   }, [supports])
 
-  const handleReplySubmit = (supportId: string) => {
-    if (replyText.trim()) {
-      setReplies({ ...replies, [supportId]: replyText })
+  const handleReplySubmit = async (supportId: string) => {
+    if (!replyText.trim() || isSubmitting) return
+
+    setIsSubmitting(true)
+    try {
+      const response = await fetch(`/api/support/${supportId}/reply`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reply: replyText.trim() }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        console.error('Failed to submit reply:', error)
+        alert(error.message || 'Failed to submit reply')
+        return
+      }
+
+      const result = await response.json()
+
+      // Update local state
+      setLocalReplies({
+        ...localReplies,
+        [supportId]: {
+          text: result.reply.creator_reply,
+          timestamp: result.reply.creator_reply_at
+        }
+      })
       setReplyText("")
       setReplyingTo(null)
+    } catch (error) {
+      console.error('Error submitting reply:', error)
+      alert('An error occurred while submitting reply')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
   const handleEditReply = (supportId: string) => {
     setEditingReply(supportId)
-    setReplyText(replies[supportId] || "")
+    setReplyText(localReplies[supportId]?.text || "")
   }
 
-  const handleUpdateReply = (supportId: string) => {
-    if (replyText.trim()) {
-      setReplies({ ...replies, [supportId]: replyText })
+  const handleUpdateReply = async (supportId: string) => {
+    if (!replyText.trim() || isSubmitting) return
+
+    setIsSubmitting(true)
+    try {
+      const response = await fetch(`/api/support/${supportId}/reply`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reply: replyText.trim() }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        console.error('Failed to update reply:', error)
+        alert(error.message || 'Failed to update reply')
+        return
+      }
+
+      const result = await response.json()
+
+      // Update local state
+      setLocalReplies({
+        ...localReplies,
+        [supportId]: {
+          text: result.reply.creator_reply,
+          timestamp: result.reply.creator_reply_at
+        }
+      })
       setReplyText("")
       setEditingReply(null)
+    } catch (error) {
+      console.error('Error updating reply:', error)
+      alert('An error occurred while updating reply')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
-  const handleDeleteReply = (supportId: string) => {
-    const newReplies = { ...replies }
-    delete newReplies[supportId]
-    setReplies(newReplies)
+  const handleDeleteReply = async (supportId: string) => {
+    if (isSubmitting) return
+
+    if (!confirm('Are you sure you want to delete this reply?')) return
+
+    setIsSubmitting(true)
+    try {
+      const response = await fetch(`/api/support/${supportId}/reply`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        console.error('Failed to delete reply:', error)
+        alert(error.message || 'Failed to delete reply')
+        return
+      }
+
+      // Remove from local state
+      const newReplies = { ...localReplies }
+      delete newReplies[supportId]
+      setLocalReplies(newReplies)
+    } catch (error) {
+      console.error('Error deleting reply:', error)
+      alert('An error occurred while deleting reply')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleCancelEdit = () => {
@@ -163,7 +262,7 @@ export function RecentSupporters({
             </div>
 
             {/* Creator Reply Section */}
-            {replies[support.id] && editingReply !== support.id && (
+            {localReplies[support.id] && editingReply !== support.id && (
               <div className="ml-16 mb-4 bg-white border-2 border-black rounded-xl p-4">
                 <div className="flex items-start gap-3 mb-3">
                   <Avatar className="w-10 h-10 border-2 border-black">
@@ -194,7 +293,7 @@ export function RecentSupporters({
                         </div>
                       )}
                     </div>
-                    <p className="text-base font-bold leading-relaxed">{replies[support.id]}</p>
+                    <p className="text-base font-bold leading-relaxed">{localReplies[support.id].text}</p>
                   </div>
                 </div>
               </div>
@@ -214,14 +313,16 @@ export function RecentSupporters({
                   <div className="flex gap-2">
                     <Button
                       onClick={() => handleUpdateReply(support.id)}
-                      className="bg-[#0000FF] hover:bg-[#0000DD] text-white font-bold px-6 py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                      disabled={isSubmitting || !replyText.trim()}
+                      className="bg-[#0000FF] hover:bg-[#0000DD] text-white font-bold px-6 py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Update Reply
+                      {isSubmitting ? 'Updating...' : 'Update Reply'}
                     </Button>
                     <Button
                       onClick={handleCancelEdit}
+                      disabled={isSubmitting}
                       variant="outline"
-                      className="font-bold px-6 py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white"
+                      className="font-bold px-6 py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white disabled:opacity-50"
                     >
                       Cancel
                     </Button>
@@ -247,23 +348,25 @@ export function RecentSupporters({
                       <div className="flex gap-2">
                         <Button
                           onClick={() => handleReplySubmit(support.id)}
-                          className="bg-[#0000FF] hover:bg-[#0000DD] text-white font-bold px-6 py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                          disabled={isSubmitting || !replyText.trim()}
+                          className="bg-[#0000FF] hover:bg-[#0000DD] text-white font-bold px-6 py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          Send Reply
+                          {isSubmitting ? 'Sending...' : 'Send Reply'}
                         </Button>
                         <Button
                           onClick={() => {
                             setReplyingTo(null)
                             setReplyText("")
                           }}
+                          disabled={isSubmitting}
                           variant="outline"
-                          className="font-bold px-6 py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white"
+                          className="font-bold px-6 py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white disabled:opacity-50"
                         >
                           Cancel
                         </Button>
                       </div>
                     </div>
-                  ) : !replies[support.id] ? (
+                  ) : !localReplies[support.id] ? (
                     <Button
                       onClick={() => setReplyingTo(support.id)}
                       variant="outline"

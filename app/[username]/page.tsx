@@ -14,9 +14,62 @@ import { Logo } from "@/components/logo"
 import { TwitterIcon, InstagramIcon, GitHubIcon, TikTokIcon, OpenSeaIcon } from "@/components/icons/social-icons"
 import { CopyWalletButton } from "@/components/copy-wallet-button"
 import { SupporterWalletProvider } from "@/context/supporter-wallet-context"
+import { Metadata } from "next"
 
 interface CreatorProfilePageProps {
   params: Promise<{ username: string }>
+}
+
+/**
+ * Generate dynamic metadata for creator profile pages
+ * Includes Open Graph tags for social media sharing
+ */
+export async function generateMetadata({ params }: CreatorProfilePageProps): Promise<Metadata> {
+  const { username } = await params
+  const supabase = await createClient()
+
+  // Fetch creator data
+  const { data: creator } = await supabase
+    .from('public_creator_profiles')
+    .select('*')
+    .eq('username', username)
+    .single()
+
+  if (!creator) {
+    return {
+      title: 'Creator Not Found',
+      description: 'This creator profile does not exist.',
+    }
+  }
+
+  const title = `${creator.display_name} (@${creator.username}) - Cobbee`
+  const description = creator.bio || `Support ${creator.display_name} with a coffee on Cobbee`
+  const ogImageUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/og?username=${creator.username}`
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'profile',
+      url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/${creator.username}`,
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: `${creator.display_name}'s Cobbee profile`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [ogImageUrl],
+    },
+  }
 }
 
 export default async function CreatorProfilePage({ params }: CreatorProfilePageProps) {

@@ -192,25 +192,36 @@ export default function AboutPage() {
       {/* Comparison Table */}
       <section className="border-b-4 border-black py-20">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-5xl font-black mb-12 text-center">Cobbee vs. Traditional Platforms</h2>
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-5xl font-black mb-4 text-center">Cobbee vs. Traditional Platforms</h2>
+            <p className="text-xl font-bold text-center text-gray-600 mb-12">
+              Why creators are switching to Cobbee
+            </p>
 
             <div className="overflow-x-auto">
               <table className="w-full border-4 border-black">
                 <thead>
                   <tr className="bg-[#0000FF] text-white border-b-4 border-black">
-                    <th className="p-4 text-left font-black text-xl border-r-4 border-black">Feature</th>
-                    <th className="p-4 text-center font-black text-xl border-r-4 border-black">Cobbee</th>
-                    <th className="p-4 text-center font-black text-xl">Buy Me A Coffee / Ko-fi</th>
+                    <th className="p-4 text-left font-black text-lg border-r-4 border-black">Feature</th>
+                    <th className="p-4 text-center font-black text-lg border-r-4 border-black">Cobbee</th>
+                    <th className="p-4 text-center font-black text-lg border-r-4 border-black">Buy Me A Coffee</th>
+                    <th className="p-4 text-center font-black text-lg">Ko-fi</th>
                   </tr>
                 </thead>
                 <tbody>
+                  {/* Platform Fee */}
                   <tr className="border-b-4 border-black bg-white">
                     <td className="p-4 font-black border-r-4 border-black">Platform Fee</td>
                     <td className="p-4 text-center border-r-4 border-black">
                       <div className="inline-flex items-center gap-2 bg-[#CCFF00] px-4 py-2 rounded-full border-2 border-black">
                         <Check className="w-5 h-5" />
                         <span className="font-black">0%</span>
+                      </div>
+                    </td>
+                    <td className="p-4 text-center border-r-4 border-black">
+                      <div className="inline-flex items-center gap-2 bg-red-100 px-4 py-2 rounded-full border-2 border-black">
+                        <X className="w-5 h-5 text-red-600" />
+                        <span className="font-black">5%</span>
                       </div>
                     </td>
                     <td className="p-4 text-center">
@@ -220,53 +231,174 @@ export default function AboutPage() {
                       </div>
                     </td>
                   </tr>
+
+                  {/* Settlement Time */}
                   <tr className="border-b-4 border-black bg-gray-50">
                     <td className="p-4 font-black border-r-4 border-black">Settlement Time</td>
                     <td className="p-4 text-center border-r-4 border-black">
-                      <span className="font-black text-[#0000FF]">~2 seconds</span>
+                      <div className="inline-flex items-center gap-2 bg-[#CCFF00] px-3 py-2 rounded-full border-2 border-black">
+                        <Check className="w-4 h-4" />
+                        <span className="font-black text-sm">~30 sec</span>
+                      </div>
+                    </td>
+                    <td className="p-4 text-center border-r-4 border-black">
+                      <span className="font-black text-gray-600">7-30 days</span>
                     </td>
                     <td className="p-4 text-center">
                       <span className="font-black text-gray-600">7-30 days</span>
                     </td>
                   </tr>
+
+                  {/* One-time / Tipping */}
                   <tr className="border-b-4 border-black bg-white">
-                    <td className="p-4 font-black border-r-4 border-black">Minimum Payment</td>
+                    <td className="p-4 font-black border-r-4 border-black">One-time Tipping</td>
                     <td className="p-4 text-center border-r-4 border-black">
-                      <span className="font-black text-[#0000FF]">$0.001</span>
+                      <div className="inline-flex items-center gap-2 bg-[#CCFF00] px-4 py-2 rounded-full border-2 border-black">
+                        <Check className="w-5 h-5" />
+                      </div>
+                    </td>
+                    <td className="p-4 text-center border-r-4 border-black">
+                      <div className="inline-flex items-center gap-2 px-4 py-2">
+                        <Check className="w-5 h-5 text-green-600" />
+                      </div>
                     </td>
                     <td className="p-4 text-center">
-                      <span className="font-black text-gray-600">$3-5</span>
+                      <div className="inline-flex items-center gap-2 px-4 py-2">
+                        <Check className="w-5 h-5 text-green-600" />
+                      </div>
                     </td>
                   </tr>
+
+                  {/* Membership Tiers */}
+                  <tr className="border-b-4 border-black bg-gray-50">
+                    <td className="p-4 font-black border-r-4 border-black">Membership Tiers</td>
+                    <td className="p-4 text-center border-r-4 border-black">
+                      <span className="font-bold text-gray-500 text-sm">Coming Soon</span>
+                    </td>
+                    <td className="p-4 text-center border-r-4 border-black">
+                      <div className="inline-flex items-center gap-2 px-4 py-2">
+                        <Check className="w-5 h-5 text-green-600" />
+                      </div>
+                    </td>
+                    <td className="p-4 text-center">
+                      <div className="inline-flex items-center gap-2 px-4 py-2">
+                        <Check className="w-5 h-5 text-green-600" />
+                      </div>
+                    </td>
+                  </tr>
+
+                  {/* Analytics */}
+                  <tr className="border-b-4 border-black bg-white">
+                    <td className="p-4 font-black border-r-4 border-black">Analytics</td>
+                    <td className="p-4 text-center border-r-4 border-black">
+                      <div className="inline-flex items-center gap-2 bg-[#CCFF00] px-4 py-2 rounded-full border-2 border-black">
+                        <Check className="w-5 h-5" />
+                        <span className="font-black text-sm">Free</span>
+                      </div>
+                    </td>
+                    <td className="p-4 text-center border-r-4 border-black">
+                      <div className="inline-flex items-center gap-2 px-4 py-2">
+                        <Check className="w-5 h-5 text-green-600" />
+                      </div>
+                    </td>
+                    <td className="p-4 text-center">
+                      <span className="font-black text-gray-600 text-sm">$6/mo</span>
+                    </td>
+                  </tr>
+
+                  {/* Premium Features */}
+                  <tr className="border-b-4 border-black bg-gray-50">
+                    <td className="p-4 font-black border-r-4 border-black">Premium Features</td>
+                    <td className="p-4 text-center border-r-4 border-black">
+                      <div className="inline-flex items-center gap-2 bg-[#CCFF00] px-4 py-2 rounded-full border-2 border-black">
+                        <Check className="w-5 h-5" />
+                        <span className="font-black text-sm">Free for all</span>
+                      </div>
+                    </td>
+                    <td className="p-4 text-center border-r-4 border-black">
+                      <span className="font-bold text-green-600 text-sm">Available</span>
+                    </td>
+                    <td className="p-4 text-center">
+                      <span className="font-black text-gray-600 text-sm">$6/mo</span>
+                    </td>
+                  </tr>
+
+                  {/* Live Chat Support */}
+                  <tr className="border-b-4 border-black bg-white">
+                    <td className="p-4 font-black border-r-4 border-black">Live Chat Support</td>
+                    <td className="p-4 text-center border-r-4 border-black">
+                      <span className="font-bold text-gray-500 text-sm">Email Support</span>
+                    </td>
+                    <td className="p-4 text-center border-r-4 border-black">
+                      <div className="inline-flex items-center gap-2 px-4 py-2">
+                        <Check className="w-5 h-5 text-green-600" />
+                        <span className="font-bold text-sm">24/7</span>
+                      </div>
+                    </td>
+                    <td className="p-4 text-center">
+                      <div className="inline-flex items-center gap-2 px-4 py-2">
+                        <X className="w-5 h-5 text-red-600" />
+                      </div>
+                    </td>
+                  </tr>
+
+                  {/* Chargeback Risk */}
                   <tr className="border-b-4 border-black bg-gray-50">
                     <td className="p-4 font-black border-r-4 border-black">Chargeback Risk</td>
                     <td className="p-4 text-center border-r-4 border-black">
                       <div className="inline-flex items-center gap-2 bg-[#CCFF00] px-4 py-2 rounded-full border-2 border-black">
                         <Check className="w-5 h-5" />
-                        <span className="font-black">None</span>
+                        <span className="font-black text-sm">None</span>
+                      </div>
+                    </td>
+                    <td className="p-4 text-center border-r-4 border-black">
+                      <div className="inline-flex items-center gap-2 bg-red-100 px-4 py-2 rounded-full border-2 border-black">
+                        <X className="w-5 h-5 text-red-600" />
+                        <span className="font-black text-sm">High</span>
                       </div>
                     </td>
                     <td className="p-4 text-center">
                       <div className="inline-flex items-center gap-2 bg-red-100 px-4 py-2 rounded-full border-2 border-black">
                         <X className="w-5 h-5 text-red-600" />
-                        <span className="font-black">High</span>
+                        <span className="font-black text-sm">High</span>
                       </div>
                     </td>
                   </tr>
+
+                  {/* Global Support */}
                   <tr className="bg-white">
-                    <td className="p-4 font-black border-r-4 border-black">Global Support</td>
+                    <td className="p-4 font-black border-r-4 border-black">Global Access</td>
                     <td className="p-4 text-center border-r-4 border-black">
                       <div className="inline-flex items-center gap-2 bg-[#CCFF00] px-4 py-2 rounded-full border-2 border-black">
                         <Check className="w-5 h-5" />
-                        <span className="font-black">Yes</span>
+                        <span className="font-black text-sm">Crypto Wallet</span>
                       </div>
                     </td>
+                    <td className="p-4 text-center border-r-4 border-black">
+                      <span className="font-black text-gray-600 text-sm">Bank/Card Only</span>
+                    </td>
                     <td className="p-4 text-center">
-                      <span className="font-black text-gray-600">Limited</span>
+                      <span className="font-black text-gray-600 text-sm">Bank/Card Only</span>
                     </td>
                   </tr>
                 </tbody>
               </table>
+            </div>
+
+            {/* Key Differentiators */}
+            <div className="mt-8 grid md:grid-cols-3 gap-4">
+              <div className="bg-[#CCFF00] border-4 border-black rounded-2xl p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+                <p className="font-black text-lg mb-2">💰 Creators Keep More</p>
+                <p className="font-bold text-sm">0% fees vs 5% on competitors = $50 saved per $1000 raised</p>
+              </div>
+              <div className="bg-[#0000FF] text-white border-4 border-black rounded-2xl p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+                <p className="font-black text-lg mb-2">⚡ Fast Settlement</p>
+                <p className="font-bold text-sm">Get paid in ~30 seconds, not weeks. No waiting for payouts.</p>
+              </div>
+              <div className="bg-[#FF6B35] text-white border-4 border-black rounded-2xl p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+                <p className="font-black text-lg mb-2">🔒 No Chargebacks</p>
+                <p className="font-bold text-sm">Crypto payments are final. No fraud, disputes, or frozen funds.</p>
+              </div>
             </div>
           </div>
         </div>
