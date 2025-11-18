@@ -100,7 +100,7 @@ export function DiscoverSearch({ creators }: DiscoverSearchProps) {
                         <div className="p-6">
                           <div className="flex items-start gap-4 mb-4">
                             <Avatar className="w-16 h-16 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                              <AvatarImage src={creator.avatar_url || undefined} alt={creator.display_name} />
+                              <AvatarImage src={creator.avatar_url && !creator.avatar_url.includes('placeholder') ? creator.avatar_url : undefined} alt={creator.display_name} />
                               <AvatarFallback className="text-xl font-black bg-white">
                                 {getInitials(creator.display_name)}
                               </AvatarFallback>

@@ -69,7 +69,7 @@ export function UserMenu() {
         className="w-12 h-12 border-4 border-black rounded-full overflow-hidden bg-gray-100 hover:ring-4 hover:ring-[#CCFF00] transition-all"
       >
         <Avatar className="w-full h-full">
-          <AvatarImage src={user.avatar_url || undefined} alt={user.display_name} />
+          <AvatarImage src={user.avatar_url && !user.avatar_url.includes('placeholder') ? user.avatar_url : undefined} alt={user.display_name} />
           <AvatarFallback className="text-xl font-black bg-white">
             {getInitials(user.display_name || 'User')}
           </AvatarFallback>

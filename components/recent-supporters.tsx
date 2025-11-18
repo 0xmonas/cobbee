@@ -116,7 +116,7 @@ export function RecentSupporters({
           <div key={support.id} className={`border-4 border-black rounded-2xl p-6 ${hiddenMessages[support.id] ? 'bg-gray-100 opacity-60' : 'bg-gray-50'} relative`}>
             <div className="flex items-start gap-4 mb-4">
               <Avatar className="w-14 h-14 border-4 border-black">
-                <AvatarImage src={support.supporter_avatar_url || "/placeholder.svg"} alt={support.supporter_name} />
+                <AvatarImage src={support.supporter_avatar_url && !support.supporter_avatar_url.includes('placeholder') ? support.supporter_avatar_url : undefined} alt={support.supporter_name} />
                 <AvatarFallback className="text-lg font-black bg-[#0000FF] text-white">
                   {getInitials(support.supporter_name)}
                 </AvatarFallback>
@@ -167,7 +167,7 @@ export function RecentSupporters({
               <div className="ml-16 mb-4 bg-white border-2 border-black rounded-xl p-4">
                 <div className="flex items-start gap-3 mb-3">
                   <Avatar className="w-10 h-10 border-2 border-black">
-                    <AvatarImage src={creatorAvatar || "/placeholder.svg"} alt={creatorDisplayName} />
+                    <AvatarImage src={creatorAvatar && !creatorAvatar.includes('placeholder') ? creatorAvatar : undefined} alt={creatorDisplayName} />
                     <AvatarFallback className="text-sm font-black bg-[#0000FF] text-white">
                       {getInitials(creatorDisplayName)}
                     </AvatarFallback>

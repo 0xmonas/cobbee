@@ -477,7 +477,7 @@ export function PaymentSettingsForm({ user, supports }: PaymentSettingsFormProps
                     >
                       <div className="flex items-start gap-4 mb-4">
                         <Avatar className="w-14 h-14 border-4 border-black">
-                          <AvatarImage src={payment.supporter_avatar_url || undefined} alt={payment.supporter_name} />
+                          <AvatarImage src={payment.supporter_avatar_url && !payment.supporter_avatar_url.includes('placeholder') ? payment.supporter_avatar_url : undefined} alt={payment.supporter_name} />
                           <AvatarFallback className="text-lg font-black bg-[#0000FF] text-white">
                             {getInitials(payment.supporter_name)}
                           </AvatarFallback>

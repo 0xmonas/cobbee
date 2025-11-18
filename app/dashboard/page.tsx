@@ -191,7 +191,7 @@ export default async function DashboardPage() {
                         <div className="flex items-center gap-4">
                           <Avatar className="w-12 h-12 border-4 border-black">
                             <AvatarImage
-                              src={support.supporter_avatar_url || undefined}
+                              src={support.supporter_avatar_url && !support.supporter_avatar_url.includes('placeholder') ? support.supporter_avatar_url : undefined}
                               alt={support.supporter_name}
                             />
                             <AvatarFallback className="font-black bg-[#0000FF] text-white">
@@ -226,7 +226,7 @@ export default async function DashboardPage() {
                 <h3 className="text-2xl font-black mb-4">Your Profile</h3>
                 <div className="flex items-center gap-4 mb-6">
                   <Avatar className="w-16 h-16 border-4 border-black">
-                    <AvatarImage src={currentCreator.avatar_url || undefined} alt={currentCreator.display_name} />
+                    <AvatarImage src={currentCreator.avatar_url && !currentCreator.avatar_url.includes('placeholder') ? currentCreator.avatar_url : undefined} alt={currentCreator.display_name} />
                     <AvatarFallback className="font-black bg-white">
                       {getInitials(currentCreator.display_name)}
                     </AvatarFallback>

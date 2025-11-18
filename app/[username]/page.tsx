@@ -183,7 +183,7 @@ export default async function CreatorProfilePage({ params }: CreatorProfilePageP
             <div className="md:w-1/3">
               <div className="sticky top-8">
                 <Avatar className="w-32 h-32 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-                  <AvatarImage src={creator.avatar_url || undefined} alt={creator.display_name} />
+                  <AvatarImage src={creator.avatar_url && !creator.avatar_url.includes('placeholder') ? creator.avatar_url : undefined} alt={creator.display_name} />
                   <AvatarFallback className="text-3xl font-black bg-[#CCFF00]">
                     {getInitials(creator.display_name)}
                   </AvatarFallback>
