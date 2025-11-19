@@ -12,7 +12,7 @@
  * - Cobbee branding with neo-brutalist design
  */
 
-import { ImageResponse } from 'next/og'
+import { ImageResponse } from '@vercel/og'
 import { NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
@@ -45,6 +45,7 @@ export async function GET(request: NextRequest) {
       .single()
 
     if (error || !creator) {
+      console.error('[OG Image] Creator not found:', error)
       return new Response('Creator not found', { status: 404 })
     }
 
@@ -60,6 +61,8 @@ export async function GET(request: NextRequest) {
 
     const initials = getInitials(creator.display_name)
     const coffeePrice = Number(creator.coffee_price).toFixed(2)
+
+    console.log('[OG Image] Generating for:', username, 'initials:', initials)
 
     // Generate OG image with ImageResponse
     return new ImageResponse(

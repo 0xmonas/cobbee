@@ -55,6 +55,7 @@
     "@upstash/redis": "^1.35.6",
     "@vercel/analytics": "latest",
     "@vercel/functions": "^3.3.2",
+    "@vercel/og": "^0.8.5",
     "@wagmi/core": "^2.22.1",
     "autoprefixer": "^10.4.22",
     "class-variance-authority": "^0.7.1",
