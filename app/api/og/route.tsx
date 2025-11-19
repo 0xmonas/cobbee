@@ -64,88 +64,82 @@ export async function GET(request: NextRequest) {
 
     console.log('[OG Image] Generating for:', username, 'initials:', initials)
 
-    // Generate OG image with ImageResponse (simplified version)
+    // Generate OG image with ImageResponse
     return new ImageResponse(
-      (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#CCFF00',
+        }}
+      >
         <div
           style={{
-            width: '100%',
-            height: '100%',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: '#CCFF00',
+            backgroundColor: 'white',
+            border: '8px solid black',
+            borderRadius: '48px',
+            padding: '60px',
           }}
         >
           <div
             style={{
+              width: '120px',
+              height: '120px',
+              borderRadius: '50%',
+              backgroundColor: '#0000FF',
+              border: '6px solid black',
               display: 'flex',
-              flexDirection: 'column',
               alignItems: 'center',
-              backgroundColor: 'white',
-              border: '8px solid black',
-              borderRadius: '48px',
-              padding: '60px',
+              justifyContent: 'center',
+              marginBottom: '30px',
             }}
           >
             <div
               style={{
-                width: '120px',
-                height: '120px',
-                borderRadius: '50%',
-                backgroundColor: '#0000FF',
-                border: '6px solid black',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: '30px',
-              }}
-            >
-              <div
-                style={{
-                  fontSize: '48px',
-                  fontWeight: 'bold',
-                  color: 'white',
-                }}
-              >
-                {initials}
-              </div>
-            </div>
-
-            <div
-              style={{
                 fontSize: '48px',
                 fontWeight: 'bold',
-                color: 'black',
-                marginBottom: '10px',
+                color: 'white',
               }}
             >
-              {creator.display_name}
-            </div>
-
-            <div
-              style={{
-                fontSize: '32px',
-                color: '#0000FF',
-                marginBottom: '20px',
-              }}
-            >
-              @{creator.username}
-            </div>
-
-            <div
-              style={{
-                fontSize: '28px',
-                fontWeight: 'bold',
-                color: 'black',
-              }}
-            >
-              ☕ ${coffeePrice}
+              {initials}
             </div>
           </div>
+          <div
+            style={{
+              fontSize: '48px',
+              fontWeight: 'bold',
+              color: 'black',
+              marginBottom: '10px',
+            }}
+          >
+            {creator.display_name}
+          </div>
+          <div
+            style={{
+              fontSize: '32px',
+              color: '#0000FF',
+              marginBottom: '20px',
+            }}
+          >
+            @{creator.username}
+          </div>
+          <div
+            style={{
+              fontSize: '28px',
+              fontWeight: 'bold',
+              color: 'black',
+            }}
+          >
+            ☕ ${coffeePrice}
+          </div>
         </div>
-      ),
+      </div>,
       {
         width: 1200,
         height: 630,
