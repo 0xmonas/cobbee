@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
               marginBottom: '30px',
             }}
           >
-            <div
+            <span
               style={{
                 fontSize: '48px',
                 fontWeight: 'bold',
@@ -108,9 +108,9 @@ export async function GET(request: NextRequest) {
               }}
             >
               {initials}
-            </div>
+            </span>
           </div>
-          <div
+          <span
             style={{
               fontSize: '48px',
               fontWeight: 'bold',
@@ -119,8 +119,8 @@ export async function GET(request: NextRequest) {
             }}
           >
             {creator.display_name}
-          </div>
-          <div
+          </span>
+          <span
             style={{
               fontSize: '32px',
               color: '#0000FF',
@@ -128,8 +128,8 @@ export async function GET(request: NextRequest) {
             }}
           >
             @{creator.username}
-          </div>
-          <div
+          </span>
+          <span
             style={{
               fontSize: '28px',
               fontWeight: 'bold',
@@ -137,7 +137,7 @@ export async function GET(request: NextRequest) {
             }}
           >
             ☕ ${coffeePrice}
-          </div>
+          </span>
         </div>
       </div>,
       {
