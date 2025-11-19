@@ -107,28 +107,16 @@ export async function GET(request: NextRequest) {
                 marginBottom: '40px',
               }}
             >
-              {creator.avatar_url && !creator.avatar_url.includes('placeholder') ? (
-                <img
-                  src={creator.avatar_url}
-                  alt={creator.display_name}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    borderRadius: '50%',
-                    objectFit: 'cover',
-                  }}
-                />
-              ) : (
-                <div
-                  style={{
-                    fontSize: '72px',
-                    fontWeight: 900,
-                    color: 'white',
-                  }}
-                >
-                  {initials}
-                </div>
-              )}
+              {/* Always show initials - ImageResponse doesn't support external images */}
+              <div
+                style={{
+                  fontSize: '72px',
+                  fontWeight: 900,
+                  color: 'white',
+                }}
+              >
+                {initials}
+              </div>
             </div>
 
             {/* Display Name */}
