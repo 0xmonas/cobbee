@@ -249,6 +249,26 @@ export async function GET(request: NextRequest) {
                 @{creator.username}
               </span>
             </div>
+
+            {/* URL Badge */}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-end',
+                justifyContent: 'center',
+              }}
+            >
+              <span
+                style={{
+                  fontSize: '28px',
+                  fontWeight: 600,
+                  color: '#666',
+                }}
+              >
+                cobbee.fun/{creator.username}
+              </span>
+            </div>
           </div>
         </div>
       </div>,
