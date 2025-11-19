@@ -31,12 +31,22 @@ export async function GET(request: NextRequest) {
       return new Response('Missing username parameter', { status: 400 })
     }
 
-    // TEMPORARY: Use mock data for debugging
-    const creator = {
-      username: username,
-      display_name: 'Test User',
-      bio: 'Hello to you!',
-      coffee_price: 5.00,
+    // Create edge-compatible Supabase client (no auth needed for public profiles)
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+
+    // Fetch creator data
+    const { data: creator, error } = await supabase
+      .from('public_creator_profiles')
+      .select('*')
+      .eq('username', username)
+      .single()
+
+    if (error || !creator) {
+      console.error('[OG Image] Creator not found:', error)
+      return new Response('Creator not found', { status: 404 })
     }
 
     // Get initials for fallback
@@ -79,7 +89,6 @@ export async function GET(request: NextRequest) {
               padding: '60px',
             }}
           >
-            {/* Initials Circle */}
             <div
               style={{
                 width: '120px',
@@ -104,7 +113,6 @@ export async function GET(request: NextRequest) {
               </div>
             </div>
 
-            {/* Name */}
             <div
               style={{
                 fontSize: '48px',
@@ -116,7 +124,6 @@ export async function GET(request: NextRequest) {
               {creator.display_name}
             </div>
 
-            {/* Username */}
             <div
               style={{
                 fontSize: '32px',
@@ -127,7 +134,6 @@ export async function GET(request: NextRequest) {
               @{creator.username}
             </div>
 
-            {/* Price */}
             <div
               style={{
                 fontSize: '28px',
