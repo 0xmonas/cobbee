@@ -91,14 +91,17 @@ export async function GET(request: NextRequest) {
 
     // Fetch cover image and convert to base64
     let coverBase64 = ''
-    if (creator.cover_image) {
+    if (creator.cover_image_url) {
       try {
-        const coverResponse = await fetch(creator.cover_image)
+        const coverResponse = await fetch(creator.cover_image_url)
         const coverBuffer = await coverResponse.arrayBuffer()
         coverBase64 = `data:${coverResponse.headers.get('content-type') || 'image/jpeg'};base64,${Buffer.from(coverBuffer).toString('base64')}`
+        console.log('[OG Image] Cover image fetched successfully')
       } catch (error) {
         console.error('[OG Image] Failed to fetch cover:', error)
       }
+    } else {
+      console.log('[OG Image] No cover image URL found for user')
     }
 
     // Generate OG image with ImageResponse
