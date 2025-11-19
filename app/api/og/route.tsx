@@ -74,7 +74,6 @@ export async function GET(request: NextRequest) {
             justifyContent: 'center',
             backgroundColor: '#CCFF00',
             padding: '60px',
-            fontFamily: 'system-ui, sans-serif',
           }}
         >
           {/* Main Card */}
@@ -111,7 +110,7 @@ export async function GET(request: NextRequest) {
               <div
                 style={{
                   fontSize: '72px',
-                  fontWeight: 900,
+                  fontWeight: 'bold',
                   color: 'white',
                 }}
               >
@@ -123,7 +122,7 @@ export async function GET(request: NextRequest) {
             <div
               style={{
                 fontSize: '64px',
-                fontWeight: 900,
+                fontWeight: 'bold',
                 color: 'black',
                 marginBottom: '20px',
                 textAlign: 'center',
@@ -136,7 +135,7 @@ export async function GET(request: NextRequest) {
             <div
               style={{
                 fontSize: '40px',
-                fontWeight: 700,
+                fontWeight: 'bold',
                 color: '#0000FF',
                 marginBottom: '40px',
               }}
@@ -161,7 +160,7 @@ export async function GET(request: NextRequest) {
               <div
                 style={{
                   fontSize: '40px',
-                  fontWeight: 900,
+                  fontWeight: 'bold',
                   color: 'black',
                 }}
               >
@@ -174,18 +173,15 @@ export async function GET(request: NextRequest) {
               <div
                 style={{
                   fontSize: '28px',
-                  fontWeight: 700,
+                  fontWeight: 'bold',
                   color: '#666',
                   textAlign: 'center',
                   maxWidth: '800px',
                   marginBottom: '40px',
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
                   overflow: 'hidden',
                 }}
               >
-                {creator.bio}
+                {creator.bio.slice(0, 100)}{creator.bio.length > 100 ? '...' : ''}
               </div>
             )}
 
@@ -201,7 +197,7 @@ export async function GET(request: NextRequest) {
               <div
                 style={{
                   fontSize: '32px',
-                  fontWeight: 900,
+                  fontWeight: 'bold',
                   color: 'black',
                 }}
               >
