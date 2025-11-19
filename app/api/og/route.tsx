@@ -14,7 +14,7 @@
 
 import { ImageResponse } from 'next/og'
 import { NextRequest } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
 
 export const runtime = 'edge'
 
@@ -31,8 +31,13 @@ export async function GET(request: NextRequest) {
       return new Response('Missing username parameter', { status: 400 })
     }
 
+    // Create edge-compatible Supabase client (no auth needed for public profiles)
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+
     // Fetch creator data
-    const supabase = await createClient()
     const { data: creator, error } = await supabase
       .from('public_creator_profiles')
       .select('*')

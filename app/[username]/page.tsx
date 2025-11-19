@@ -42,9 +42,15 @@ export async function generateMetadata({ params }: CreatorProfilePageProps): Pro
     }
   }
 
+  // Get base URL - prioritize env var, fallback to vercel URL or localhost
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL
+    || (process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : 'http://localhost:3000')
+
   const title = `${creator.display_name} (@${creator.username}) - Cobbee`
   const description = creator.bio || `Support ${creator.display_name} with a coffee on Cobbee`
-  const ogImageUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/og?username=${creator.username}`
+  const ogImageUrl = `${baseUrl}/api/og?username=${creator.username}`
 
   return {
     title,
@@ -53,7 +59,7 @@ export async function generateMetadata({ params }: CreatorProfilePageProps): Pro
       title,
       description,
       type: 'profile',
-      url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/${creator.username}`,
+      url: `${baseUrl}/${creator.username}`,
       images: [
         {
           url: ogImageUrl,
