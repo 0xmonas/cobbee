@@ -54,55 +54,48 @@ export async function GET(request: NextRequest) {
 
     console.log('[OG Image] Generating for:', username, 'initials:', initials)
 
-    // Generate OG image with ImageResponse
+    // Generate OG image with ImageResponse (simplified version)
     return new ImageResponse(
       (
         <div
           style={{
-            height: '100%',
             width: '100%',
+            height: '100%',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
             backgroundColor: '#CCFF00',
-            padding: '60px',
           }}
         >
-          {/* Main Card */}
           <div
             style={{
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              justifyContent: 'center',
               backgroundColor: 'white',
               border: '8px solid black',
               borderRadius: '48px',
-              padding: '80px 100px',
-              boxShadow: '16px 16px 0px 0px rgba(0,0,0,1)',
-              width: '100%',
-              maxWidth: '1000px',
+              padding: '60px',
             }}
           >
-            {/* Avatar/Initials */}
+            {/* Initials Circle */}
             <div
               style={{
-                width: '180px',
-                height: '180px',
+                width: '120px',
+                height: '120px',
                 borderRadius: '50%',
                 backgroundColor: '#0000FF',
-                border: '8px solid black',
+                border: '6px solid black',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                marginBottom: '40px',
+                marginBottom: '30px',
               }}
             >
-              {/* Always show initials - ImageResponse doesn't support external images */}
               <div
                 style={{
-                  fontSize: '72px',
+                  fontSize: '48px',
                   fontWeight: 'bold',
                   color: 'white',
                 }}
@@ -111,14 +104,13 @@ export async function GET(request: NextRequest) {
               </div>
             </div>
 
-            {/* Display Name */}
+            {/* Name */}
             <div
               style={{
-                fontSize: '64px',
+                fontSize: '48px',
                 fontWeight: 'bold',
                 color: 'black',
-                marginBottom: '20px',
-                textAlign: 'center',
+                marginBottom: '10px',
               }}
             >
               {creator.display_name}
@@ -127,75 +119,23 @@ export async function GET(request: NextRequest) {
             {/* Username */}
             <div
               style={{
-                fontSize: '40px',
-                fontWeight: 'bold',
+                fontSize: '32px',
                 color: '#0000FF',
-                marginBottom: '40px',
+                marginBottom: '20px',
               }}
             >
               @{creator.username}
             </div>
 
-            {/* Coffee Price Badge */}
+            {/* Price */}
             <div
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '16px',
-                backgroundColor: '#CCFF00',
-                border: '6px solid black',
-                borderRadius: '999px',
-                padding: '20px 40px',
-                marginBottom: '40px',
+                fontSize: '28px',
+                fontWeight: 'bold',
+                color: 'black',
               }}
             >
-              <div style={{ fontSize: '40px' }}>☕</div>
-              <div
-                style={{
-                  fontSize: '40px',
-                  fontWeight: 'bold',
-                  color: 'black',
-                }}
-              >
-                ${coffeePrice}
-              </div>
-            </div>
-
-            {/* Bio (if exists, truncated) */}
-            {creator.bio && (
-              <div
-                style={{
-                  fontSize: '28px',
-                  fontWeight: 'bold',
-                  color: '#666',
-                  textAlign: 'center',
-                  maxWidth: '800px',
-                  marginBottom: '40px',
-                  overflow: 'hidden',
-                }}
-              >
-                {creator.bio.slice(0, 100)}{creator.bio.length > 100 ? '...' : ''}
-              </div>
-            )}
-
-            {/* Cobbee Branding */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '16px',
-                marginTop: '20px',
-              }}
-            >
-              <div
-                style={{
-                  fontSize: '32px',
-                  fontWeight: 'bold',
-                  color: 'black',
-                }}
-              >
-                ☕ Cobbee
-              </div>
+              ☕ ${coffeePrice}
             </div>
           </div>
         </div>
