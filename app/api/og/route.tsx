@@ -64,6 +64,19 @@ export async function GET(request: NextRequest) {
 
     console.log('[OG Image] Generating for:', username, 'initials:', initials)
 
+    // Fetch logo SVG
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://cobbee.fun'
+    const logoUrl = `${baseUrl}/logo/logocobbee.svg`
+    let logoSvg = ''
+    try {
+      const logoResponse = await fetch(logoUrl)
+      const logoText = await logoResponse.text()
+      const logoBase64 = `data:image/svg+xml;base64,${Buffer.from(logoText).toString('base64')}`
+      logoSvg = logoBase64
+    } catch (error) {
+      console.error('[OG Image] Failed to fetch logo:', error)
+    }
+
     // Fetch avatar image and convert to base64
     let avatarBase64 = ''
     if (creator.avatar_url) {
@@ -98,20 +111,29 @@ export async function GET(request: NextRequest) {
           position: 'relative',
         }}
       >
-        {/* Background: Cover image with overlay */}
-        <div
-          style={{
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            background: coverBase64
-              ? `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${coverBase64})`
-              : 'linear-gradient(135deg, #CCFF00 0%, #0000FF 100%)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        />
+        {/* Background: Cover image or gradient */}
+        {coverBase64 ? (
+          <img
+            src={coverBase64}
+            style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              filter: 'brightness(0.5)',
+            }}
+          />
+        ) : (
+          <div
+            style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              background: 'linear-gradient(135deg, #CCFF00 0%, #0000FF 100%)',
+            }}
+          />
+        )}
 
         {/* Content */}
         <div
@@ -125,24 +147,24 @@ export async function GET(request: NextRequest) {
             padding: '60px',
           }}
         >
-          {/* Top: Cobbee branding */}
+          {/* Top: Cobbee branding with real logo */}
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '12px',
+              gap: '16px',
             }}
           >
-            <span
-              style={{
-                fontSize: '36px',
-                fontWeight: 'bold',
-                color: 'white',
-                textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)',
-              }}
-            >
-              ☕ Cobbee
-            </span>
+            {logoSvg && (
+              <img
+                src={logoSvg}
+                style={{
+                  width: '120px',
+                  height: '68px',
+                  filter: 'brightness(0) invert(1)',
+                }}
+              />
+            )}
           </div>
 
           {/* Bottom: Creator info card */}
