@@ -239,35 +239,33 @@ export async function GET(request: NextRequest) {
               >
                 {creator.display_name}
               </span>
-              <span
+              <div
                 style={{
-                  fontSize: '32px',
-                  color: '#0000FF',
-                  fontWeight: 600,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'baseline',
+                  width: '100%',
                 }}
               >
-                @{creator.username}
-              </span>
-            </div>
-
-            {/* URL Badge */}
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-end',
-                justifyContent: 'center',
-              }}
-            >
-              <span
-                style={{
-                  fontSize: '28px',
-                  fontWeight: 600,
-                  color: '#666',
-                }}
-              >
-                cobbee.fun/{creator.username}
-              </span>
+                <span
+                  style={{
+                    fontSize: '32px',
+                    color: '#0000FF',
+                    fontWeight: 600,
+                  }}
+                >
+                  @{creator.username}
+                </span>
+                <span
+                  style={{
+                    fontSize: '32px',
+                    fontWeight: 600,
+                    color: '#0000FF',
+                  }}
+                >
+                  cobbee.fun/{creator.username}
+                </span>
+              </div>
             </div>
           </div>
         </div>
