@@ -64,6 +64,30 @@ export async function GET(request: NextRequest) {
 
     console.log('[OG Image] Generating for:', username, 'initials:', initials)
 
+    // Fetch avatar image and convert to base64
+    let avatarBase64 = ''
+    if (creator.avatar_url) {
+      try {
+        const avatarResponse = await fetch(creator.avatar_url)
+        const avatarBuffer = await avatarResponse.arrayBuffer()
+        avatarBase64 = `data:${avatarResponse.headers.get('content-type') || 'image/jpeg'};base64,${Buffer.from(avatarBuffer).toString('base64')}`
+      } catch (error) {
+        console.error('[OG Image] Failed to fetch avatar:', error)
+      }
+    }
+
+    // Fetch cover image and convert to base64
+    let coverBase64 = ''
+    if (creator.cover_image) {
+      try {
+        const coverResponse = await fetch(creator.cover_image)
+        const coverBuffer = await coverResponse.arrayBuffer()
+        coverBase64 = `data:${coverResponse.headers.get('content-type') || 'image/jpeg'};base64,${Buffer.from(coverBuffer).toString('base64')}`
+      } catch (error) {
+        console.error('[OG Image] Failed to fetch cover:', error)
+      }
+    }
+
     // Generate OG image with ImageResponse
     return new ImageResponse(
       <div
@@ -71,73 +95,136 @@ export async function GET(request: NextRequest) {
           width: '100%',
           height: '100%',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: '#CCFF00',
+          position: 'relative',
         }}
       >
+        {/* Background: Cover image with overlay */}
         <div
           style={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            background: coverBase64
+              ? `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${coverBase64})`
+              : 'linear-gradient(135deg, #CCFF00 0%, #0000FF 100%)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        />
+
+        {/* Content */}
+        <div
+          style={{
+            position: 'relative',
+            width: '100%',
+            height: '100%',
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center',
-            backgroundColor: 'white',
-            border: '8px solid black',
-            borderRadius: '48px',
+            justifyContent: 'space-between',
             padding: '60px',
           }}
         >
+          {/* Top: Cobbee branding */}
           <div
             style={{
-              width: '120px',
-              height: '120px',
-              borderRadius: '50%',
-              backgroundColor: '#0000FF',
-              border: '6px solid black',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: '30px',
+              gap: '12px',
             }}
           >
             <span
               style={{
-                fontSize: '48px',
+                fontSize: '36px',
                 fontWeight: 'bold',
                 color: 'white',
+                textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)',
               }}
             >
-              {initials}
+              ☕ Cobbee
             </span>
           </div>
-          <span
+
+          {/* Bottom: Creator info card */}
+          <div
             style={{
-              fontSize: '48px',
-              fontWeight: 'bold',
-              color: 'black',
-              marginBottom: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '30px',
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              padding: '30px 40px',
+              borderRadius: '24px',
+              border: '4px solid black',
+              boxShadow: '8px 8px 0px 0px rgba(0, 0, 0, 1)',
             }}
           >
-            {creator.display_name}
-          </span>
-          <span
-            style={{
-              fontSize: '32px',
-              color: '#0000FF',
-              marginBottom: '20px',
-            }}
-          >
-            @{creator.username}
-          </span>
-          <span
-            style={{
-              fontSize: '28px',
-              fontWeight: 'bold',
-              color: 'black',
-            }}
-          >
-            ☕ ${coffeePrice}
-          </span>
+            {/* Avatar */}
+            {avatarBase64 ? (
+              <img
+                src={avatarBase64}
+                style={{
+                  width: '120px',
+                  height: '120px',
+                  borderRadius: '50%',
+                  border: '4px solid black',
+                  objectFit: 'cover',
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: '120px',
+                  height: '120px',
+                  borderRadius: '50%',
+                  backgroundColor: '#0000FF',
+                  border: '4px solid black',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: '48px',
+                    fontWeight: 'bold',
+                    color: 'white',
+                  }}
+                >
+                  {initials}
+                </span>
+              </div>
+            )}
+
+            {/* Creator details */}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                flex: 1,
+              }}
+            >
+              <span
+                style={{
+                  fontSize: '52px',
+                  fontWeight: 'bold',
+                  color: 'black',
+                  lineHeight: 1.2,
+                }}
+              >
+                {creator.display_name}
+              </span>
+              <span
+                style={{
+                  fontSize: '32px',
+                  color: '#0000FF',
+                  fontWeight: 600,
+                }}
+              >
+                @{creator.username}
+              </span>
+            </div>
+          </div>
         </div>
       </div>,
       {
