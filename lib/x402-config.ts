@@ -118,9 +118,10 @@ export function smallestUnitToUSDC(amount: bigint): number {
  * These are the only facilitators we trust for payment verification
  */
 const TRUSTED_FACILITATORS = [
-  'https://x402.org/facilitator',           // Community facilitator
-  'https://facilitator.x402.rs',            // Production facilitator
-  'https://api.developer.coinbase.com/x402', // Coinbase CDP facilitator
+  'https://x402.org/facilitator',                      // Community facilitator
+  'https://facilitator.x402.rs',                       // Production facilitator
+  'https://api.developer.coinbase.com/x402',           // Coinbase CDP facilitator (docs)
+  'https://api.cdp.coinbase.com/platform/v2/x402',     // Coinbase CDP facilitator (actual)
 ]
 
 /**
