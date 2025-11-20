@@ -112,3 +112,43 @@ export function usdcToSmallestUnit(amount: number): bigint {
 export function smallestUnitToUSDC(amount: bigint): number {
   return Number(amount) / 1_000_000
 }
+
+/**
+ * Trusted facilitator URLs (whitelist)
+ * These are the only facilitators we trust for payment verification
+ */
+const TRUSTED_FACILITATORS = [
+  'https://x402.org/facilitator',           // Community facilitator
+  'https://facilitator.x402.rs',            // Production facilitator
+  'https://api.developer.coinbase.com/x402', // Coinbase CDP facilitator
+]
+
+/**
+ * Validate facilitator URL against whitelist
+ * Returns true if the URL is trusted, false otherwise
+ */
+export function validateFacilitatorUrl(url: string): boolean {
+  try {
+    // Normalize URL (remove trailing slash)
+    const normalizedUrl = url.replace(/\/$/, '')
+    return TRUSTED_FACILITATORS.some(trusted =>
+      normalizedUrl === trusted || normalizedUrl.startsWith(trusted)
+    )
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Get validated facilitator URL
+ * Throws error if facilitator URL is not whitelisted
+ */
+export function getValidatedFacilitatorUrl(facilitatorUrl: string): string {
+  if (!validateFacilitatorUrl(facilitatorUrl)) {
+    console.error('[x402] Untrusted facilitator URL:', facilitatorUrl)
+    throw new Error(
+      `Untrusted facilitator URL: ${facilitatorUrl}. Only whitelisted facilitators are allowed.`
+    )
+  }
+  return facilitatorUrl
+}

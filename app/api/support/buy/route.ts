@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { validateSupporterName, validateSupportMessage } from '@/lib/utils/validation'
-import { getX402Config, usdcToSmallestUnit } from '@/lib/x402-config'
+import { getX402Config, usdcToSmallestUnit, getValidatedFacilitatorUrl } from '@/lib/x402-config'
 import { getCDPFacilitator } from '@/lib/cdp-facilitator'
 import { getAddress } from 'viem'
 import { paymentRateLimit, getRateLimitIdentifier } from '@/lib/security/ratelimit'
@@ -61,6 +61,20 @@ export async function POST(request: NextRequest) {
     // Get facilitator configuration (CDP if available, otherwise fallback)
     const cdpFacilitator = getCDPFacilitator()
     const facilitatorUrl = cdpFacilitator?.url || x402Config.facilitatorUrl
+
+    // ⚠️ SECURITY: Validate facilitator URL against whitelist
+    try {
+      getValidatedFacilitatorUrl(facilitatorUrl)
+    } catch (error) {
+      console.error('[x402] Facilitator validation failed:', error)
+      return Response.json(
+        {
+          error: 'Configuration error',
+          details: error instanceof Error ? error.message : 'Invalid facilitator configuration',
+        },
+        { status: 500 }
+      )
+    }
 
     console.log('[x402] Using facilitator:', {
       type: cdpFacilitator ? 'CDP (authenticated)' : 'Community',
@@ -375,13 +389,15 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Extract payer address from verification result or payment payload
+      // Extract payer address and nonce from verification result or payment payload
       const supporterWalletAddress = verificationResult.payer || paymentPayload.payload?.authorization?.from
+      const paymentNonce = paymentPayload.payload?.authorization?.nonce
 
       console.log('[x402] Payment verified:', {
         payer: supporterWalletAddress,
         network: paymentPayload.network,
         scheme: paymentPayload.scheme,
+        nonce: paymentNonce,
       })
 
       if (!supporterWalletAddress) {
@@ -533,6 +549,44 @@ export async function POST(request: NextRequest) {
 
       if (insertError) {
         console.error('Failed to create support:', insertError)
+
+        // ⚠️ REPLAY ATTACK DETECTION: Check for duplicate transaction hash
+        // Postgres error code 23505 = unique_violation
+        if (insertError.code === '23505' && insertError.message?.includes('tx_hash')) {
+          // Log replay attempt for security monitoring
+          await createAuditLog({
+            request,
+            supabase,
+            eventType: 'support_replay_attempt',
+            actorType: 'anonymous',
+            actorId: null,
+            targetType: 'user',
+            targetId: creator_id,
+            metadata: {
+              supporter_name: sanitizedName,
+              supporter_wallet_address: supporterWalletAddress,
+              coffee_count,
+              total_amount: totalAmount,
+              transaction_hash: transactionHash,
+              payment_nonce: paymentNonce,
+              chain_id: x402Config.chainId,
+              network: x402Config.network,
+              security_event: 'duplicate_transaction_hash',
+              error_code: insertError.code,
+            },
+          })
+
+          return Response.json(
+            {
+              error: 'Duplicate transaction',
+              details: 'This payment has already been processed. Each transaction can only be used once.',
+              transactionHash,
+            },
+            { status: 409 } // 409 Conflict - resource already exists
+          )
+        }
+
+        // Other database errors
         return Response.json(
           { error: 'Failed to create support record. Please contact support.' },
           { status: 500 }
@@ -555,6 +609,7 @@ export async function POST(request: NextRequest) {
           coffee_count,
           total_amount: totalAmount,
           transaction_hash: transactionHash,
+          payment_nonce: paymentNonce,
           chain_id: x402Config.chainId,
           network: x402Config.network,
           payment_method: 'x402',

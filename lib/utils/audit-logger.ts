@@ -50,6 +50,7 @@ export type AuditEventType =
   | 'support_created'
   | 'support_confirmed'
   | 'support_failed'
+  | 'support_replay_attempt'
   | 'payment_received'
   | 'payout_initiated'
   | 'payout_completed'
