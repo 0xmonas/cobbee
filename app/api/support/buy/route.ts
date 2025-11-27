@@ -636,12 +636,15 @@ export async function POST(request: NextRequest) {
         {
           status: 200,
           headers: {
-            'X-Payment-Response': JSON.stringify({
-              verified: true,
-              transactionHash,
-              amount: totalAmount,
-              network: x402Config.network,
-            }),
+            // x402 protocol: X-Payment-Response must be base64 encoded JSON
+            'X-Payment-Response': Buffer.from(
+              JSON.stringify({
+                success: true,
+                txHash: transactionHash,
+                amount: totalAmount,
+                network: x402Config.network,
+              })
+            ).toString('base64'),
           },
         }
       )
