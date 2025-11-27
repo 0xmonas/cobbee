@@ -453,6 +453,12 @@ export async function POST(request: NextRequest) {
       }
 
       if (!settlementResponse.ok) {
+        // Log HTTP status for debugging
+        console.error('[x402] Settlement HTTP error:', {
+          status: settlementResponse.status,
+          statusText: settlementResponse.statusText,
+        })
+
         const errorData = await settlementResponse.json().catch(() => ({}))
         console.error('[x402] Settlement failed:', errorData)
         return Response.json(

@@ -6,8 +6,61 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+
+  // ============================================================================
+  // CORS Configuration for Development
+  // ============================================================================
+  // Allow cross-origin requests in development for testing
+  allowedDevOrigins: [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    '*.local.dev',
+  ],
+
+  // ============================================================================
+  // External Script CORS
+  // ============================================================================
+  // Allow cross-origin script loading (WalletConnect, etc.)
+  crossOrigin: 'anonymous',
+
+  // ============================================================================
+  // HTTP Headers Configuration
+  // ============================================================================
   async headers() {
+    // Environment-based configuration
+    const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000']
+    const isDevelopment = process.env.NODE_ENV === 'development'
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://*.supabase.co'
+
     return [
+      // ==========================================================================
+      // API ROUTES: CORS Headers
+      // ==========================================================================
+      {
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: isDevelopment ? '*' : allowedOrigins[0],
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET, POST, PATCH, DELETE, OPTIONS',
+          },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: 'Content-Type, Authorization, X-Payment, X-Requested-With',
+          },
+          {
+            key: 'Access-Control-Max-Age',
+            value: '86400', // 24 hours
+          },
+        ],
+      },
+
+      // ==========================================================================
+      // ALL ROUTES: Security Headers
+      // ==========================================================================
       {
         source: '/(.*)',
         headers: [
@@ -20,7 +73,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: blob: https: http:",
               "font-src 'self' data: https://fonts.gstatic.com",
-              "connect-src 'self' https://*.supabase.co https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.com wss://*.walletconnect.org https://relay.walletconnect.com wss://relay.walletconnect.com https://rpc.walletconnect.com https://pulse.walletconnect.com https://sepolia.base.org https://mainnet.base.org https://base-sepolia.blockpi.network https://base.blockpi.network https://x402.org https://facilitator.x402.rs https://facilitator.x402.coinbase.com https://vercel.live",
+              `connect-src 'self' ${supabaseUrl} https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.com wss://*.walletconnect.org https://relay.walletconnect.com wss://relay.walletconnect.com https://rpc.walletconnect.com https://pulse.walletconnect.com https://sepolia.base.org https://mainnet.base.org https://base-sepolia.blockpi.network https://base.blockpi.network https://x402.org https://facilitator.x402.rs https://api.cdp.coinbase.com https://vercel.live`,
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",
@@ -51,6 +104,11 @@ const nextConfig = {
           {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()',
+          },
+          // HSTS - Force HTTPS (production only)
+          {
+            key: 'Strict-Transport-Security',
+            value: isDevelopment ? '' : 'max-age=63072000; includeSubDomains; preload',
           },
         ],
       },
