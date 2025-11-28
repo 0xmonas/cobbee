@@ -3,23 +3,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ClashDisplay Font */
-@font-face {
-  font-family: 'Clash Display';
-  src: url('/fonts/ClashDisplay-Variable.woff2') format('woff2-variations');
-  font-weight: 200 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Clash Display';
-  src: url('/fonts/ClashDisplay-Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
 :root {
   /* Updated to neo-brutalist color scheme */
   --background: oklch(1 0 0);
@@ -46,7 +29,6 @@
   --chart-3: oklch(0.65 0.25 30);
   --chart-4: oklch(0 0 0);
   --chart-5: oklch(1 0 0);
-  --chart-6: oklch(0.65 0.25 282);
   --radius: 1.5rem;
   --sidebar: oklch(1 0 0);
   --sidebar-foreground: oklch(0 0 0);
@@ -83,7 +65,6 @@
   --chart-3: oklch(0.65 0.25 30);
   --chart-4: oklch(1 0 0);
   --chart-5: oklch(0 0 0);
-  --chart-6: oklch(0.65 0.25 282);
   --sidebar: oklch(0.1 0 0);
   --sidebar-foreground: oklch(1 0 0);
   --sidebar-primary: oklch(0.85 0.2 120);
@@ -94,6 +75,7 @@
   --sidebar-ring: oklch(0.85 0.2 120);
 }
 
+/* Removed invalid --animate-* variables from @theme inline block */
 @theme inline {
   --font-sans: "Geist", "Geist Fallback";
   --font-mono: "Geist Mono", "Geist Mono Fallback";
@@ -121,7 +103,6 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --color-chart-6: var(--chart-6);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -145,11 +126,104 @@
   }
 }
 
-/* ========================================
-   MILESTONE TEST TUBE ANIMATIONS
-   ======================================== */
+/* Bubble animations for neon test tube milestones */
+@keyframes bubble-1 {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-40px) scale(0.8);
+    opacity: 0;
+  }
+}
 
-/* Bubble rise animations for test tubes */
+@keyframes bubble-2 {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-35px) scale(0.7);
+    opacity: 0;
+  }
+}
+
+@keyframes bubble-3 {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateY(-30px) scale(0.6);
+    opacity: 0;
+  }
+}
+
+.animate-bubble-1 {
+  animation: bubble-1 3s ease-in-out infinite;
+}
+
+.animate-bubble-2 {
+  animation: bubble-2 2.5s ease-in-out infinite 0.5s;
+}
+
+.animate-bubble-3 {
+  animation: bubble-3 2s ease-in-out infinite 1s;
+}
+
+/* Dynamic liquid wave animations */
+@keyframes liquid-wave {
+  0%,
+  100% {
+    transform: translateX(-2px) skewX(-1deg);
+  }
+  25% {
+    transform: translateX(2px) skewX(1deg);
+  }
+  50% {
+    transform: translateX(-1px) skewX(-0.5deg);
+  }
+  75% {
+    transform: translateX(1px) skewX(0.5deg);
+  }
+}
+
+@keyframes liquid-surface {
+  0%,
+  100% {
+    transform: scaleY(1) translateY(0);
+    border-radius: 50% 50% 0 0;
+  }
+  25% {
+    transform: scaleY(1.1) translateY(-1px);
+    border-radius: 40% 60% 0 0;
+  }
+  50% {
+    transform: scaleY(0.95) translateY(1px);
+    border-radius: 60% 40% 0 0;
+  }
+  75% {
+    transform: scaleY(1.05) translateY(-0.5px);
+    border-radius: 45% 55% 0 0;
+  }
+}
+
+@keyframes liquid-glow-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+    filter: blur(8px);
+  }
+  50% {
+    opacity: 1;
+    filter: blur(12px);
+  }
+}
+
 @keyframes bubble-rise-1 {
   0% {
     transform: translateY(0) translateX(0) scale(1);
@@ -207,70 +281,6 @@
   }
 }
 
-/* Liquid wave animation */
-@keyframes liquid-wave {
-  0%,
-  100% {
-    transform: translateX(-2px) skewX(-1deg);
-  }
-  25% {
-    transform: translateX(2px) skewX(1deg);
-  }
-  50% {
-    transform: translateX(-1px) skewX(-0.5deg);
-  }
-  75% {
-    transform: translateX(1px) skewX(0.5deg);
-  }
-}
-
-/* Liquid surface animation */
-@keyframes liquid-surface {
-  0%,
-  100% {
-    transform: scaleY(1) translateY(0);
-    border-radius: 50% 50% 0 0;
-  }
-  25% {
-    transform: scaleY(1.1) translateY(-1px);
-    border-radius: 40% 60% 0 0;
-  }
-  50% {
-    transform: scaleY(0.95) translateY(1px);
-    border-radius: 60% 40% 0 0;
-  }
-  75% {
-    transform: scaleY(1.05) translateY(-0.5px);
-    border-radius: 45% 55% 0 0;
-  }
-}
-
-/* Liquid glow pulse */
-@keyframes liquid-glow-pulse {
-  0%,
-  100% {
-    opacity: 0.6;
-    filter: blur(8px);
-  }
-  50% {
-    opacity: 1;
-    filter: blur(12px);
-  }
-}
-
-/* Animation utility classes */
-.animate-bubble-rise-1 {
-  animation: bubble-rise-1 2.5s ease-out infinite;
-}
-
-.animate-bubble-rise-2 {
-  animation: bubble-rise-2 3s ease-out infinite 0.8s;
-}
-
-.animate-bubble-rise-3 {
-  animation: bubble-rise-3 2s ease-out infinite 1.5s;
-}
-
 .animate-liquid-wave {
   animation: liquid-wave 2.5s ease-in-out infinite;
 }
@@ -281,4 +291,16 @@
 
 .animate-liquid-glow {
   animation: liquid-glow-pulse 2s ease-in-out infinite;
+}
+
+.animate-bubble-rise-1 {
+  animation: bubble-rise-1 2.5s ease-out infinite;
+}
+
+.animate-bubble-rise-2 {
+  animation: bubble-rise-2 3s ease-out infinite 0.8s;
+}
+
+.animate-bubble-rise-3 {
+  animation: bubble-rise-3 2s ease-out infinite 1.5s;
 }

@@ -237,6 +237,86 @@ export type Database = {
         }
         Relationships: []
       }
+      milestones: {
+        Row: {
+          activated_at: string | null
+          color: string
+          completed_at: string | null
+          created_at: string
+          creator_id: string
+          current_amount: number
+          deactivated_at: string | null
+          deleted_at: string | null
+          description: string | null
+          goal_amount: number
+          id: string
+          is_active: boolean
+          status: string
+          title: string
+        }
+        Insert: {
+          activated_at?: string | null
+          color?: string
+          completed_at?: string | null
+          created_at?: string
+          creator_id: string
+          current_amount?: number
+          deactivated_at?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          goal_amount: number
+          id?: string
+          is_active?: boolean
+          status?: string
+          title: string
+        }
+        Update: {
+          activated_at?: string | null
+          color?: string
+          completed_at?: string | null
+          created_at?: string
+          creator_id?: string
+          current_amount?: number
+          deactivated_at?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          goal_amount?: number
+          id?: string
+          is_active?: boolean
+          status?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestones_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "admin_top_creators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "milestones_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_dashboard_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "milestones_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "public_creator_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "milestones_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string | null
@@ -382,6 +462,7 @@ export type Database = {
           is_hidden_by_creator: boolean | null
           is_message_private: boolean | null
           message: string | null
+          milestone_id: string | null
           status: string
           supporter_avatar_url: string | null
           supporter_name: string
@@ -403,6 +484,7 @@ export type Database = {
           is_hidden_by_creator?: boolean | null
           is_message_private?: boolean | null
           message?: string | null
+          milestone_id?: string | null
           status?: string
           supporter_avatar_url?: string | null
           supporter_name: string
@@ -424,6 +506,7 @@ export type Database = {
           is_hidden_by_creator?: boolean | null
           is_message_private?: boolean | null
           message?: string | null
+          milestone_id?: string | null
           status?: string
           supporter_avatar_url?: string | null
           supporter_name?: string
@@ -458,6 +541,13 @@ export type Database = {
             columns: ["creator_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supports_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "milestones"
             referencedColumns: ["id"]
           },
         ]

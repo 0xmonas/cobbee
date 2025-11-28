@@ -32,6 +32,23 @@ export interface Support {
   isHidden?: boolean
 }
 
+export interface Milestone {
+  id: string
+  title: string
+  description: string | null
+  goal_amount: number
+  current_amount: number
+  color: string
+  status: 'draft' | 'active' | 'completed' | 'archived'
+  is_active: boolean
+  created_at: string
+  activated_at: string | null
+  deactivated_at: string | null
+  completed_at: string | null
+  deleted_at: string | null
+  creator_id: string
+}
+
 export const mockCreators: Creator[] = [
   {
     id: "1",

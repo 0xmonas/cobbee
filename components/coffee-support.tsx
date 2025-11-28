@@ -21,16 +21,19 @@ import { createX402Fetch } from "@/lib/x402-client"
 import { isTestnet, getX402Config } from "@/lib/x402-config"
 import { createPublicClient, http, formatUnits } from "viem"
 import { useToast } from "@/hooks/use-toast"
+import type { Milestone } from "@/lib/mock-data"
+import { FlaskConical } from "lucide-react"
 
 type User = Database['public']['Tables']['users']['Row']
 
 interface CoffeeSupportProps {
   creator: User
+  milestones?: Milestone[]
 }
 
 type PurchaseStep = "form" | "connect-wallet" | "summary" | "processing" | "success" | "error"
 
-export function CoffeeSupport({ creator }: CoffeeSupportProps) {
+export function CoffeeSupport({ creator, milestones = [] }: CoffeeSupportProps) {
   // Reown AppKit hooks for supporter wallet
   const { open } = useAppKit()
   const { address, isConnected } = useAppKitAccount()
@@ -43,6 +46,7 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
   const [message, setMessage] = useState("")
   const [supporterName, setSupporterName] = useState("")
   const [isPrivate, setIsPrivate] = useState(false)
+  const [selectedMilestoneId, setSelectedMilestoneId] = useState<string | null>(null)
   const [purchaseStep, setPurchaseStep] = useState<PurchaseStep>("form")
   const [copiedWallet, setCopiedWallet] = useState(false)
   const [copiedSupporterWallet, setCopiedSupporterWallet] = useState(false)
@@ -52,6 +56,11 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
   const [usdcBalance, setUsdcBalance] = useState<string | null>(null)
   const [isLoadingBalance, setIsLoadingBalance] = useState(false)
   const [thankYouMessage, setThankYouMessage] = useState<string | null>(null)
+
+  // Filter active milestones
+  const activeMilestones = milestones.filter(
+    (m) => m.is_active && !m.deleted_at && m.status === 'active'
+  )
 
   const presetAmounts = [1, 3, 5]
   const isCustom = !presetAmounts.includes(coffeeCount)
@@ -214,6 +223,7 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
           coffee_count: isCustom ? Math.floor(totalAmount / Number(creator.coffee_price)) : coffeeCount,
           message: message || null,
           is_private: isPrivate,
+          milestone_id: selectedMilestoneId || null,
         })
       })
 
@@ -267,6 +277,7 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
     setSupporterName("")
     setCustomAmount("")
     setIsPrivate(false)
+    setSelectedMilestoneId(null)
     setTxnHash("")
     setThankYouMessage(null)
   }
@@ -552,6 +563,34 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
             </div>
           )}
 
+          {/* Selected Milestone */}
+          {selectedMilestoneId && (
+            <div className="bg-white border-4 border-black rounded-2xl p-4">
+              <p className="text-sm font-bold text-gray-600 mb-2 flex items-center gap-2">
+                <FlaskConical className="w-4 h-4" />
+                Contributing to Milestone
+              </p>
+              {(() => {
+                const selectedMilestone = activeMilestones.find(m => m.id === selectedMilestoneId)
+                if (!selectedMilestone) return null
+                return (
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-4 h-4 rounded-full border-2 border-black shrink-0"
+                      style={{ backgroundColor: selectedMilestone.color }}
+                    />
+                    <div>
+                      <p className="text-lg font-black">{selectedMilestone.title}</p>
+                      <p className="text-xs font-bold text-gray-600">
+                        ${selectedMilestone.current_amount.toFixed(2)} / ${selectedMilestone.goal_amount.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                )
+              })()}
+            </div>
+          )}
+
           {/* Message */}
           {message && (
             <div className="bg-white border-4 border-black rounded-2xl p-4">
@@ -731,6 +770,93 @@ export function CoffeeSupport({ creator }: CoffeeSupportProps) {
               </p>
             )}
           </div>
+
+          {/* Milestone Selection */}
+          {activeMilestones.length > 0 && (
+            <div>
+              <label className="text-xl font-black mb-3 flex items-center gap-2">
+                <FlaskConical className="w-6 h-6" />
+                Support a milestone (optional)
+              </label>
+              <div className="grid gap-3">
+                {/* No milestone option */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedMilestoneId(null)}
+                  className={`
+                    p-4 rounded-xl font-bold text-left border-4 border-black
+                    transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
+                    hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]
+                    ${selectedMilestoneId === null ? "bg-white ring-4 ring-[#0000FF]" : "bg-white"}
+                  `}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 rounded-full border-2 border-black bg-gray-300" />
+                    <span className="text-lg font-black">General Support</span>
+                  </div>
+                  <p className="text-sm text-gray-600 font-bold mt-1 ml-6">
+                    Not contributing to any specific milestone
+                  </p>
+                </button>
+
+                {/* Milestone options */}
+                {activeMilestones.map((milestone) => {
+                  const progress = Math.min((milestone.current_amount / milestone.goal_amount) * 100, 100)
+                  return (
+                    <button
+                      key={milestone.id}
+                      type="button"
+                      onClick={() => setSelectedMilestoneId(milestone.id)}
+                      className={`
+                        p-4 rounded-xl font-bold text-left border-4 border-black
+                        transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
+                        hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]
+                        ${selectedMilestoneId === milestone.id ? "bg-white ring-4 ring-[#0000FF]" : "bg-white"}
+                      `}
+                    >
+                      <div className="flex items-start gap-3">
+                        {/* Color indicator */}
+                        <div
+                          className="w-3 h-3 rounded-full border-2 border-black mt-1 shrink-0"
+                          style={{ backgroundColor: milestone.color }}
+                        />
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <span className="text-lg font-black truncate">{milestone.title}</span>
+                            <span className="text-sm font-black text-gray-600 shrink-0">
+                              {Math.round(progress)}%
+                            </span>
+                          </div>
+
+                          {milestone.description && (
+                            <p className="text-sm text-gray-600 font-bold mb-2 line-clamp-2">
+                              {milestone.description}
+                            </p>
+                          )}
+
+                          {/* Progress bar */}
+                          <div className="bg-gray-200 border-2 border-black rounded-full h-3 overflow-hidden">
+                            <div
+                              className="h-full transition-all duration-300 rounded-full"
+                              style={{
+                                width: `${progress}%`,
+                                backgroundColor: milestone.color,
+                              }}
+                            />
+                          </div>
+
+                          <p className="text-xs font-bold text-gray-600 mt-1">
+                            ${milestone.current_amount.toFixed(2)} / ${milestone.goal_amount.toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Message */}
           <div>
