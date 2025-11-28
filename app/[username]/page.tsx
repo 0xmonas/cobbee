@@ -42,11 +42,14 @@ export async function generateMetadata({ params }: CreatorProfilePageProps): Pro
     }
   }
 
-  // Get base URL - prioritize env var, fallback to vercel URL or localhost
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL
+  // Get base URL - normalize to canonical domain (without www)
+  let baseUrl = process.env.NEXT_PUBLIC_APP_URL
     || (process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
       : 'http://localhost:3000')
+
+  // Remove www subdomain to ensure canonical URL
+  baseUrl = baseUrl.replace('://www.', '://')
 
   const title = `${creator.display_name} (@${creator.username}) - Cobbee`
   const description = creator.bio || `Support ${creator.display_name} with a coffee on Cobbee`
