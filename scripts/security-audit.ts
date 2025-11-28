@@ -392,6 +392,201 @@ function checkPublicDirectory() {
 }
 
 /**
+ * Check 7: Verify CDP API keys are not exposed
+ */
+function checkCDPKeys() {
+  logSection('🔑 Checking CDP/Coinbase API Key Security')
+
+  const cdpKeyPatterns = [
+    { name: 'CDP API Key ID', pattern: /CDP_API_KEY_ID/g },
+    { name: 'CDP API Key Secret', pattern: /CDP_API_KEY_SECRET/g },
+    { name: 'Coinbase API Key', pattern: /COINBASE.*API.*KEY/gi },
+  ]
+
+  // Check client-side files
+  const clientDirs = ['components', 'hooks', 'app', 'context']
+
+  clientDirs.forEach((dir) => {
+    if (!fs.existsSync(dir)) return
+
+    try {
+      const files = execSync(`find ${dir} -type f \\( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \\)`, {
+        encoding: 'utf-8',
+        cwd: process.cwd(),
+      })
+        .split('\n')
+        .filter(Boolean)
+
+      files.forEach((file) => {
+        // Skip API routes - they're server-side
+        if (file.includes('/api/')) return
+
+        const content = fs.readFileSync(file, 'utf-8')
+        const lines = content.split('\n')
+
+        // Check for "use client" directive
+        const isClientComponent = lines.some((line) => line.trim() === '"use client"' || line.trim() === "'use client'")
+
+        if (isClientComponent) {
+          lines.forEach((line, index) => {
+            cdpKeyPatterns.forEach(({ name, pattern }) => {
+              if (pattern.test(line) && !line.trim().startsWith('//') && !line.trim().startsWith('*')) {
+                addIssue({
+                  severity: 'critical',
+                  category: 'CDP Key Exposure',
+                  file,
+                  line: index + 1,
+                  message: `${name} referenced in client component`,
+                  recommendation: 'CDP API keys must NEVER be used in client components. Move to server-side API routes.',
+                })
+              }
+            })
+          })
+        }
+      })
+    } catch (error) {
+      // Ignore
+    }
+  })
+
+  log('green', '✓ CDP API key check completed')
+}
+
+/**
+ * Check 8: Verify x402 payment security
+ */
+function checkX402Security() {
+  logSection('💳 Checking x402 Payment Security')
+
+  // Check for proper nonce validation
+  const paymentRoutes = ['app/api/support/buy/route.ts']
+
+  paymentRoutes.forEach((route) => {
+    if (!fs.existsSync(route)) return
+
+    const content = fs.readFileSync(route, 'utf-8')
+
+    // Check for replay attack protection (nonce tracking)
+    const hasNonceTracking = /payment_nonce|nonce.*tracking|blacklist.*nonce/i.test(content)
+    if (!hasNonceTracking) {
+      addIssue({
+        severity: 'high',
+        category: 'Payment Security',
+        file: route,
+        message: 'No nonce tracking found in payment route - vulnerable to replay attacks',
+        recommendation: 'Implement nonce tracking to prevent payment replay attacks.',
+      })
+    }
+
+    // Check for facilitator URL validation
+    const hasFacilitatorValidation = /validateFacilitatorUrl|TRUSTED_FACILITATORS|whitelist/i.test(content)
+    if (!hasFacilitatorValidation) {
+      addIssue({
+        severity: 'high',
+        category: 'Payment Security',
+        file: route,
+        message: 'No facilitator URL validation found',
+        recommendation: 'Validate facilitator URLs against a whitelist to prevent malicious facilitators.',
+      })
+    }
+
+    // Check for self-payment prevention
+    const hasSelfPaymentCheck = /supporter.*creator.*same|cannot.*support.*yourself/i.test(content)
+    if (!hasSelfPaymentCheck) {
+      addIssue({
+        severity: 'medium',
+        category: 'Payment Logic',
+        file: route,
+        message: 'No self-payment prevention found',
+        recommendation: 'Add check to prevent users from supporting themselves.',
+      })
+    }
+  })
+
+  log('green', '✓ x402 payment security check completed')
+}
+
+/**
+ * Check 9: Verify wallet address handling
+ */
+function checkWalletSecurity() {
+  logSection('👛 Checking Wallet Address Security')
+
+  // Check for proper wallet address validation
+  const walletFiles = ['lib/x402-client.ts', 'app/api/support/buy/route.ts']
+
+  walletFiles.forEach((file) => {
+    if (!fs.existsSync(file)) return
+
+    const content = fs.readFileSync(file, 'utf-8')
+
+    // Check for checksum address validation (EIP-55)
+    const hasChecksumValidation = /getAddress|isAddress|checksum/i.test(content)
+    if (!hasChecksumValidation) {
+      addIssue({
+        severity: 'low',
+        category: 'Wallet Security',
+        file,
+        message: 'No EIP-55 checksum validation found for addresses',
+        recommendation: 'Use viem getAddress() to validate and normalize wallet addresses.',
+      })
+    }
+  })
+
+  log('green', '✓ Wallet address security check completed')
+}
+
+/**
+ * Check 10: Verify CORS and CSP configuration
+ */
+function checkSecurityHeaders() {
+  logSection('🔒 Checking Security Headers Configuration')
+
+  const configFile = 'next.config.mjs'
+  if (!fs.existsSync(configFile)) {
+    log('yellow', '⚠ next.config.mjs not found')
+    return
+  }
+
+  const content = fs.readFileSync(configFile, 'utf-8')
+
+  // Check for CSP
+  if (!content.includes('Content-Security-Policy')) {
+    addIssue({
+      severity: 'high',
+      category: 'Security Headers',
+      file: configFile,
+      message: 'No Content-Security-Policy configured',
+      recommendation: 'Add CSP headers to prevent XSS attacks.',
+    })
+  }
+
+  // Check for unsafe-inline in CSP (should be avoided if possible)
+  if (content.includes("'unsafe-inline'")) {
+    addIssue({
+      severity: 'low',
+      category: 'Security Headers',
+      file: configFile,
+      message: "CSP allows 'unsafe-inline' scripts/styles",
+      recommendation: "Consider using nonces or hashes instead of 'unsafe-inline' for better security.",
+    })
+  }
+
+  // Check for CORS configuration
+  if (!content.includes('Access-Control-Allow-Origin')) {
+    addIssue({
+      severity: 'medium',
+      category: 'Security Headers',
+      file: configFile,
+      message: 'No CORS configuration found',
+      recommendation: 'Add CORS headers to control which origins can access your API.',
+    })
+  }
+
+  log('green', '✓ Security headers check completed')
+}
+
+/**
  * Generate security report
  */
 function generateReport() {
@@ -437,12 +632,19 @@ async function main() {
   console.log(`\n${colors.cyan}${colors.bold}🔒 COBBEE SECURITY AUDIT${colors.reset}`)
   console.log(`${colors.cyan}Scanning for sensitive data exposure and security vulnerabilities...${colors.reset}\n`)
 
+  // Core security checks
   checkServiceRoleKeyInSource()
   checkClientSideCode()
   checkEnvironmentVariables()
   checkBuildOutput()
   checkAPIRoutes()
   checkPublicDirectory()
+
+  // Blockchain & payment security checks
+  checkCDPKeys()
+  checkX402Security()
+  checkWalletSecurity()
+  checkSecurityHeaders()
 
   const exitCode = generateReport()
   process.exit(exitCode)
