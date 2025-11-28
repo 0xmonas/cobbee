@@ -775,28 +775,29 @@ export function CoffeeSupport({ creator, milestones = [] }: CoffeeSupportProps) 
           {/* Milestone Selection - Test Tubes */}
           {activeMilestones.length > 0 && (
             <div>
-              <label className="text-xl font-black mb-4 flex items-center gap-2">
+              <label className="text-xl font-black mb-6 flex items-center gap-2">
                 <FlaskConical className="w-6 h-6" />
                 Support a milestone (optional)
               </label>
-              <div className="bg-gray-50 border-4 border-black rounded-2xl p-6">
-                <div className="flex flex-wrap justify-center gap-8">
-                  {activeMilestones.map((milestone) => (
-                    <button
-                      key={milestone.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedMilestoneId(selectedMilestoneId === milestone.id ? null : milestone.id)
-                      }}
-                      className={`
-                        transition-all cursor-pointer
-                        ${selectedMilestoneId === milestone.id ? 'ring-4 ring-[#0000FF] ring-offset-4 scale-105' : 'hover:scale-105'}
-                      `}
-                    >
-                      <MilestoneTestTube milestone={milestone} />
-                    </button>
-                  ))}
-                </div>
+              <div className="flex flex-wrap justify-center gap-12">
+                {activeMilestones.map((milestone) => (
+                  <button
+                    key={milestone.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedMilestoneId(selectedMilestoneId === milestone.id ? null : milestone.id)
+                    }}
+                    className={`
+                      transition-all duration-200 cursor-pointer rounded-3xl p-4
+                      ${selectedMilestoneId === milestone.id
+                        ? 'border-4 border-[#0000FF] bg-[#CCFF00] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] scale-105'
+                        : 'border-4 border-transparent hover:border-black hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:scale-105'
+                      }
+                    `}
+                  >
+                    <MilestoneTestTube milestone={milestone} />
+                  </button>
+                ))}
               </div>
             </div>
           )}

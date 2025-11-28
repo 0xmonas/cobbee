@@ -118,8 +118,8 @@ export function MilestoneTestTube({ milestone }: MilestoneTestTubeProps) {
         </div>
       </div>
 
-      {/* Milestone Info */}
-      <div className="mt-4 text-center max-w-[120px]">
+      {/* Milestone Info - Fixed height for consistent alignment */}
+      <div className="mt-4 text-center max-w-[120px] h-[60px] flex flex-col justify-start">
         <h4 className="font-black text-sm leading-tight mb-1 line-clamp-2">{milestone.title}</h4>
         <p className="text-xs font-bold text-gray-600">
           ${milestone.current_amount} / ${milestone.goal_amount}
