@@ -31,5 +31,13 @@ export default async function PaymentSettingsPage() {
     .eq('creator_id', currentUser.id)
     .order('created_at', { ascending: false })
 
-  return <PaymentSettingsForm user={currentUser} supports={supports || []} />
+  // Fetch all milestones for this creator
+  const { data: milestones } = await supabase
+    .from('milestones')
+    .select('*')
+    .eq('creator_id', currentUser.id)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+
+  return <PaymentSettingsForm user={currentUser} supports={supports || []} milestones={milestones || []} />
 }

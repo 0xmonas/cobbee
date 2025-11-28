@@ -23,20 +23,29 @@ import {
   Coffee,
   Copy,
   Check,
+  FlaskConical,
+  Plus,
+  Trash2,
+  Loader2,
 } from "lucide-react"
 import type { Database } from "@/lib/types/database.types"
 import { validateCoffeePrice, validateThankYouMessage } from "@/lib/utils/validation"
+import { MilestoneTestTube } from "./milestone-test-tube"
+import { useToast } from "@/hooks/use-toast"
 
 type User = Database['public']['Tables']['users']['Row']
 type Support = Database['public']['Tables']['supports']['Row']
+type Milestone = Database['public']['Tables']['milestones']['Row']
 
 interface PaymentSettingsFormProps {
   user: User
   supports: Support[]
+  milestones: Milestone[]
 }
 
-export function PaymentSettingsForm({ user, supports }: PaymentSettingsFormProps) {
+export function PaymentSettingsForm({ user, supports, milestones: initialMilestones }: PaymentSettingsFormProps) {
   const router = useRouter()
+  const { toast } = useToast()
   const [coffeePrice, setCoffeePrice] = useState(user.coffee_price?.toString() || "1.00")
   const [ethereumAddress] = useState(user.wallet_address || "")
   const [copiedWallet, setCopiedWallet] = useState(false)
@@ -54,6 +63,25 @@ export function PaymentSettingsForm({ user, supports }: PaymentSettingsFormProps
   const [showFilters, setShowFilters] = useState(false)
   const [minAmount, setMinAmount] = useState("")
   const [maxAmount, setMaxAmount] = useState("")
+
+  // Milestone state
+  const [milestones, setMilestones] = useState<Milestone[]>(initialMilestones)
+  const [isAddingMilestone, setIsAddingMilestone] = useState(false)
+  const [newMilestone, setNewMilestone] = useState({
+    title: "",
+    description: "",
+    goal_amount: "",
+    color: "#00FF00",
+  })
+
+  const NEON_COLORS = [
+    { name: "Neon Green", value: "#00FF00" },
+    { name: "Neon Pink", value: "#FF00FF" },
+    { name: "Neon Cyan", value: "#00FFFF" },
+    { name: "Neon Yellow", value: "#FFFF00" },
+    { name: "Neon Orange", value: "#FF6600" },
+    { name: "Neon Blue", value: "#0066FF" },
+  ]
 
   const handleCopyWallet = () => {
     navigator.clipboard.writeText(ethereumAddress)
@@ -170,6 +198,151 @@ export function PaymentSettingsForm({ user, supports }: PaymentSettingsFormProps
     setMaxAmount("")
   }
 
+  // Milestone handlers
+  const handleAddMilestone = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!newMilestone.title.trim()) {
+      toast({
+        title: "Error",
+        description: "Milestone title is required",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!newMilestone.goal_amount || Number(newMilestone.goal_amount) <= 0) {
+      toast({
+        title: "Error",
+        description: "Goal amount must be greater than 0",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      const response = await fetch('/api/milestones', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: newMilestone.title.trim(),
+          description: newMilestone.description.trim() || null,
+          goal_amount: Number(newMilestone.goal_amount),
+          color: newMilestone.color,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        toast({
+          title: "Error",
+          description: result.error || 'Failed to create milestone',
+          variant: "destructive",
+        })
+        return
+      }
+
+      setMilestones([result.milestone, ...milestones])
+      setNewMilestone({ title: "", description: "", goal_amount: "", color: "#00FF00" })
+      setIsAddingMilestone(false)
+
+      toast({
+        title: "Success",
+        description: "Milestone created successfully",
+      })
+
+      router.refresh()
+    } catch (error) {
+      console.error('Add milestone error:', error)
+      toast({
+        title: "Error",
+        description: "Failed to create milestone",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleUpdateMilestone = async (id: string, updates: Partial<Milestone>) => {
+    try {
+      const response = await fetch(`/api/milestones/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        toast({
+          title: "Error",
+          description: result.error || 'Failed to update milestone',
+          variant: "destructive",
+        })
+        return
+      }
+
+      setMilestones(milestones.map(m => m.id === id ? result.milestone : m))
+
+      toast({
+        title: "Success",
+        description: "Milestone updated successfully",
+      })
+
+      router.refresh()
+    } catch (error) {
+      console.error('Update milestone error:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update milestone",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleToggleActive = async (milestone: Milestone) => {
+    await handleUpdateMilestone(milestone.id, {
+      is_active: !milestone.is_active,
+      status: !milestone.is_active ? 'active' : 'draft',
+    })
+  }
+
+  const handleDeleteMilestone = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this milestone?')) return
+
+    try {
+      const response = await fetch(`/api/milestones/${id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const result = await response.json()
+        toast({
+          title: "Error",
+          description: result.error || 'Failed to delete milestone',
+          variant: "destructive",
+        })
+        return
+      }
+
+      setMilestones(milestones.filter(m => m.id !== id))
+
+      toast({
+        title: "Success",
+        description: "Milestone deleted successfully",
+      })
+
+      router.refresh()
+    } catch (error) {
+      console.error('Delete milestone error:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete milestone",
+        variant: "destructive",
+      })
+    }
+  }
+
   // Format time ago
   const formatTimeAgo = (dateString: string | null) => {
     if (!dateString) return "Unknown"
@@ -267,6 +440,262 @@ export function PaymentSettingsForm({ user, supports }: PaymentSettingsFormProps
                 </p>
               </div>
             </form>
+          </div>
+        </div>
+
+        {/* Milestones Section */}
+        <div className="border-4 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+          <div className="bg-[#FF00FF] border-b-4 border-black p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <FlaskConical className="w-6 h-6 text-white" />
+              <h2 className="text-2xl font-black text-white">Milestones</h2>
+            </div>
+            <Button
+              onClick={() => setIsAddingMilestone(!isAddingMilestone)}
+              className="bg-white hover:bg-gray-100 text-black border-4 border-black font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Milestone
+            </Button>
+          </div>
+          <div className="p-6">
+            <p className="text-sm text-gray-600 font-bold mb-6">
+              Create goals for your supporters to help you achieve. Maximum 3 active milestones allowed. Progress is calculated from donations received AFTER activation.
+            </p>
+
+            {/* Add Milestone Form */}
+            {isAddingMilestone && (
+              <form onSubmit={handleAddMilestone} className="border-4 border-black bg-gray-50 p-6 rounded-lg mb-6">
+                <h3 className="text-xl font-black mb-4">Create New Milestone</h3>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="milestone-title" className="font-bold">
+                      Title *
+                    </Label>
+                    <Input
+                      id="milestone-title"
+                      type="text"
+                      value={newMilestone.title}
+                      onChange={(e) => setNewMilestone({ ...newMilestone, title: e.target.value })}
+                      placeholder="e.g., New Equipment Fund"
+                      maxLength={100}
+                      className="border-4 border-black p-4 focus:ring-4 focus:ring-[#FF00FF]"
+                    />
+                    <p className="text-xs text-gray-500 font-bold">{newMilestone.title.length}/100 characters</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="milestone-description" className="font-bold">
+                      Description (optional)
+                    </Label>
+                    <Textarea
+                      id="milestone-description"
+                      value={newMilestone.description}
+                      onChange={(e) => setNewMilestone({ ...newMilestone, description: e.target.value })}
+                      placeholder="Describe what this milestone will help you achieve..."
+                      maxLength={500}
+                      className="border-4 border-black p-4 focus:ring-4 focus:ring-[#FF00FF]"
+                    />
+                    <p className="text-xs text-gray-500 font-bold">{newMilestone.description.length}/500 characters</p>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="milestone-goal" className="font-bold">
+                        Goal Amount ($) *
+                      </Label>
+                      <Input
+                        id="milestone-goal"
+                        type="number"
+                        min="1"
+                        max="1000000"
+                        step="0.01"
+                        value={newMilestone.goal_amount}
+                        onChange={(e) => setNewMilestone({ ...newMilestone, goal_amount: e.target.value })}
+                        placeholder="1000"
+                        className="border-4 border-black p-4 focus:ring-4 focus:ring-[#FF00FF]"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="milestone-color" className="font-bold">
+                        Neon Color *
+                      </Label>
+                      <div className="flex gap-2">
+                        {NEON_COLORS.map((color) => (
+                          <button
+                            key={color.value}
+                            type="button"
+                            onClick={() => setNewMilestone({ ...newMilestone, color: color.value })}
+                            className={`w-10 h-10 rounded-lg border-4 border-black transition-all ${
+                              newMilestone.color === color.value
+                                ? 'ring-4 ring-offset-2 ring-black scale-110'
+                                : 'hover:scale-105'
+                            }`}
+                            style={{ backgroundColor: color.value }}
+                            title={color.name}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <Button
+                      type="submit"
+                      className="bg-[#FF00FF] hover:bg-[#E000E0] text-white border-4 border-black font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+                    >
+                      Create Milestone
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setIsAddingMilestone(false)
+                        setNewMilestone({ title: "", description: "", goal_amount: "", color: "#00FF00" })
+                      }}
+                      variant="outline"
+                      className="border-4 border-black font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </form>
+            )}
+
+            {/* Milestones List */}
+            <div className="space-y-4">
+              {milestones.length === 0 ? (
+                <div className="text-center py-12 border-4 border-dashed border-gray-300 rounded-lg">
+                  <FlaskConical className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                  <p className="text-lg font-bold text-gray-500">No milestones yet</p>
+                  <p className="text-sm text-gray-400 font-bold">Create your first milestone to start tracking your goals</p>
+                </div>
+              ) : (
+                milestones.map((milestone) => {
+                  const progress = milestone.goal_amount > 0
+                    ? Math.min((Number(milestone.current_amount) / Number(milestone.goal_amount)) * 100, 100)
+                    : 0
+                  const isCompleted = milestone.status === 'completed'
+                  const activeCount = milestones.filter(m => m.is_active).length
+
+                  return (
+                    <div
+                      key={milestone.id}
+                      className="border-4 border-black bg-white rounded-lg p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                    >
+                      <div className="flex items-start justify-between gap-4 mb-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-xl font-black">{milestone.title}</h3>
+                            {milestone.is_active && (
+                              <span className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full border-2 border-black">
+                                ACTIVE
+                              </span>
+                            )}
+                            {isCompleted && (
+                              <span className="bg-[#CCFF00] text-black text-xs font-bold px-2 py-1 rounded-full border-2 border-black">
+                                COMPLETED
+                              </span>
+                            )}
+                          </div>
+                          {milestone.description && (
+                            <p className="text-sm text-gray-600 font-bold mb-3">{milestone.description}</p>
+                          )}
+
+                          {/* Progress Bar */}
+                          <div className="mb-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm font-bold">
+                                ${Number(milestone.current_amount).toFixed(2)} / ${Number(milestone.goal_amount).toFixed(2)}
+                              </span>
+                              <span className="text-sm font-bold">{progress.toFixed(0)}%</span>
+                            </div>
+                            <div className="h-6 border-4 border-black bg-white overflow-hidden">
+                              <div
+                                className="h-full transition-all duration-500"
+                                style={{
+                                  width: `${progress}%`,
+                                  backgroundColor: milestone.color,
+                                }}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Test Tube Visualization */}
+                          <div className="flex justify-center my-4">
+                            <MilestoneTestTube
+                              milestone={{
+                                id: milestone.id,
+                                title: milestone.title,
+                                description: milestone.description || '',
+                                goal_amount: Number(milestone.goal_amount),
+                                current_amount: Number(milestone.current_amount),
+                                color: milestone.color,
+                                status: milestone.status as 'draft' | 'active' | 'completed' | 'archived',
+                                is_active: milestone.is_active,
+                                created_at: milestone.created_at,
+                                activated_at: milestone.activated_at,
+                                deactivated_at: milestone.deactivated_at,
+                                completed_at: milestone.completed_at,
+                                deleted_at: milestone.deleted_at,
+                                creator_id: milestone.creator_id,
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                          {!isCompleted && (
+                            <>
+                              <Button
+                                onClick={() => handleToggleActive(milestone)}
+                                disabled={!milestone.is_active && activeCount >= 3}
+                                className={`${
+                                  milestone.is_active
+                                    ? 'bg-gray-500 hover:bg-gray-600'
+                                    : 'bg-green-500 hover:bg-green-600'
+                                } text-white border-4 border-black font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
+                                title={!milestone.is_active && activeCount >= 3 ? 'Maximum 3 active milestones allowed' : ''}
+                              >
+                                {milestone.is_active ? 'Deactivate' : 'Activate'}
+                              </Button>
+                              <Button
+                                onClick={() => handleDeleteMilestone(milestone.id)}
+                                variant="outline"
+                                className="border-4 border-black font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-red-50 transition-all"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </>
+                          )}
+                          {isCompleted && (
+                            <Button
+                              onClick={() => handleDeleteMilestone(milestone.id)}
+                              variant="outline"
+                              className="border-4 border-black font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-red-50 transition-all"
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Metadata */}
+                      <div className="text-xs text-gray-500 font-bold space-y-1 border-t-2 border-gray-200 pt-3">
+                        {milestone.activated_at && (
+                          <p>Activated: {new Date(milestone.activated_at).toLocaleDateString()}</p>
+                        )}
+                        {milestone.completed_at && (
+                          <p>Completed: {new Date(milestone.completed_at).toLocaleDateString()}</p>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })
+              )}
+            </div>
           </div>
         </div>
 
