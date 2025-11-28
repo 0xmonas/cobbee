@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { CoffeeSupport } from "@/components/coffee-support"
 import { RecentSupporters } from "@/components/recent-supporters"
-import { MilestoneDisplay } from "@/components/milestone-display"
 import { Coffee } from "lucide-react"
 import Link from "next/link"
 import NextImage from "next/image"
@@ -356,30 +355,6 @@ export default async function CreatorProfilePage({ params }: CreatorProfilePageP
                   )}
                 </div>
               </div>
-
-              {/* Milestone Display */}
-              {milestones && milestones.length > 0 && (
-                <div className="mt-8">
-                  <MilestoneDisplay
-                    milestones={milestones.map(m => ({
-                      id: m.id,
-                      title: m.title,
-                      description: m.description,
-                      goal_amount: Number(m.goal_amount),
-                      current_amount: Number(m.current_amount),
-                      color: m.color,
-                      status: m.status as 'draft' | 'active' | 'completed' | 'archived',
-                      is_active: m.is_active,
-                      created_at: m.created_at,
-                      activated_at: m.activated_at,
-                      deactivated_at: m.deactivated_at,
-                      completed_at: m.completed_at,
-                      deleted_at: m.deleted_at,
-                      creator_id: m.creator_id,
-                    }))}
-                  />
-                </div>
-              )}
             </div>
 
             {/* Right Column - Support Form & Recent Supporters */}

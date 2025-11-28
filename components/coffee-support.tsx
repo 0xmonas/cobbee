@@ -23,6 +23,7 @@ import { createPublicClient, http, formatUnits } from "viem"
 import { useToast } from "@/hooks/use-toast"
 import type { Milestone } from "@/lib/mock-data"
 import { FlaskConical } from "lucide-react"
+import { MilestoneTestTube } from "./milestone-test-tube"
 
 type User = Database['public']['Tables']['users']['Row']
 
@@ -771,89 +772,31 @@ export function CoffeeSupport({ creator, milestones = [] }: CoffeeSupportProps) 
             )}
           </div>
 
-          {/* Milestone Selection */}
+          {/* Milestone Selection - Test Tubes */}
           {activeMilestones.length > 0 && (
             <div>
-              <label className="text-xl font-black mb-3 flex items-center gap-2">
+              <label className="text-xl font-black mb-4 flex items-center gap-2">
                 <FlaskConical className="w-6 h-6" />
                 Support a milestone (optional)
               </label>
-              <div className="grid gap-3">
-                {/* No milestone option */}
-                <button
-                  type="button"
-                  onClick={() => setSelectedMilestoneId(null)}
-                  className={`
-                    p-4 rounded-xl font-bold text-left border-4 border-black
-                    transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
-                    hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]
-                    ${selectedMilestoneId === null ? "bg-white ring-4 ring-[#0000FF]" : "bg-white"}
-                  `}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 rounded-full border-2 border-black bg-gray-300" />
-                    <span className="text-lg font-black">General Support</span>
-                  </div>
-                  <p className="text-sm text-gray-600 font-bold mt-1 ml-6">
-                    Not contributing to any specific milestone
-                  </p>
-                </button>
-
-                {/* Milestone options */}
-                {activeMilestones.map((milestone) => {
-                  const progress = Math.min((milestone.current_amount / milestone.goal_amount) * 100, 100)
-                  return (
+              <div className="bg-gray-50 border-4 border-black rounded-2xl p-6">
+                <div className="flex flex-wrap justify-center gap-8">
+                  {activeMilestones.map((milestone) => (
                     <button
                       key={milestone.id}
                       type="button"
-                      onClick={() => setSelectedMilestoneId(milestone.id)}
+                      onClick={() => {
+                        setSelectedMilestoneId(selectedMilestoneId === milestone.id ? null : milestone.id)
+                      }}
                       className={`
-                        p-4 rounded-xl font-bold text-left border-4 border-black
-                        transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
-                        hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]
-                        ${selectedMilestoneId === milestone.id ? "bg-white ring-4 ring-[#0000FF]" : "bg-white"}
+                        transition-all cursor-pointer
+                        ${selectedMilestoneId === milestone.id ? 'ring-4 ring-[#0000FF] ring-offset-4 scale-105' : 'hover:scale-105'}
                       `}
                     >
-                      <div className="flex items-start gap-3">
-                        {/* Color indicator */}
-                        <div
-                          className="w-3 h-3 rounded-full border-2 border-black mt-1 shrink-0"
-                          style={{ backgroundColor: milestone.color }}
-                        />
-
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2 mb-1">
-                            <span className="text-lg font-black truncate">{milestone.title}</span>
-                            <span className="text-sm font-black text-gray-600 shrink-0">
-                              {Math.round(progress)}%
-                            </span>
-                          </div>
-
-                          {milestone.description && (
-                            <p className="text-sm text-gray-600 font-bold mb-2 line-clamp-2">
-                              {milestone.description}
-                            </p>
-                          )}
-
-                          {/* Progress bar */}
-                          <div className="bg-gray-200 border-2 border-black rounded-full h-3 overflow-hidden">
-                            <div
-                              className="h-full transition-all duration-300 rounded-full"
-                              style={{
-                                width: `${progress}%`,
-                                backgroundColor: milestone.color,
-                              }}
-                            />
-                          </div>
-
-                          <p className="text-xs font-bold text-gray-600 mt-1">
-                            ${milestone.current_amount.toFixed(2)} / ${milestone.goal_amount.toFixed(2)}
-                          </p>
-                        </div>
-                      </div>
+                      <MilestoneTestTube milestone={milestone} />
                     </button>
-                  )
-                })}
+                  ))}
+                </div>
               </div>
             </div>
           )}
