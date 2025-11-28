@@ -76,10 +76,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log('[x402] Using facilitator:', {
-      type: cdpFacilitator ? 'CDP (authenticated)' : 'Community',
-      url: facilitatorUrl,
-    })
+    // Using facilitator: CDP or community
 
     // Parse request body
     const body: SupportBuyRequest = await request.json()
@@ -206,14 +203,6 @@ export async function POST(request: NextRequest) {
     // =========================================================================
 
     try {
-      // Log the payment header for debugging
-      console.log('[x402] Payment header received:', {
-        headerLength: paymentHeader.length,
-        headerType: typeof paymentHeader,
-        headerPreview: paymentHeader.substring(0, 200),
-        isJSON: paymentHeader.startsWith('{') || paymentHeader.startsWith('['),
-      })
-
       // Construct the resource URL (for paymentRequirements)
       const resourceUrl = new URL(request.url)
 
@@ -244,19 +233,8 @@ export async function POST(request: NextRequest) {
       try {
         // Decode base64 to get JSON string
         const decodedHeader = Buffer.from(paymentHeader, 'base64').toString('utf-8')
-        console.log('[x402] Payment header decoded:', {
-          originalLength: paymentHeader.length,
-          decodedLength: decodedHeader.length,
-          decodedPreview: decodedHeader.substring(0, 200),
-        })
-
-        // Parse JSON
+        // Decode and parse JSON
         paymentPayload = JSON.parse(decodedHeader)
-        console.log('[x402] Payment payload parsed successfully:', {
-          scheme: paymentPayload.scheme,
-          network: paymentPayload.network,
-          hasPayload: !!paymentPayload.payload,
-        })
       } catch (parseError) {
         console.error('[x402] Failed to parse payment header:', {
           error: parseError instanceof Error ? parseError.message : String(parseError),
@@ -278,12 +256,6 @@ export async function POST(request: NextRequest) {
       }
 
       // Verify payment via Facilitator using x402 protocol format
-      console.log('[x402] Verifying payment:', {
-        network: x402Config.network,
-        amount: totalAmountSmallestUnit.toString(),
-        recipient: creator.wallet_address,
-        facilitator: facilitatorUrl,
-      })
 
       // Prepare headers for facilitator request
       const facilitatorHeaders: Record<string, string> = {
@@ -295,10 +267,6 @@ export async function POST(request: NextRequest) {
         const authHeaders = await cdpFacilitator.createAuthHeaders()
         // Merge verify endpoint headers (includes Authorization and Correlation-Context)
         Object.assign(facilitatorHeaders, authHeaders.verify)
-        console.log('[x402] Using CDP authentication headers:', {
-          hasAuthorization: !!authHeaders.verify.Authorization,
-          hasCorrelation: !!authHeaders.verify['Correlation-Context'],
-        })
       }
 
       let facilitatorResponse
@@ -358,7 +326,6 @@ export async function POST(request: NextRequest) {
       }
 
       const verificationResult = await facilitatorResponse.json()
-      console.log('[x402] Verification result:', verificationResult)
 
       // Protocol uses 'isValid' not 'verified'
       if (!verificationResult.isValid) {
@@ -392,13 +359,6 @@ export async function POST(request: NextRequest) {
       // Extract payer address and nonce from verification result or payment payload
       const supporterWalletAddress = verificationResult.payer || paymentPayload.payload?.authorization?.from
       const paymentNonce = paymentPayload.payload?.authorization?.nonce
-
-      console.log('[x402] Payment verified:', {
-        payer: supporterWalletAddress,
-        network: paymentPayload.network,
-        scheme: paymentPayload.scheme,
-        nonce: paymentNonce,
-      })
 
       if (!supporterWalletAddress) {
         return Response.json(
@@ -471,7 +431,6 @@ export async function POST(request: NextRequest) {
       }
 
       const settlementResult = await settlementResponse.json()
-      console.log('[x402] Settlement result:', settlementResult)
 
       // ⚠️ CRITICAL: Verify transaction is on correct network
       const ALLOWED_CHAIN_IDS = [8453, 84532] // Base Mainnet, Base Sepolia
