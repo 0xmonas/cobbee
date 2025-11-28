@@ -157,6 +157,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Log milestone creation to audit log
+    await supabase
+      .from('audit_logs')
+      .insert({
+        user_id: authUser.id,
+        action: 'milestone_created',
+        resource_type: 'milestone',
+        resource_id: milestone.id,
+        details: {
+          title: milestone.title,
+          description: milestone.description,
+          goal_amount: milestone.goal_amount,
+          color: milestone.color,
+          status: milestone.status,
+        },
+        ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || null,
+        user_agent: request.headers.get('user-agent') || null,
+      })
+
     return Response.json({ milestone }, { status: 201 })
   } catch (error) {
     console.error('Milestones POST error:', error)

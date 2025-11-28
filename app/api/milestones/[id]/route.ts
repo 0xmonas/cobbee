@@ -172,6 +172,46 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       )
     }
 
+    // Determine the action for audit log
+    let action = 'milestone_updated'
+    if (is_active !== undefined) {
+      action = is_active ? 'milestone_activated' : 'milestone_deactivated'
+    }
+    if (status === 'completed' && existingMilestone.status !== 'completed') {
+      action = 'milestone_completed'
+    }
+
+    // Log milestone update to audit log
+    await supabase
+      .from('audit_logs')
+      .insert({
+        user_id: authUser.id,
+        action,
+        resource_type: 'milestone',
+        resource_id: milestone.id,
+        details: {
+          changes: updates,
+          previous: {
+            title: existingMilestone.title,
+            description: existingMilestone.description,
+            goal_amount: existingMilestone.goal_amount,
+            color: existingMilestone.color,
+            is_active: existingMilestone.is_active,
+            status: existingMilestone.status,
+          },
+          current: {
+            title: milestone.title,
+            description: milestone.description,
+            goal_amount: milestone.goal_amount,
+            color: milestone.color,
+            is_active: milestone.is_active,
+            status: milestone.status,
+          },
+        },
+        ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || null,
+        user_agent: request.headers.get('user-agent') || null,
+      })
+
     return Response.json({ milestone })
   } catch (error) {
     console.error('Milestone PATCH error:', error)
@@ -208,7 +248,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     // Fetch existing milestone to verify ownership
     const { data: existingMilestone, error: fetchError } = await supabase
       .from('milestones')
-      .select('creator_id')
+      .select('*')
       .eq('id', id)
       .single()
 
@@ -240,6 +280,27 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         { status: 500 }
       )
     }
+
+    // Log milestone deletion to audit log
+    await supabase
+      .from('audit_logs')
+      .insert({
+        user_id: authUser.id,
+        action: 'milestone_deleted',
+        resource_type: 'milestone',
+        resource_id: id,
+        details: {
+          title: existingMilestone.title,
+          description: existingMilestone.description,
+          goal_amount: existingMilestone.goal_amount,
+          current_amount: existingMilestone.current_amount,
+          color: existingMilestone.color,
+          status: existingMilestone.status,
+          is_active: existingMilestone.is_active,
+        },
+        ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || null,
+        user_agent: request.headers.get('user-agent') || null,
+      })
 
     return Response.json({ success: true })
   } catch (error) {
