@@ -10,7 +10,9 @@
     "typecheck": "tsc --noEmit",
     "start": "next start",
     "security:test": "tsx security-tests/admin-impersonation-test.ts",
-    "security:test:prod": "NODE_ENV=production tsx security-tests/admin-impersonation-test.ts"
+    "security:test:prod": "NODE_ENV=production tsx security-tests/admin-impersonation-test.ts",
+    "security:audit": "tsx scripts/security-audit.ts",
+    "prebuild": "pnpm security:audit"
   },
   "dependencies": {
     "@coinbase/x402": "^0.7.1",
