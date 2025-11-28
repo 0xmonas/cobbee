@@ -43,12 +43,26 @@ export function useEmailOTP() {
   const sendOTPForLogin = async (email: string) => {
     setIsSending(true)
     try {
-      // Send magic link OTP for login
+      // IMPORTANT: Check if email exists in public.users BEFORE sending OTP
+      // This prevents new signups via email login
+      const { data: existingUser, error: userError } = await supabase
+        .from('users')
+        .select('id, email')
+        .eq('email', email.toLowerCase())
+        .single()
+
+      if (userError || !existingUser) {
+        // Email not found in users table
+        console.error('Email not registered:', email)
+        return {
+          success: false,
+          error: 'This email is not registered. Please add your email in Settings after logging in with your wallet.'
+        }
+      }
+
+      // Send magic link OTP for login (email is confirmed to exist)
       const { error } = await supabase.auth.signInWithOtp({
         email: email,
-        options: {
-          shouldCreateUser: false // Only allow existing users
-        }
       })
 
       if (error) {
