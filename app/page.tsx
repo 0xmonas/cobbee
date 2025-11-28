@@ -1,6 +1,7 @@
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Coffee, Users, Zap } from "lucide-react"
+import { Coffee, Users, Zap, Shield, ArrowRight, Check } from "lucide-react"
 import { LandingHeader } from "@/components/landing-header"
 import { LandingFooter } from "@/components/landing-footer"
 import { SupportDemo } from "@/components/support-demo"
@@ -132,6 +133,135 @@ export default async function LandingPage() {
             <p className="text-lg font-bold leading-relaxed">
               Receive cryptocurrency donations instantly to your wallet. All transactions are transparent on the blockchain.
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Powered by x402 Section */}
+      <section className="container mx-auto px-4 py-20">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-5xl md:text-6xl font-black mb-6">Powered by x402 Protocol</h2>
+            <p className="text-xl font-bold text-gray-700">
+              Next-generation payment technology that makes crypto support seamless
+            </p>
+          </div>
+
+          {/* What is x402 */}
+          <div className="bg-white border-4 border-black rounded-3xl p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-8 relative">
+            <div>
+              <h3 className="text-2xl font-black mb-3">What is x402?</h3>
+              <p className="text-lg font-bold text-gray-700 mb-4">
+                x402 revives the HTTP 402 status code ("Payment Required") to enable automatic, seamless crypto payments on the web.
+                It's an open standard by Coinbase that brings blockchain payments to every website.
+              </p>
+              <div className="bg-[#CCFF00] border-2 border-black rounded-xl p-4 inline-block">
+                <code className="font-mono font-black text-sm">
+                  HTTP 402 Payment Required → Pay with crypto → Access granted
+                </code>
+              </div>
+            </div>
+            <Link
+              href="https://www.x402.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute bottom-4 right-4 hover:scale-110 transition-transform"
+            >
+              <Image
+                src="/button/x402-button-medium.png"
+                alt="x402 Protocol"
+                width={80}
+                height={80}
+                className="flex-shrink-0"
+              />
+            </Link>
+          </div>
+
+          {/* Key Benefits Grid */}
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-[#CCFF00] border-4 border-black rounded-2xl p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+              <div className="flex items-center gap-3 mb-3">
+                <Zap className="w-6 h-6" />
+                <h4 className="text-xl font-black">Instant Settlement</h4>
+              </div>
+              <p className="font-bold">
+                Creators get paid in ~30 seconds. No 7-30 day holding periods like traditional platforms.
+              </p>
+            </div>
+
+            <div className="bg-[#0000FF] text-white border-4 border-black rounded-2xl p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+              <div className="flex items-center gap-3 mb-3">
+                <Shield className="w-6 h-6" />
+                <h4 className="text-xl font-black">Zero Platform Fees</h4>
+              </div>
+              <p className="font-bold">
+                Only tiny network fees (~$0.01). No 5-10% platform cut. Creators keep 99%+ of earnings.
+              </p>
+            </div>
+
+            <div className="bg-[#FF6B35] text-white border-4 border-black rounded-2xl p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+              <div className="flex items-center gap-3 mb-3">
+                <Check className="w-6 h-6" />
+                <h4 className="text-xl font-black">No Chargebacks</h4>
+              </div>
+              <p className="font-bold">
+                Blockchain transactions are final. Creators never lose money to fraudulent chargebacks.
+              </p>
+            </div>
+          </div>
+
+          {/* How x402 Works Under the Hood */}
+          <div className="bg-gray-50 border-4 border-black rounded-3xl p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+            <h3 className="text-2xl font-black mb-6 text-center">How it works under the hood</h3>
+            <div className="space-y-4">
+              <div className="flex items-start gap-4">
+                <div className="bg-[#0000FF] text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 border-2 border-black font-black">
+                  1
+                </div>
+                <div>
+                  <p className="font-black text-lg">HTTP 402 Payment Required</p>
+                  <p className="font-bold text-gray-700">Server returns payment instructions to your wallet</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="bg-[#0000FF] text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 border-2 border-black font-black">
+                  2
+                </div>
+                <div>
+                  <p className="font-black text-lg">EIP-712 Signature</p>
+                  <p className="font-bold text-gray-700">You sign a cryptographic message (no gas fees!)</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="bg-[#0000FF] text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 border-2 border-black font-black">
+                  3
+                </div>
+                <div>
+                  <p className="font-black text-lg">CDP Facilitator Verification</p>
+                  <p className="font-bold text-gray-700">Coinbase verifies your signature and payment intent</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="bg-[#CCFF00] rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 border-2 border-black">
+                  <Check className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="font-black text-lg">On-Chain Settlement</p>
+                  <p className="font-bold text-gray-700">USDC transferred directly to creator's wallet on Base network</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Learn More CTA */}
+          <div className="text-center mt-8">
+            <Link
+              href="/about"
+              className="inline-flex items-center gap-2 text-lg font-black hover:underline text-[#0000FF]"
+            >
+              Learn more about x402 and crypto payments
+              <ArrowRight className="w-5 h-5" />
+            </Link>
           </div>
         </div>
       </section>
