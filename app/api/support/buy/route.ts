@@ -143,6 +143,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Normalize creator wallet address for comparison (lowercase)
+    const creatorWalletLower = creator.wallet_address.toLowerCase()
+
     // Calculate total amount (creator's coffee_price × coffee_count)
     const coffeePrice = creator.coffee_price || 1.0 // Default to 1 USDC if not set
     const totalAmount = coffeePrice * coffee_count
@@ -235,6 +238,19 @@ export async function POST(request: NextRequest) {
         const decodedHeader = Buffer.from(paymentHeader, 'base64').toString('utf-8')
         // Decode and parse JSON
         paymentPayload = JSON.parse(decodedHeader)
+
+        // ⚠️ VALIDATION: Check if supporter is trying to pay themselves
+        // EIP-3009 receiveWithAuthorization requires from ≠ to
+        const supporterWallet = paymentPayload.payload?.authorization?.from
+        if (supporterWallet && supporterWallet.toLowerCase() === creatorWalletLower) {
+          return Response.json(
+            {
+              error: 'Cannot support yourself',
+              details: 'You cannot send a payment to your own wallet address. Please support other creators!',
+            },
+            { status: 400 }
+          )
+        }
       } catch (parseError) {
         console.error('[x402] Failed to parse payment header:', {
           error: parseError instanceof Error ? parseError.message : String(parseError),
