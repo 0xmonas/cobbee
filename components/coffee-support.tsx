@@ -93,6 +93,8 @@ export function CoffeeSupport({ creator, milestones = [] }: CoffeeSupportProps) 
       setIsLoadingBalance(true)
 
       try {
+
+        // Create public client for reading contract data
         const publicClient = createPublicClient({
           chain: {
             id: x402Config.chainId,
@@ -132,6 +134,7 @@ export function CoffeeSupport({ creator, milestones = [] }: CoffeeSupportProps) 
         const formattedBalance = formatUnits(balance, 6)
         setUsdcBalance(formattedBalance)
       } catch (error) {
+        console.error('Failed to fetch USDC balance:', error)
         setUsdcBalance(null)
       } finally {
         setIsLoadingBalance(false)
@@ -139,7 +142,6 @@ export function CoffeeSupport({ creator, milestones = [] }: CoffeeSupportProps) 
     }
 
     fetchUsdcBalance()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address, isConnected])
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -161,21 +163,24 @@ export function CoffeeSupport({ creator, milestones = [] }: CoffeeSupportProps) 
 
   const handleConnectWallet = async () => {
     try {
+      // Open Reown AppKit modal for supporter wallet connection
       await open()
+      // After connection, check if wallet is connected
       if (isConnected && address) {
         setPurchaseStep("summary")
       }
     } catch (error) {
-      // Silent error handling
+      console.error('Wallet connection error:', error)
     }
   }
 
   const handleDisconnectWallet = async () => {
     try {
       await disconnect()
+      // Go back to connect wallet screen
       setPurchaseStep("connect-wallet")
     } catch (error) {
-      // Silent error handling
+      console.error('Wallet disconnect error:', error)
     }
   }
 
@@ -191,11 +196,23 @@ export function CoffeeSupport({ creator, milestones = [] }: CoffeeSupportProps) 
     setPurchaseStep("processing")
 
     if (!address) {
+      console.error('No wallet address available')
       setPurchaseStep("error")
       return
     }
 
     try {
+      // ========================================================================
+      // x402 Payment Flow Integration
+      // ========================================================================
+      // 1. Create x402-enabled fetch with supporter's wallet
+      // 2. Make request to /api/support/buy endpoint
+      // 3. x402-fetch automatically handles 402 Payment Required response
+      // 4. Payment is executed via supporter's wallet
+      // 5. Request is retried with payment proof
+      // 6. Backend verifies payment and creates support record
+      // ========================================================================
+
       const x402Fetch = createX402Fetch(address as `0x${string}`)
 
       const response = await x402Fetch('/api/support/buy', {
@@ -212,25 +229,31 @@ export function CoffeeSupport({ creator, milestones = [] }: CoffeeSupportProps) 
       })
 
       if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Payment failed' }))
+        console.error('Payment failed:', error)
         setPurchaseStep("error")
         return
       }
 
       const result = await response.json()
 
+      // Extract transaction hash from payment response
       const transactionHash = result.payment?.transactionHash || result.support?.transaction_hash
 
       if (transactionHash) {
         setTxnHash(transactionHash)
       }
 
+      // Extract creator's thank you message from response
       if (result.creator?.thank_you_message) {
         setThankYouMessage(result.creator.thank_you_message)
       }
 
+      // Success!
       setPurchaseStep("success")
 
     } catch (error) {
+      console.error('Purchase error:', error)
       setPurchaseStep("error")
     }
   }
@@ -244,6 +267,7 @@ export function CoffeeSupport({ creator, milestones = [] }: CoffeeSupportProps) 
   }
 
   const handleDone = async () => {
+    // Disconnect wallet after transaction is done
     if (isConnected) {
       await disconnect()
     }
@@ -748,13 +772,14 @@ export function CoffeeSupport({ creator, milestones = [] }: CoffeeSupportProps) 
             )}
           </div>
 
+          {/* Milestone Selection - Test Tubes */}
           {activeMilestones.length > 0 && (
             <div>
               <label className="text-xl font-black mb-6 flex items-center gap-2">
                 <FlaskConical className="w-6 h-6" />
                 Support a milestone (optional)
               </label>
-              <div className="flex flex-row justify-center gap-4 md:gap-12 overflow-x-auto pb-2">
+              <div className="flex flex-wrap justify-center gap-12">
                 {activeMilestones.map((milestone) => (
                   <button
                     key={milestone.id}
@@ -763,7 +788,7 @@ export function CoffeeSupport({ creator, milestones = [] }: CoffeeSupportProps) 
                       setSelectedMilestoneId(selectedMilestoneId === milestone.id ? null : milestone.id)
                     }}
                     className={`
-                      transition-all duration-200 cursor-pointer rounded-3xl p-4 shrink-0
+                      transition-all duration-200 cursor-pointer rounded-3xl p-4
                       ${selectedMilestoneId === milestone.id
                         ? 'border-4 border-[#0000FF] bg-[#CCFF00] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] scale-105'
                         : 'border-4 border-transparent hover:border-black hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:scale-105'
