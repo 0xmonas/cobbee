@@ -172,7 +172,7 @@ export default async function LandingPage() {
                 alt="x402 Protocol"
                 width={80}
                 height={80}
-                className="flex-shrink-0"
+                className="shrink-0"
               />
             </Link>
           </div>
@@ -215,7 +215,7 @@ export default async function LandingPage() {
             <h3 className="text-2xl font-black mb-6 text-center">How it works under the hood</h3>
             <div className="space-y-4">
               <div className="flex items-start gap-4">
-                <div className="bg-[#0000FF] text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 border-2 border-black font-black">
+                <div className="bg-[#0000FF] text-white rounded-full w-8 h-8 flex items-center justify-center shrink-0 border-2 border-black font-black">
                   1
                 </div>
                 <div>
@@ -224,7 +224,7 @@ export default async function LandingPage() {
                 </div>
               </div>
               <div className="flex items-start gap-4">
-                <div className="bg-[#0000FF] text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 border-2 border-black font-black">
+                <div className="bg-[#0000FF] text-white rounded-full w-8 h-8 flex items-center justify-center shrink-0 border-2 border-black font-black">
                   2
                 </div>
                 <div>
@@ -233,7 +233,7 @@ export default async function LandingPage() {
                 </div>
               </div>
               <div className="flex items-start gap-4">
-                <div className="bg-[#0000FF] text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 border-2 border-black font-black">
+                <div className="bg-[#0000FF] text-white rounded-full w-8 h-8 flex items-center justify-center shrink-0 border-2 border-black font-black">
                   3
                 </div>
                 <div>
@@ -242,7 +242,7 @@ export default async function LandingPage() {
                 </div>
               </div>
               <div className="flex items-start gap-4">
-                <div className="bg-[#CCFF00] rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 border-2 border-black">
+                <div className="bg-[#CCFF00] rounded-full w-8 h-8 flex items-center justify-center shrink-0 border-2 border-black">
                   <Check className="w-5 h-5" />
                 </div>
                 <div>

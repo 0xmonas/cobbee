@@ -114,7 +114,7 @@ export function sanitizeMarkdown(markdown: string): string {
   if (!markdown) return ''
 
   // First sanitize as text to remove script tags etc
-  let clean = sanitizeText(markdown)
+  const clean = sanitizeText(markdown)
 
   // Preserve basic markdown
   // (Line breaks, bold, italic, links)

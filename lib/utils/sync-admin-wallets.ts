@@ -74,9 +74,9 @@ export async function syncAdminWallets(): Promise<{
         return { success: false, syncedCount: 0, error: insertError.message }
       }
 
-      console.log(`[Admin Sync] ✅ Synced ${walletsToInsert.length} admin wallets to database`)
+      console.warn(`[Admin Sync] ✅ Synced ${walletsToInsert.length} admin wallets to database`)
     } else {
-      console.log('[Admin Sync] ✅ All admin wallets already in database')
+      console.warn('[Admin Sync] ✅ All admin wallets already in database')
     }
 
     // Optional: Remove wallets from DB that are no longer in env
@@ -93,7 +93,7 @@ export async function syncAdminWallets(): Promise<{
         console.error('[Admin Sync] Failed to remove old wallets:', deleteError)
         // Don't fail the sync, just log
       } else {
-        console.log(`[Admin Sync] 🗑️  Removed ${walletsToRemove.length} wallets no longer in env`)
+        console.warn(`[Admin Sync] 🗑️  Removed ${walletsToRemove.length} wallets no longer in env`)
       }
     }
 

@@ -96,7 +96,7 @@ export function MilestoneSettings({ initialMilestones = [], onSave }: MilestoneS
               </div>
 
               {/* Mini Test Tube Preview */}
-              <div className="flex-shrink-0 scale-50 origin-top-left -my-16 -mx-4">
+              <div className="shrink-0 scale-50 origin-top-left -my-16 -mx-4">
                 <MilestoneTestTube milestone={milestone} />
               </div>
 

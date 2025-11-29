@@ -158,7 +158,6 @@ function getGeolocation(request: Request): GeolocationData | null {
     }
   } catch (error) {
     // Geolocation not available (local dev or non-Vercel environment)
-    console.debug('Geolocation not available:', error)
     return null
   }
 }
@@ -269,7 +268,7 @@ export async function createAuditLog(options: CreateAuditLogOptions): Promise<bo
 
     // Log for debugging (only in development)
     if (process.env.NODE_ENV === 'development') {
-      console.log('[AUDIT]', {
+      console.warn('[AUDIT]', {
         event: eventType,
         actor: actorType,
         ip: ipAddress,

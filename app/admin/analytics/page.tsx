@@ -70,20 +70,7 @@ export default async function AdminAnalyticsPage({
     { p_days: days }
   )
 
-  if (error) {
-    console.error('Analytics RPC error:', error)
-  }
-
   const analytics: DailyAnalytics[] = analyticsData || []
-
-  // Debug logging
-  console.log('Analytics query result:', {
-    days,
-    rowCount: analytics.length,
-    hasError: !!error,
-    error: error?.message,
-    firstRow: analytics[0],
-  })
 
   // Calculate totals
   const totalNewCreators = analytics.reduce((sum, day) => sum + day.new_creators, 0)

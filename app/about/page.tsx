@@ -105,7 +105,7 @@ export default function AboutPage() {
               <h3 className="text-3xl font-black mb-6 text-center">Under the Hood</h3>
               <div className="space-y-4">
                 <div className="flex items-start gap-4">
-                  <div className="bg-[#0000FF] text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 border-2 border-black">
+                  <div className="bg-[#0000FF] text-white rounded-full w-8 h-8 flex items-center justify-center shrink-0 border-2 border-black">
                     <span className="font-black">→</span>
                   </div>
                   <div>
@@ -114,7 +114,7 @@ export default function AboutPage() {
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
-                  <div className="bg-[#0000FF] text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 border-2 border-black">
+                  <div className="bg-[#0000FF] text-white rounded-full w-8 h-8 flex items-center justify-center shrink-0 border-2 border-black">
                     <span className="font-black">→</span>
                   </div>
                   <div>
@@ -123,7 +123,7 @@ export default function AboutPage() {
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
-                  <div className="bg-[#0000FF] text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 border-2 border-black">
+                  <div className="bg-[#0000FF] text-white rounded-full w-8 h-8 flex items-center justify-center shrink-0 border-2 border-black">
                     <span className="font-black">→</span>
                   </div>
                   <div>
@@ -132,7 +132,7 @@ export default function AboutPage() {
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
-                  <div className="bg-[#CCFF00] rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 border-2 border-black">
+                  <div className="bg-[#CCFF00] rounded-full w-8 h-8 flex items-center justify-center shrink-0 border-2 border-black">
                     <Check className="w-5 h-5" />
                   </div>
                   <div>
@@ -416,7 +416,7 @@ export default function AboutPage() {
               </p>
               <div className="space-y-4">
                 <div className="flex items-start gap-4">
-                  <div className="bg-[#CCFF00] rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 border-2 border-black">
+                  <div className="bg-[#CCFF00] rounded-full w-8 h-8 flex items-center justify-center shrink-0 border-2 border-black">
                     <Check className="w-5 h-5" />
                   </div>
                   <div>
@@ -425,7 +425,7 @@ export default function AboutPage() {
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
-                  <div className="bg-[#CCFF00] rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 border-2 border-black">
+                  <div className="bg-[#CCFF00] rounded-full w-8 h-8 flex items-center justify-center shrink-0 border-2 border-black">
                     <Check className="w-5 h-5" />
                   </div>
                   <div>
@@ -434,7 +434,7 @@ export default function AboutPage() {
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
-                  <div className="bg-[#CCFF00] rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 border-2 border-black">
+                  <div className="bg-[#CCFF00] rounded-full w-8 h-8 flex items-center justify-center shrink-0 border-2 border-black">
                     <Check className="w-5 h-5" />
                   </div>
                   <div>
@@ -490,19 +490,19 @@ export default function AboutPage() {
                 <h3 className="text-xl font-black mb-4">Key Features</h3>
                 <ul className="space-y-3">
                   <li className="flex items-start gap-3">
-                    <ArrowRight className="w-5 h-5 flex-shrink-0 mt-1" />
+                    <ArrowRight className="w-5 h-5 shrink-0 mt-1" />
                     <span className="font-bold">HTTP-native payments</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <ArrowRight className="w-5 h-5 flex-shrink-0 mt-1" />
+                    <ArrowRight className="w-5 h-5 shrink-0 mt-1" />
                     <span className="font-bold">Chain agnostic (Base, Ethereum, Solana)</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <ArrowRight className="w-5 h-5 flex-shrink-0 mt-1" />
+                    <ArrowRight className="w-5 h-5 shrink-0 mt-1" />
                     <span className="font-bold">Automatic retry with payment</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <ArrowRight className="w-5 h-5 flex-shrink-0 mt-1" />
+                    <ArrowRight className="w-5 h-5 shrink-0 mt-1" />
                     <span className="font-bold">Open standard by Coinbase</span>
                   </li>
                 </ul>
@@ -512,19 +512,19 @@ export default function AboutPage() {
                 <h3 className="text-xl font-black mb-4">Use Cases</h3>
                 <ul className="space-y-3">
                   <li className="flex items-start gap-3">
-                    <Coffee className="w-5 h-5 flex-shrink-0 mt-1" />
+                    <Coffee className="w-5 h-5 shrink-0 mt-1" />
                     <span className="font-bold">Creator support (like Cobbee!)</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <Zap className="w-5 h-5 flex-shrink-0 mt-1" />
+                    <Zap className="w-5 h-5 shrink-0 mt-1" />
                     <span className="font-bold">Pay-per-API-call services</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <Clock className="w-5 h-5 flex-shrink-0 mt-1" />
+                    <Clock className="w-5 h-5 shrink-0 mt-1" />
                     <span className="font-bold">Paywalls for content</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <Globe className="w-5 h-5 flex-shrink-0 mt-1" />
+                    <Globe className="w-5 h-5 shrink-0 mt-1" />
                     <span className="font-bold">AI agent payments</span>
                   </li>
                 </ul>

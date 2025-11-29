@@ -125,7 +125,7 @@ export function WalletModerationActions({
         {blacklistReason && (
           <div className="text-xs font-bold text-red-600 border-2 border-red-200 bg-red-50 rounded-lg p-2">
             <div className="flex items-start gap-1">
-              <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
+              <AlertCircle className="w-3 h-3 mt-0.5 shrink-0" />
               <span className="break-words">{blacklistReason}</span>
             </div>
           </div>

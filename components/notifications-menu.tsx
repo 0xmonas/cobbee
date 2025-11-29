@@ -125,7 +125,7 @@ export function NotificationsMenu() {
                       className="p-4 border-b-2 border-gray-200 hover:bg-[#CCFF00] transition-colors cursor-pointer"
                     >
                       <div className="flex items-start gap-3">
-                        <div className={`p-2 rounded-full border-2 border-black flex-shrink-0 ${
+                        <div className={`p-2 rounded-full border-2 border-black shrink-0 ${
                           notification.type === "support" ? "bg-[#0000FF] text-white" :
                           notification.type === "milestone" ? "bg-[#FF6B35] text-white" :
                           "bg-[#CCFF00]"
@@ -137,7 +137,7 @@ export function NotificationsMenu() {
                           <p className="text-xs text-gray-600 font-bold">{formatTimeAgo(notification.created_at)}</p>
                         </div>
                         {!notification.read && (
-                          <div className="w-2 h-2 bg-[#0000FF] rounded-full mt-2 flex-shrink-0" />
+                          <div className="w-2 h-2 bg-[#0000FF] rounded-full mt-2 shrink-0" />
                         )}
                       </div>
                     </div>

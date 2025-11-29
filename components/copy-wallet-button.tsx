@@ -19,7 +19,7 @@ export function CopyWalletButton({ walletAddress }: CopyWalletButtonProps) {
   return (
     <button
       onClick={handleCopy}
-      className="bg-[#CCFF00] hover:bg-[#B8E600] text-black font-bold p-2 rounded-lg border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all flex-shrink-0"
+      className="bg-[#CCFF00] hover:bg-[#B8E600] text-black font-bold p-2 rounded-lg border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all shrink-0"
       title="Copy wallet address"
     >
       {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}

@@ -90,7 +90,6 @@ export function useNotifications() {
             filter: `user_id=eq.${user.id}`,
           },
           (payload) => {
-            console.log('New notification received:', payload)
             const newNotification = payload.new as Notification
             setNotifications((prev) => [newNotification, ...prev])
           }
@@ -104,7 +103,6 @@ export function useNotifications() {
             filter: `user_id=eq.${user.id}`,
           },
           (payload) => {
-            console.log('Notification updated:', payload)
             const updatedNotification = payload.new as Notification
             setNotifications((prev) =>
               prev.map((n) => (n.id === updatedNotification.id ? updatedNotification : n))
@@ -120,14 +118,11 @@ export function useNotifications() {
             filter: `user_id=eq.${user.id}`,
           },
           (payload) => {
-            console.log('Notification deleted:', payload)
             const deletedNotification = payload.old as Notification
             setNotifications((prev) => prev.filter((n) => n.id !== deletedNotification.id))
           }
         )
-        .subscribe((status) => {
-          console.log('Realtime subscription status:', status)
-        })
+        .subscribe()
     }
 
     setupRealtimeSubscription()

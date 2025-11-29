@@ -409,7 +409,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
               <form onSubmit={handleVerifyOTP} className="space-y-6">
                 <div className="bg-[#0000FF] text-white p-6 rounded-xl border-4 border-black">
                   <div className="flex items-start gap-3">
-                    <MailIcon className="w-6 h-6 flex-shrink-0 mt-1" />
+                    <MailIcon className="w-6 h-6 shrink-0 mt-1" />
                     <div className="flex-1">
                       <p className="text-lg font-black mb-2">Code sent!</p>
                       <p className="text-sm font-bold">

@@ -10,7 +10,12 @@
  * - Username
  * - Coffee price
  * - Cobbee branding with neo-brutalist design
+ *
+ * Note: Uses <img> instead of Next.js <Image> because Vercel ImageResponse
+ * requires standard HTML elements in JSX. @next/next/no-img-element disabled.
  */
+
+/* eslint-disable @next/next/no-img-element */
 
 import { ImageResponse } from '@vercel/og'
 import { NextRequest } from 'next/server'
@@ -45,7 +50,6 @@ export async function GET(request: NextRequest) {
       .single()
 
     if (error || !creator) {
-      console.error('[OG Image] Creator not found:', error)
       return new Response('Creator not found', { status: 404 })
     }
 
@@ -62,8 +66,6 @@ export async function GET(request: NextRequest) {
     const initials = getInitials(creator.display_name)
     const coffeePrice = Number(creator.coffee_price).toFixed(2)
 
-    console.log('[OG Image] Generating for:', username, 'initials:', initials)
-
     // Fetch logo SVG
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://cobbee.fun'
     const logoUrl = `${baseUrl}/logo/logocobbee.svg`
@@ -74,7 +76,7 @@ export async function GET(request: NextRequest) {
       const logoBase64 = `data:image/svg+xml;base64,${Buffer.from(logoText).toString('base64')}`
       logoSvg = logoBase64
     } catch (error) {
-      console.error('[OG Image] Failed to fetch logo:', error)
+      // Logo fetch failed, will use fallback
     }
 
     // Fetch avatar image and convert to base64
@@ -85,7 +87,7 @@ export async function GET(request: NextRequest) {
         const avatarBuffer = await avatarResponse.arrayBuffer()
         avatarBase64 = `data:${avatarResponse.headers.get('content-type') || 'image/jpeg'};base64,${Buffer.from(avatarBuffer).toString('base64')}`
       } catch (error) {
-        console.error('[OG Image] Failed to fetch avatar:', error)
+        // Avatar fetch failed, will use initials fallback
       }
     }
 
@@ -96,12 +98,9 @@ export async function GET(request: NextRequest) {
         const coverResponse = await fetch(creator.cover_image_url)
         const coverBuffer = await coverResponse.arrayBuffer()
         coverBase64 = `data:${coverResponse.headers.get('content-type') || 'image/jpeg'};base64,${Buffer.from(coverBuffer).toString('base64')}`
-        console.log('[OG Image] Cover image fetched successfully')
       } catch (error) {
-        console.error('[OG Image] Failed to fetch cover:', error)
+        // Cover fetch failed, will use gradient fallback
       }
-    } else {
-      console.log('[OG Image] No cover image URL found for user')
     }
 
     // Generate OG image with ImageResponse
@@ -118,6 +117,7 @@ export async function GET(request: NextRequest) {
         {coverBase64 ? (
           <img
             src={coverBase64}
+            alt="Cover background"
             style={{
               position: 'absolute',
               width: '100%',
@@ -161,6 +161,7 @@ export async function GET(request: NextRequest) {
             {logoSvg && (
               <img
                 src={logoSvg}
+                alt="Cobbee logo"
                 style={{
                   width: '120px',
                   height: '68px',
@@ -187,6 +188,7 @@ export async function GET(request: NextRequest) {
             {avatarBase64 ? (
               <img
                 src={avatarBase64}
+                alt={`${creator.display_name} avatar`}
                 style={{
                   width: '120px',
                   height: '120px',
@@ -276,7 +278,6 @@ export async function GET(request: NextRequest) {
       }
     )
   } catch (error) {
-    console.error('[OG Image] Error:', error)
     return new Response('Failed to generate image', { status: 500 })
   }
 }

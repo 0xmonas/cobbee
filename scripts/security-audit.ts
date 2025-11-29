@@ -38,13 +38,13 @@ interface SecurityIssue {
 const issues: SecurityIssue[] = []
 
 function log(color: keyof typeof colors, message: string) {
-  console.log(`${colors[color]}${message}${colors.reset}`)
+  console.warn(`${colors[color]}${message}${colors.reset}`)
 }
 
 function logSection(title: string) {
-  console.log('\n' + '='.repeat(80))
+  console.warn('\n' + '='.repeat(80))
   log('cyan', `  ${title}`)
-  console.log('='.repeat(80) + '\n')
+  console.warn('='.repeat(80) + '\n')
 }
 
 function addIssue(issue: SecurityIssue) {
@@ -57,8 +57,8 @@ function addIssue(issue: SecurityIssue) {
   }[issue.severity] as keyof typeof colors
 
   log(severityColor, `[${issue.severity.toUpperCase()}] ${issue.category}: ${issue.message}`)
-  console.log(`  File: ${issue.file}${issue.line ? `:${issue.line}` : ''}`)
-  console.log(`  ${colors.cyan}→ ${issue.recommendation}${colors.reset}\n`)
+  console.warn(`  File: ${issue.file}${issue.line ? `:${issue.line}` : ''}`)
+  console.warn(`  ${colors.cyan}→ ${issue.recommendation}${colors.reset}\n`)
 }
 
 /**
@@ -597,28 +597,28 @@ function generateReport() {
   const mediumIssues = issues.filter((i) => i.severity === 'medium')
   const lowIssues = issues.filter((i) => i.severity === 'low')
 
-  console.log(`Total Issues Found: ${colors.bold}${issues.length}${colors.reset}\n`)
-  console.log(`  ${colors.red}● Critical: ${criticalIssues.length}${colors.reset}`)
-  console.log(`  ${colors.red}● High:     ${highIssues.length}${colors.reset}`)
-  console.log(`  ${colors.yellow}● Medium:   ${mediumIssues.length}${colors.reset}`)
-  console.log(`  ${colors.blue}● Low:      ${lowIssues.length}${colors.reset}`)
+  console.warn(`Total Issues Found: ${colors.bold}${issues.length}${colors.reset}\n`)
+  console.warn(`  ${colors.red}● Critical: ${criticalIssues.length}${colors.reset}`)
+  console.warn(`  ${colors.red}● High:     ${highIssues.length}${colors.reset}`)
+  console.warn(`  ${colors.yellow}● Medium:   ${mediumIssues.length}${colors.reset}`)
+  console.warn(`  ${colors.blue}● Low:      ${lowIssues.length}${colors.reset}`)
 
   if (issues.length === 0) {
-    console.log(`\n${colors.green}${colors.bold}✓ No security issues found! Your application is secure.${colors.reset}\n`)
+    console.warn(`\n${colors.green}${colors.bold}✓ No security issues found! Your application is secure.${colors.reset}\n`)
     return 0
   }
 
-  console.log('\n' + '='.repeat(80))
+  console.warn('\n' + '='.repeat(80))
 
   if (criticalIssues.length > 0 || highIssues.length > 0) {
-    console.log(`\n${colors.red}${colors.bold}❌ CRITICAL/HIGH SECURITY ISSUES FOUND!${colors.reset}`)
-    console.log(`${colors.red}Please fix these issues immediately before deploying to production.${colors.reset}\n`)
+    console.warn(`\n${colors.red}${colors.bold}❌ CRITICAL/HIGH SECURITY ISSUES FOUND!${colors.reset}`)
+    console.warn(`${colors.red}Please fix these issues immediately before deploying to production.${colors.reset}\n`)
     return 1
   }
 
   if (mediumIssues.length > 0) {
-    console.log(`\n${colors.yellow}${colors.bold}⚠ WARNING: Medium severity issues found.${colors.reset}`)
-    console.log(`${colors.yellow}Consider fixing these issues before deploying.${colors.reset}\n`)
+    console.warn(`\n${colors.yellow}${colors.bold}⚠ WARNING: Medium severity issues found.${colors.reset}`)
+    console.warn(`${colors.yellow}Consider fixing these issues before deploying.${colors.reset}\n`)
     return 0
   }
 
@@ -629,8 +629,8 @@ function generateReport() {
  * Main execution
  */
 async function main() {
-  console.log(`\n${colors.cyan}${colors.bold}🔒 COBBEE SECURITY AUDIT${colors.reset}`)
-  console.log(`${colors.cyan}Scanning for sensitive data exposure and security vulnerabilities...${colors.reset}\n`)
+  console.warn(`\n${colors.cyan}${colors.bold}🔒 COBBEE SECURITY AUDIT${colors.reset}`)
+  console.warn(`${colors.cyan}Scanning for sensitive data exposure and security vulnerabilities...${colors.reset}\n`)
 
   // Core security checks
   checkServiceRoleKeyInSource()

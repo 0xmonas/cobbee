@@ -27,7 +27,7 @@ const results: TestResult[] = []
 // TEST 1: Direct Admin Route Access (Unauthenticated)
 // ============================================================================
 async function test1_DirectAdminAccess() {
-  console.log('\n🔴 TEST 1: Attempting direct /admin access without auth...')
+  console.warn('\n🔴 TEST 1: Attempting direct /admin access without auth...')
 
   try {
     const response = await fetch(`${TARGET_URL}/admin`, {
@@ -50,7 +50,7 @@ async function test1_DirectAdminAccess() {
       httpStatus: response.status,
     })
 
-    console.log(results[results.length - 1].details)
+    console.warn(results[results.length - 1].details)
   } catch (error) {
     results.push({
       testName: 'Direct Admin Access (No Auth)',
@@ -64,7 +64,7 @@ async function test1_DirectAdminAccess() {
 // TEST 2: CORS Attack - Try to read admin data from external origin
 // ============================================================================
 async function test2_CORSAttack() {
-  console.log('\n🔴 TEST 2: Attempting CORS attack with fake origin...')
+  console.warn('\n🔴 TEST 2: Attempting CORS attack with fake origin...')
 
   try {
     const response = await fetch(`${TARGET_URL}/admin`, {
@@ -87,7 +87,7 @@ async function test2_CORSAttack() {
       httpStatus: response.status,
     })
 
-    console.log(results[results.length - 1].details)
+    console.warn(results[results.length - 1].details)
   } catch (error) {
     results.push({
       testName: 'CORS Attack (Evil Origin)',
@@ -101,7 +101,7 @@ async function test2_CORSAttack() {
 // TEST 3: Fake Supabase Session Cookie Injection
 // ============================================================================
 async function test3_FakeCookieInjection() {
-  console.log('\n🔴 TEST 3: Attempting to inject fake session cookie...')
+  console.warn('\n🔴 TEST 3: Attempting to inject fake session cookie...')
 
   try {
     const fakeCookie = 'sb-access-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJGQUtFIiwicm9sZSI6ImFkbWluIn0.FAKESIGNATURE'
@@ -126,7 +126,7 @@ async function test3_FakeCookieInjection() {
       httpStatus: response.status,
     })
 
-    console.log(results[results.length - 1].details)
+    console.warn(results[results.length - 1].details)
   } catch (error) {
     results.push({
       testName: 'Fake Cookie Injection',
@@ -140,7 +140,7 @@ async function test3_FakeCookieInjection() {
 // TEST 4: SQL Injection in Wallet Address Parameter
 // ============================================================================
 async function test4_SQLInjectionWallet() {
-  console.log('\n🔴 TEST 4: Attempting SQL injection via wallet parameter...')
+  console.warn('\n🔴 TEST 4: Attempting SQL injection via wallet parameter...')
 
   const sqlPayloads = [
     "' OR '1'='1",
@@ -163,7 +163,7 @@ async function test4_SQLInjectionWallet() {
 
       if (response.status === 200) {
         allPassed = false
-        console.log(`  ❌ SQL payload accepted: ${payload.substring(0, 30)}...`)
+        console.warn(`  ❌ SQL payload accepted: ${payload.substring(0, 30)}...`)
       }
     } catch (error) {
       // Expected - endpoint might not exist
@@ -178,14 +178,14 @@ async function test4_SQLInjectionWallet() {
       : `❌ VULNERABLE: Some SQL payloads were accepted - check parameter sanitization`,
   })
 
-  console.log(results[results.length - 1].details)
+  console.warn(results[results.length - 1].details)
 }
 
 // ============================================================================
 // TEST 5: Environment Variable Exposure
 // ============================================================================
 async function test5_EnvVariableExposure() {
-  console.log('\n🔴 TEST 5: Attempting to read ADMIN_WALLET_ADDRESSES env var...')
+  console.warn('\n🔴 TEST 5: Attempting to read ADMIN_WALLET_ADDRESSES env var...')
 
   const endpoints = [
     '/api/env',
@@ -207,7 +207,7 @@ async function test5_EnvVariableExposure() {
         const text = await response.text()
         if (text.includes('ADMIN_WALLET') || text.includes('0x')) {
           exposed = true
-          console.log(`  ❌ Env vars exposed at: ${endpoint}`)
+          console.warn(`  ❌ Env vars exposed at: ${endpoint}`)
         }
       }
     } catch (error) {
@@ -223,14 +223,14 @@ async function test5_EnvVariableExposure() {
       : `❌ VULNERABLE: Environment variables are publicly accessible!`,
   })
 
-  console.log(results[results.length - 1].details)
+  console.warn(results[results.length - 1].details)
 }
 
 // ============================================================================
 // TEST 6: Brute Force Admin Wallet Enumeration
 // ============================================================================
 async function test6_WalletEnumeration() {
-  console.log('\n🔴 TEST 6: Attempting to enumerate valid admin wallets...')
+  console.warn('\n🔴 TEST 6: Attempting to enumerate valid admin wallets...')
 
   const commonWallets = [
     '0x0000000000000000000000000000000000000000',
@@ -255,7 +255,7 @@ async function test6_WalletEnumeration() {
       // If endpoint exists and returns different status codes = enumerable
       if (response.status === 200 || response.status === 403) {
         enumerable = true
-        console.log(`  ⚠️ Endpoint reveals wallet validity: ${wallet.substring(0, 10)}...`)
+        console.warn(`  ⚠️ Endpoint reveals wallet validity: ${wallet.substring(0, 10)}...`)
       }
     } catch (error) {
       // Expected - endpoint might not exist
@@ -270,14 +270,14 @@ async function test6_WalletEnumeration() {
       : `⚠️ WARNING: Endpoint may leak admin wallet validity (timing/status codes)`,
   })
 
-  console.log(results[results.length - 1].details)
+  console.warn(results[results.length - 1].details)
 }
 
 // ============================================================================
 // TEST 7: Session Fixation Attack
 // ============================================================================
 async function test7_SessionFixation() {
-  console.log('\n🔴 TEST 7: Attempting session fixation attack...')
+  console.warn('\n🔴 TEST 7: Attempting session fixation attack...')
 
   try {
     // Try to set a known session ID and reuse it
@@ -309,7 +309,7 @@ async function test7_SessionFixation() {
       httpStatus: response.status,
     })
 
-    console.log(results[results.length - 1].details)
+    console.warn(results[results.length - 1].details)
   } catch (error) {
     results.push({
       testName: 'Session Fixation',
@@ -323,12 +323,12 @@ async function test7_SessionFixation() {
 // RUN ALL TESTS
 // ============================================================================
 async function runAllTests() {
-  console.log('═══════════════════════════════════════════════════════════')
-  console.log('🔒 COBBEE ADMIN SECURITY TEST SUITE')
-  console.log('═══════════════════════════════════════════════════════════')
-  console.log(`Target: ${TARGET_URL}`)
-  console.log(`Fake Wallet: ${FAKE_ADMIN_WALLET}`)
-  console.log('═══════════════════════════════════════════════════════════')
+  console.warn('═══════════════════════════════════════════════════════════')
+  console.warn('🔒 COBBEE ADMIN SECURITY TEST SUITE')
+  console.warn('═══════════════════════════════════════════════════════════')
+  console.warn(`Target: ${TARGET_URL}`)
+  console.warn(`Fake Wallet: ${FAKE_ADMIN_WALLET}`)
+  console.warn('═══════════════════════════════════════════════════════════')
 
   await test1_DirectAdminAccess()
   await test2_CORSAttack()
@@ -341,9 +341,9 @@ async function runAllTests() {
   // ============================================================================
   // SUMMARY
   // ============================================================================
-  console.log('\n═══════════════════════════════════════════════════════════')
-  console.log('📊 TEST SUMMARY')
-  console.log('═══════════════════════════════════════════════════════════')
+  console.warn('\n═══════════════════════════════════════════════════════════')
+  console.warn('📊 TEST SUMMARY')
+  console.warn('═══════════════════════════════════════════════════════════')
 
   const passed = results.filter(r => r.passed).length
   const failed = results.filter(r => !r.passed).length
@@ -351,21 +351,21 @@ async function runAllTests() {
 
   results.forEach(result => {
     const emoji = result.passed ? '✅' : '❌'
-    console.log(`${emoji} ${result.testName}`)
+    console.warn(`${emoji} ${result.testName}`)
   })
 
-  console.log('\n───────────────────────────────────────────────────────────')
-  console.log(`Passed: ${passed}/${total}`)
-  console.log(`Failed: ${failed}/${total}`)
-  console.log(`Security Score: ${((passed / total) * 100).toFixed(1)}%`)
-  console.log('═══════════════════════════════════════════════════════════')
+  console.warn('\n───────────────────────────────────────────────────────────')
+  console.warn(`Passed: ${passed}/${total}`)
+  console.warn(`Failed: ${failed}/${total}`)
+  console.warn(`Security Score: ${((passed / total) * 100).toFixed(1)}%`)
+  console.warn('═══════════════════════════════════════════════════════════')
 
   if (failed === 0) {
-    console.log('\n🎉 ALL SECURITY TESTS PASSED!')
-    console.log('Admin authentication appears secure against common attacks.')
+    console.warn('\n🎉 ALL SECURITY TESTS PASSED!')
+    console.warn('Admin authentication appears secure against common attacks.')
   } else {
-    console.log('\n⚠️  SECURITY VULNERABILITIES DETECTED!')
-    console.log('Please review failed tests and patch vulnerabilities.')
+    console.warn('\n⚠️  SECURITY VULNERABILITIES DETECTED!')
+    console.warn('Please review failed tests and patch vulnerabilities.')
   }
 
   // Save results to JSON file
@@ -374,7 +374,7 @@ async function runAllTests() {
     './security-test-results.json',
     JSON.stringify({ timestamp: new Date().toISOString(), results, summary: { passed, failed, total } }, null, 2)
   )
-  console.log('\n📝 Results saved to: security-test-results.json')
+  console.warn('\n📝 Results saved to: security-test-results.json')
 }
 
 // ============================================================================
