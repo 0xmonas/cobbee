@@ -209,29 +209,44 @@ export type Database = {
       }
       email_verifications: {
         Row: {
+          attempt_count: number | null
           created_at: string | null
           email: string
           expires_at: string
           id: string
+          ip_address: string | null
+          last_attempt_at: string | null
+          locked_until: string | null
           otp_code: string
+          user_agent: string | null
           user_id: string
           verified: boolean | null
         }
         Insert: {
+          attempt_count?: number | null
           created_at?: string | null
           email: string
           expires_at: string
           id?: string
+          ip_address?: string | null
+          last_attempt_at?: string | null
+          locked_until?: string | null
           otp_code: string
+          user_agent?: string | null
           user_id: string
           verified?: boolean | null
         }
         Update: {
+          attempt_count?: number | null
           created_at?: string | null
           email?: string
           expires_at?: string
           id?: string
+          ip_address?: string | null
+          last_attempt_at?: string | null
+          locked_until?: string | null
           otp_code?: string
+          user_agent?: string | null
           user_id?: string
           verified?: boolean | null
         }
@@ -398,6 +413,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      otp_audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          email: string
+          error_message: string | null
+          id: string
+          ip_address: string | null
+          success: boolean | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          email: string
+          error_message?: string | null
+          id?: string
+          ip_address?: string | null
+          success?: boolean | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          email?: string
+          error_message?: string | null
+          id?: string
+          ip_address?: string | null
+          success?: boolean | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       supporter_wallets: {
         Row: {
@@ -911,10 +962,39 @@ export type Database = {
         Returns: boolean
       }
       get_unread_notification_count: { Args: never; Returns: number }
+      increment_otp_attempt: {
+        Args: {
+          p_email: string
+          p_ip_address?: string
+          p_user_agent?: string
+          p_user_id: string
+        }
+        Returns: {
+          attempts: number
+          locked: boolean
+          locked_until_ts: string
+        }[]
+      }
       is_admin_user: { Args: never; Returns: boolean }
+      is_otp_locked: {
+        Args: { p_email: string; p_user_id: string }
+        Returns: boolean
+      }
       is_wallet_blacklisted: {
         Args: { p_wallet_address: string }
         Returns: boolean
+      }
+      log_otp_event: {
+        Args: {
+          p_action: string
+          p_email: string
+          p_error_message?: string
+          p_ip_address?: string
+          p_success: boolean
+          p_user_agent?: string
+          p_user_id: string
+        }
+        Returns: undefined
       }
       mark_all_notifications_read: { Args: never; Returns: number }
       mark_notification_read: {
@@ -924,6 +1004,10 @@ export type Database = {
       remove_admin_wallet: {
         Args: { p_wallet_address: string }
         Returns: boolean
+      }
+      reset_otp_attempts: {
+        Args: { p_email: string; p_user_id: string }
+        Returns: undefined
       }
     }
     Enums: {

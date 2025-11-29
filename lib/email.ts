@@ -1,6 +1,8 @@
 import { Resend } from 'resend';
 import OtpEmail from '@/emails/otp-email';
 import ConfirmationEmail from '@/emails/confirmation-email';
+import { hash, verify } from '@node-rs/argon2';
+import { randomBytes } from 'crypto';
 
 // Default sender email (verified Resend domain)
 const FROM_EMAIL = 'Cobbee <noreply@mail.cobbee.fun>';
@@ -20,42 +22,107 @@ function getResendClient(): Resend {
 }
 
 /**
- * Generate a secure 6-digit OTP code
+ * Generate a cryptographically secure 6-digit OTP code
+ *
+ * Security Standards:
+ * - NIST SP 800-63B: Recommends 6+ digits for OTP
+ * - OWASP ASVS: Requires cryptographically secure random generation
+ * - Uses crypto.randomBytes for true randomness (not Math.random)
+ *
+ * @returns 6-digit OTP string
  */
 export function generateOTP(): string {
-  // Generate cryptographically secure random 6-digit number
-  const otp = Math.floor(100000 + Math.random() * 900000);
+  // Generate cryptographically secure random bytes
+  // Using crypto.randomBytes instead of Math.random (OWASP requirement)
+  const buffer = randomBytes(4); // 4 bytes = 32 bits of entropy
+  const randomNumber = buffer.readUInt32BE(0);
+
+  // Convert to 6-digit number (100000 to 999999)
+  const otp = (randomNumber % 900000) + 100000;
+
   return otp.toString();
 }
 
 /**
- * Get OTP expiry time (10 minutes from now)
+ * Get OTP expiry time
+ *
+ * Security Standards:
+ * - NIST SP 800-63B: Recommends 5-10 minutes
+ * - OWASP: Max 10 minutes to prevent brute force
+ * - Industry standard: 5 minutes for high-security, 10 for convenience
+ *
+ * @returns Date object 5 minutes from now
  */
 export function getOTPExpiry(): Date {
   const expiry = new Date();
-  expiry.setMinutes(expiry.getMinutes() + 10);
+  // Changed from 10 to 5 minutes (NIST recommendation for high-security)
+  expiry.setMinutes(expiry.getMinutes() + 5);
   return expiry;
 }
 
 /**
- * Hash OTP code for secure database storage
- * Using simple crypto.subtle if available, otherwise store plain
- * Note: For production, consider bcrypt or similar
+ * Hash OTP code for secure database storage using Argon2id
+ *
+ * Security Standards:
+ * - OWASP Password Storage Cheat Sheet: Recommends Argon2id
+ * - Password Hashing Competition (PHC) 2015 Winner: Argon2
+ * - RFC 9106: Argon2 Memory-Hard Function
+ * - NIST: Approved for password hashing
+ *
+ * Why Argon2id?
+ * 1. Winner of Password Hashing Competition (2015)
+ * 2. Resistant to GPU/ASIC attacks (memory-hard)
+ * 3. Resistant to side-channel attacks
+ * 4. Configurable memory cost, time cost, parallelism
+ * 5. OWASP #1 recommendation for password/token hashing
+ *
+ * Configuration (OWASP recommendations):
+ * - Memory cost: 19 MiB (19456 KiB) - balance between security and performance
+ * - Time cost: 2 iterations - good balance
+ * - Parallelism: 1 - sufficient for our use case
+ * - Hash length: 32 bytes - standard secure length
+ *
+ * @param otp - Plain text OTP code
+ * @returns Argon2id hash with embedded salt and parameters
  */
 export async function hashOTP(otp: string): Promise<string> {
-  // For now, we'll store plain OTP since it's already time-limited
-  // In production, consider using bcrypt or similar
-  // Example: const salt = await bcrypt.genSalt(10); return bcrypt.hash(otp, salt);
-  return otp;
+  try {
+    // Argon2id configuration based on OWASP recommendations
+    const argon2Hash = await hash(otp, {
+      memoryCost: 19456,      // 19 MiB (OWASP minimum for server-side)
+      timeCost: 2,            // 2 iterations (OWASP recommendation)
+      parallelism: 1,         // Single thread (sufficient for OTP)
+      outputLen: 32,          // 32 bytes output
+    });
+
+    return argon2Hash;
+  } catch (error) {
+    console.error('Argon2 hashing error:', error);
+    throw new Error('Failed to hash OTP code');
+  }
 }
 
 /**
- * Verify OTP code against hash
+ * Verify OTP code against Argon2id hash
+ *
+ * Timing-Attack Resistant:
+ * - Argon2 verify() uses constant-time comparison
+ * - Prevents timing attacks that could leak information
+ *
+ * @param otp - Plain text OTP to verify
+ * @param hash - Argon2id hash from database
+ * @returns true if OTP matches, false otherwise
  */
 export async function verifyOTPHash(otp: string, hash: string): Promise<boolean> {
-  // For now, simple comparison since we're storing plain
-  // In production with bcrypt: return bcrypt.compare(otp, hash);
-  return otp === hash;
+  try {
+    // Argon2 verify automatically handles constant-time comparison
+    // This prevents timing attacks (OWASP security requirement)
+    return await verify(hash, otp);
+  } catch (error) {
+    console.error('Argon2 verification error:', error);
+    // On error, return false (fail closed, not fail open)
+    return false;
+  }
 }
 
 /**
